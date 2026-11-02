@@ -1057,10 +1057,10 @@ function nav(){
   if(CAB){
     const until = new Date(ME.accessUntil).toLocaleDateString("ru-RU");
     h += `</nav><div class="sidecta"><div class="box"><b>${RO ? "Доступ закончился" : "Доступ до " + until}</b><p>${esc(ME.name)} · ${ME.role==="owner"?"владелец":"сотрудник"}</p><a class="btn pri wide" href="#team">${RO ? "Продлить" : "Команда и доступ"}</a></div></div>`;
-  } else if(LOGIN_URL) h += `</nav><div class="sidecta"><div class="box"><b>Свой онлайн-кабинет</b><p>Ваши объекты в этом же интерфейсе: данные на сервере, сотрудники, вход с телефона.</p><a class="btn pri wide" href="/pricing.html">Тарифы</a></div></div>`;
+  } else if(LOGIN_URL) h += `</nav><div class="sidecta"><div class="box"><b>Свой онлайн-кабинет</b><p>Ваши объекты в этом же интерфейсе: данные на сервере, сотрудники, вход с телефона.</p><a class="btn pri wide" href="/login.html#buy">Купить доступ</a><a href="/pricing.html" style="display:block;text-align:center;margin-top:8px;font-size:12px;color:var(--navyMuted)">Тарифы и условия</a></div></div>`;
   else h += `</nav><div class="sidecta"><div class="box"><b>Excel-версия</b><p>Этот же инструмент в одном файле: демо, чистая версия и инструкция.</p><a class="btn pri wide" href="#buy">Подробнее</a></div></div>`;
   document.getElementById("side").innerHTML = h;
-  document.getElementById("mnav").innerHTML = SHEETS.map(s=>`<a href="#${s.id}" class="${cur===s.id?"on":""}">${s.t}</a>`).join("") + (CAB ? "" : LOGIN_URL ? `<a href="/pricing.html">Тарифы</a>` : `<a href="#buy" class="${cur==="buy"?"on":""}">Excel-версия</a>`);
+  document.getElementById("mnav").innerHTML = SHEETS.map(s=>`<a href="#${s.id}" class="${cur===s.id?"on":""}">${s.t}</a>`).join("") + (CAB ? "" : LOGIN_URL ? `<a href="/login.html#buy">Купить</a>` : `<a href="#buy" class="${cur==="buy"?"on":""}">Excel-версия</a>`);
 }
 function render(keepScroll){
   R = compute(S); KP = computeKP(S.kp, S);
@@ -1166,7 +1166,7 @@ document.documentElement.lang = "ru";
 async function boot(){
   if(!CAB){
     ensureIds();
-    if(LOGIN_URL){ const l = document.getElementById("loginTop"); l.href = LOGIN_URL; l.hidden = false; const b = document.getElementById("buyTop"); b.href = "/pricing.html"; b.textContent = "Тарифы"; }
+    if(LOGIN_URL){ const l = document.getElementById("loginTop"); l.href = LOGIN_URL; l.hidden = false; const b = document.getElementById("buyTop"); b.href = "/login.html#buy"; b.textContent = "Купить"; }
     route(); return;
   }
   ["demochip","resetbox","buyTop"].forEach(id => { const el = document.getElementById(id); if(el) el.remove(); });
