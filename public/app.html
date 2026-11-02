@@ -772,7 +772,7 @@ V.dash = () => {
     <a href="#payments"><em>4. ПЛАТЕЖИ</em>Поступления и расходы — факт и деньги посчитаются сами.</a></div></section>`) : `<section class="try" aria-label="Попробуйте сами"><div class="lbl">Попробуйте<br>сами</div>
     <a href="#payments"><em>ПЛАТЕЖИ</em>Поставьте «Оплачено» у плановой оплаты — пересчитаются факт бюджета, деньги на счёте и прибыль.</a>
     <a href="#schedule"><em>ГРАФИК РАБОТ</em>Сотрите «Факт начало» у работы — увидите «Старт сорван» и новый прогноз окончания этапа в ППР.</a>
-    <a href="#kp"><em>РАСЧЁТ КП</em>Снизьте цену заявки — файл покажет рентабельность и ответ: брать тендер или нет.</a>
+    <a href="#kp"><em>РАСЧЁТ КП</em>Снизьте цену заявки — сразу видно рентабельность и ответ: брать тендер или нет.</a>
   </section>`}
   <section><h2 class="sec-h">Объекты: финансы и статус</h2>`;
   const cols = [
@@ -978,7 +978,7 @@ V.setup = () => {
   [["Системы","systems"],["Статьи затрат","cost"],["Этапы проекта","stages"],["Исполнители","exec"],["Руководители","pms"],["Причины замены","reasons"],["Причины срыва сроков","delays"],["Ед. изм.","units"]].forEach(([t,k]) => {
     h += `<div class="card"><h3>${t}</h3><ul>${S.lists[k].map(x=>`<li>${esc(x)}${RO?"":`<button type="button" data-ldel="${k}" data-v="${esc(x)}" title="Убрать из списка" aria-label="Убрать ${esc(x)}">×</button>`}</li>`).join("")}</ul>${RO?"":`<form data-ladd="${k}"><input aria-label="Новое значение: ${t}" placeholder="Добавить…" maxlength="150"><button class="btn sm" type="submit">+</button></form>`}</div>`;
   });
-  return h + `</div><p class="note">Добавляйте свои значения через поле «Добавить…» под списком. Новые контрагенты добавляются и сами: просто впишите название в столбце «Контрагент» в Платежах или «Поставщик» в Закупках. В Excel-версии справочники дополняются на листе «Настройки».</p></section>`;
+  return h + `</div><p class="note">Добавляйте свои значения через поле «Добавить…» под списком. Новые контрагенты добавляются и сами: просто впишите название в столбце «Контрагент» в Платежах или «Поставщик» в Закупках.${LOGIN_URL ? "" : " В Excel-версии справочники дополняются на листе «Настройки»."}</p></section>`;
 };
 V.team = () => {
   const until = ME ? new Date(ME.accessUntil) : null, own = ME && ME.role==="owner";
@@ -1057,9 +1057,10 @@ function nav(){
   if(CAB){
     const until = new Date(ME.accessUntil).toLocaleDateString("ru-RU");
     h += `</nav><div class="sidecta"><div class="box"><b>${RO ? "Доступ закончился" : "Доступ до " + until}</b><p>${esc(ME.name)} · ${ME.role==="owner"?"владелец":"сотрудник"}</p><a class="btn pri wide" href="#team">${RO ? "Продлить" : "Команда и доступ"}</a></div></div>`;
-  } else h += `</nav><div class="sidecta"><div class="box"><b>Excel-версия</b><p>Этот же инструмент в одном файле: демо, чистая версия и инструкция.</p><a class="btn pri wide" href="#buy">Подробнее</a></div></div>`;
+  } else if(LOGIN_URL) h += `</nav><div class="sidecta"><div class="box"><b>Свой онлайн-кабинет</b><p>Ваши объекты в этом же интерфейсе: данные на сервере, сотрудники, вход с телефона.</p><a class="btn pri wide" href="/pricing.html">Тарифы</a></div></div>`;
+  else h += `</nav><div class="sidecta"><div class="box"><b>Excel-версия</b><p>Этот же инструмент в одном файле: демо, чистая версия и инструкция.</p><a class="btn pri wide" href="#buy">Подробнее</a></div></div>`;
   document.getElementById("side").innerHTML = h;
-  document.getElementById("mnav").innerHTML = SHEETS.map(s=>`<a href="#${s.id}" class="${cur===s.id?"on":""}">${s.t}</a>`).join("") + (CAB ? "" : `<a href="#buy" class="${cur==="buy"?"on":""}">Excel-версия</a>`);
+  document.getElementById("mnav").innerHTML = SHEETS.map(s=>`<a href="#${s.id}" class="${cur===s.id?"on":""}">${s.t}</a>`).join("") + (CAB ? "" : LOGIN_URL ? `<a href="/pricing.html">Тарифы</a>` : `<a href="#buy" class="${cur==="buy"?"on":""}">Excel-версия</a>`);
 }
 function render(keepScroll){
   R = compute(S); KP = computeKP(S.kp, S);
@@ -1156,7 +1157,8 @@ document.addEventListener("click", e => {
     send(ops); ui.proj.budget = code; location.hash = "budget"; toast(`Создан ${code}: договор и бюджет`); return;
   }
 });
-function route(){ if(!S) return; const h = location.hash.slice(1); cur = (V[h] && !(CAB && h==="buy") && !(!CAB && h==="team")) ? h : "dash"; render(); }
+function route(){ if(!S) return; const h = location.hash.slice(1);
+  if(LOGIN_URL && h==="buy"){ location.replace("/pricing.html"); return; } cur = (V[h] && !(CAB && h==="buy") && !(!CAB && h==="team")) ? h : "dash"; render(); }
 window.addEventListener("hashchange", route);
 if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", ()=>drawCharts());
 new MutationObserver(()=>drawCharts()).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
@@ -1164,7 +1166,7 @@ document.documentElement.lang = "ru";
 async function boot(){
   if(!CAB){
     ensureIds();
-    if(LOGIN_URL){ const l = document.getElementById("loginTop"); l.href = LOGIN_URL; l.hidden = false; }
+    if(LOGIN_URL){ const l = document.getElementById("loginTop"); l.href = LOGIN_URL; l.hidden = false; const b = document.getElementById("buyTop"); b.href = "/pricing.html"; b.textContent = "Тарифы"; }
     route(); return;
   }
   ["demochip","resetbox","buyTop"].forEach(id => { const el = document.getElementById(id); if(el) el.remove(); });
