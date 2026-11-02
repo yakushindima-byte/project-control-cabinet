@@ -108,6 +108,16 @@ a{color:var(--accent)}
 .top .ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .repdate{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:7px;padding:3px 4px 3px 9px}
 .repdate input{border:0;background:transparent;font-weight:700;color:var(--badInk);font-size:13px;padding:2px}
+.demo{display:inline-flex;align-items:stretch;border-radius:7px;background:var(--warn);color:var(--warnInk);overflow:hidden;height:30px}
+.demo-l{display:flex;align-items:center;padding:0 9px;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase}
+#resetbox{display:flex;align-items:stretch}
+.demo-q{display:flex;align-items:center;padding:0 4px 0 9px;font-size:12px;font-weight:600;border-left:1px solid color-mix(in srgb, currentColor 25%, transparent)}
+.demo-reset{border:0;border-left:1px solid color-mix(in srgb, currentColor 25%, transparent);background:transparent;color:inherit;font:inherit;font-size:12.5px;font-weight:600;padding:0 10px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.demo-reset:hover{background:color-mix(in srgb, currentColor 12%, transparent)}
+.demo-q + .demo-reset{border-left:0}
+.btn.acc{border-color:var(--accent);color:var(--accent);height:30px}
+.btn.acc:hover{background:var(--accentSoft)}
+.btn.sm.pri{height:30px}
 .chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--warnInk);background:var(--warn);border-radius:5px;padding:3px 7px}
 .mnav{display:none}
 .content{padding-block:20px 48px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px;min-width:0}
@@ -274,6 +284,8 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
   .grid2,.buy{grid-template-columns:1fr}
   .try{grid-template-columns:1fr}
   .top .sub{display:none}
+  .top .ctrl{gap:6px}
+  #demochip{order:1} #loginTop{order:2} #buyTop{order:3} #logout{order:3} .repdate{order:4}
   .g-row{grid-template-columns:150px minmax(0,1fr)}
   .form{grid-template-columns:1fr}
 }
@@ -287,10 +299,9 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
     <header class="top">
       <div class="tt"><h1 id="h1"></h1><div class="sub" id="hsub"></div></div>
       <div class="ctrl">
-        <span class="chip" id="demochip" title="Пример компании с 8 объектами">Демо-данные</span>
+        <span class="demo" id="demochip"><span class="demo-l" title="Пример компании с 8 объектами">Демо</span><span id="resetbox"><button class="demo-reset" id="reset" type="button" title="Вернуть исходные демо-данные"><span aria-hidden="true">↺</span> Сбросить</button></span></span>
         <label class="repdate" for="repdate">Дата отчёта <input type="date" id="repdate"></label>
-        <span id="resetbox"><button class="btn sm ghost" id="reset" type="button">Сбросить демо</button></span>
-        <a class="btn sm" id="loginTop" href="/login.html" hidden>Войти в кабинет</a>
+        <a class="btn sm acc" id="loginTop" href="/login.html" hidden><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Войти</a>
         <a class="btn sm pri" id="buyTop" href="/login.html#buy">Купить</a>
         <button class="btn sm ghost" id="logout" type="button" hidden>Выйти</button>
       </div>
@@ -1176,9 +1187,9 @@ document.addEventListener("click", e => {
   const rm = e.target.closest("[data-rm]");
   if(rm){ if(rm.dataset.sure!=="1"){ rm.dataset.sure="1"; rm.textContent = "Точно удалить?"; setTimeout(()=>{ if(rm.isConnected){ rm.dataset.sure=""; rm.textContent="Удалить"; } }, 4000); return; }
     api("DELETE","/api/team/"+rm.dataset.rm).then(()=>{ toast("Сотрудник удалён"); loadTeam(); }).catch(err=>toast(err.message)); return; }
-  if(e.target.id==="reset"){ document.getElementById("resetbox").innerHTML = `<span class="confirm">Вернуть исходные демо-данные? <button class="btn sm" id="resetYes" type="button">Да</button><button class="btn sm ghost" id="resetNo" type="button">Нет</button></span>`; return; }
-  if(e.target.id==="resetNo"){ document.getElementById("resetbox").innerHTML = `<button class="btn sm ghost" id="reset" type="button">Сбросить демо</button>`; return; }
-  if(e.target.id==="resetYes"){ S = clone(DATA); save(); document.getElementById("resetbox").innerHTML = `<button class="btn sm ghost" id="reset" type="button">Сбросить демо</button>`; render(); toast("Демо-данные восстановлены"); return; }
+  if(e.target.closest("#reset")){ document.getElementById("resetbox").innerHTML = `<span class="demo-q">Сбросить?</span><button class="demo-reset" id="resetYes" type="button">Да</button><button class="demo-reset" id="resetNo" type="button">Нет</button>`; return; }
+  if(e.target.id==="resetNo"){ document.getElementById("resetbox").innerHTML = `<button class="demo-reset" id="reset" type="button" title="Вернуть исходные демо-данные"><span aria-hidden="true">↺</span> Сбросить</button>`; return; }
+  if(e.target.id==="resetYes"){ S = clone(DATA); save(); document.getElementById("resetbox").innerHTML = `<button class="demo-reset" id="reset" type="button" title="Вернуть исходные демо-данные"><span aria-hidden="true">↺</span> Сбросить</button>`; render(); toast("Демо-данные восстановлены"); return; }
   if(e.target.id==="kpToBudget"){
     if(RO) return;
     const code = nextId(S.projects,"code","PR-",2), clean = o => { Object.keys(o).forEach(k => { if(o[k]===""||o[k]===undefined||o[k]===null) delete o[k]; }); return o; };
