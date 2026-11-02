@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Вход — PROJECT CONTROL PRO</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230B1F3A'/%3E%3Crect x='7' y='17' width='4' height='8' fill='%236FA8FF'/%3E%3Crect x='14' y='12' width='4' height='13' fill='%236FA8FF'/%3E%3Crect x='21' y='7' width='4' height='18' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap">
+<style>
+:root{--bg:#0B1F3A;--panel:#FFFFFF;--ink:#0F1B2D;--muted:#5B6A80;--line:#C9D3E0;--accent:#1565C0;--bad:#A0101C;--badBg:#FBD3D6;--okBg:#D7F2DD;--ok:#11652B;
+  --f-ui:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--f-disp:"Unbounded","Golos Text",system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root{--bg:#060C17;--panel:#111A2A;--ink:#E6ECF5;--muted:#8C9AB0;--line:#2B3B56;--accent:#5B9BEF;--bad:#FF9AA4;--badBg:#46161C;--okBg:#123A22;--ok:#7EE0A0;color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.45;display:flex;align-items:center;justify-content:center;padding:32px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}
+.wrap{width:100%;max-width:420px;display:flex;flex-direction:column;gap:18px}
+.logo{font-family:var(--f-disp);font-weight:700;font-size:18px;color:#fff;text-decoration:none;letter-spacing:.3px}
+.logo span{color:#6FA8FF}
+.card{background:var(--panel);border-radius:12px;padding:22px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+h1{font-family:var(--f-disp);font-size:19px;font-weight:600;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+.tabs{display:flex;gap:4px;background:rgba(127,140,160,.15);border-radius:8px;padding:3px;margin-bottom:16px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:600;font-size:13px;padding:7px;border-radius:6px;cursor:pointer}
+.tabs button.on{background:var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+form{display:flex;flex-direction:column;gap:11px}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
+input[type=text],input[type=email],input[type=password]{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:7px;padding:9px 10px;font-size:14.5px}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.chk{flex-direction:row;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.4}
+.chk input{margin-top:2px;flex:none}
+a{color:var(--accent)}
+.btn{border:0;background:#1565C0;color:#fff;font:inherit;font-weight:700;font-size:14.5px;padding:11px;border-radius:8px;cursor:pointer}
+.btn:hover{background:#0F57AA}
+.btn[disabled]{opacity:.6;cursor:default}
+.msg{border-radius:7px;padding:9px 11px;font-size:13px}
+.msg.err{background:var(--badBg);color:var(--bad)}
+.msg.ok{background:var(--okBg);color:var(--ok)}
+.foot{color:#B9C7DC;font-size:12.5px;text-align:center}
+.foot a{color:#9CC3FF}
+.plans{display:grid;gap:8px}
+.plan{display:flex;flex-direction:row;align-items:center;gap:10px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;cursor:pointer;font-size:14px;color:var(--ink);font-weight:500}
+.plan input{margin:0;flex:none}
+.plan b{margin-left:auto;font-size:16px;font-variant-numeric:tabular-nums}
+.plan:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:1px;text-transform:uppercase}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <a class="logo" href="/">PROJECT CONTROL <span>PRO</span></a>
+  <div class="card">
+    <div class="tabs" role="tablist" id="tabs">
+      <button type="button" role="tab" data-tab="login" class="on">Вход</button>
+      <button type="button" role="tab" data-tab="buy" id="buyTab" hidden>Купить</button>
+      <button type="button" role="tab" data-tab="register">По коду</button>
+    </div>
+    <div id="msg" class="msg" hidden role="alert"></div>
+
+    <form id="login" autocomplete="on">
+      <h1>Вход в кабинет</h1>
+      <label>Почта<input type="email" id="l-email" autocomplete="email" required></label>
+      <label>Пароль<input type="password" id="l-pass" autocomplete="current-password" required></label>
+      <button class="btn" type="submit">Войти</button>
+      <p class="sub" style="margin:0">Забыли пароль? Напишите нам на <a href="https://boosty.to/project_control_lab" target="_blank" rel="noopener">Boosty</a> — пришлём временный пароль.</p>
+    </form>
+
+    <form id="register" hidden>
+      <h1>Регистрация</h1>
+      <p class="sub">Код доступа приходит после оплаты на <a href="https://boosty.to/project_control_lab" target="_blank" rel="noopener">Boosty</a>.</p>
+      <label>Код доступа<input type="text" id="r-code" class="code" placeholder="PCP-XXXX-XXXX" autocomplete="off" required></label>
+      <label>Название компании<input type="text" id="r-company" autocomplete="organization" maxlength="150" required></label>
+      <label>Ваше имя<input type="text" id="r-name" autocomplete="name" maxlength="100" required></label>
+      <label>Почта (логин)<input type="email" id="r-email" autocomplete="email" required></label>
+      <label>Пароль, не короче 8 символов<input type="password" id="r-pass" autocomplete="new-password" minlength="8" required></label>
+      <label class="chk"><input type="checkbox" id="r-consent" required><span>Даю согласие на обработку персональных данных в соответствии с <a href="/privacy.html" target="_blank">политикой</a></span></label>
+      <button class="btn" type="submit">Создать кабинет</button>
+    </form>
+
+    <form id="buy" hidden>
+      <h1>Купить доступ</h1>
+      <p class="sub">Кабинет создастся сразу после оплаты. Оплата картой или через СБП на защищённой странице Т-Банка.</p>
+      <div class="plans" id="plans" role="radiogroup" aria-label="Тариф"></div>
+      <label>Название компании<input type="text" id="b-company" autocomplete="organization" maxlength="150" required></label>
+      <label>Ваше имя<input type="text" id="b-name" autocomplete="name" maxlength="100" required></label>
+      <label>Почта (логин, на неё придёт чек)<input type="email" id="b-email" autocomplete="email" required></label>
+      <label>Пароль для входа, не короче 8 символов<input type="password" id="b-pass" autocomplete="new-password" minlength="8" required></label>
+      <label class="chk"><input type="checkbox" id="b-offer" required><span>Принимаю условия <a href="/offer.html" target="_blank">договора-оферты</a></span></label>
+      <label class="chk"><input type="checkbox" id="b-consent" required><span>Даю согласие на обработку персональных данных в соответствии с <a href="/privacy.html" target="_blank">политикой</a></span></label>
+      <button class="btn" type="submit" id="b-go">Перейти к оплате</button>
+    </form>
+
+    <form id="join" hidden>
+      <h1>Приглашение</h1>
+      <p class="sub" id="j-sub">Регистрация сотрудника в кабинете компании.</p>
+      <label>Ваше имя<input type="text" id="j-name" autocomplete="name" maxlength="100" required></label>
+      <label>Почта (логин)<input type="email" id="j-email" autocomplete="email" required></label>
+      <label>Пароль, не короче 8 символов<input type="password" id="j-pass" autocomplete="new-password" minlength="8" required></label>
+      <label class="chk"><input type="checkbox" id="j-consent" required><span>Даю согласие на обработку персональных данных в соответствии с <a href="/privacy.html" target="_blank">политикой</a></span></label>
+      <button class="btn" type="submit">Присоединиться</button>
+    </form>
+  </div>
+  <p class="foot"><a href="/">← Открыть демо</a> · <a href="/pricing.html">Тарифы</a> · <a href="/offer.html">Оферта</a> · <a href="/privacy.html">Политика данных</a></p>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const invite = new URLSearchParams(location.search).get("invite");
+function msg(text, ok){ const m = $("msg"); m.hidden = !text; m.textContent = text || ""; m.className = "msg " + (ok ? "ok" : "err"); }
+function show(tab){
+  ["login","register","join","buy"].forEach(t => $(t).hidden = t !== tab);
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  msg("");
+}
+async function post(url, body){
+  const r = await fetch(url, {method:"POST", credentials:"same-origin", headers:{"Content-Type":"application/json","X-PCP":"1"}, body:JSON.stringify(body)});
+  let j = {}; try{ j = await r.json(); }catch(e){}
+  if(!r.ok) throw new Error(j.error || "Ошибка " + r.status);
+  return j;
+}
+async function submit(form, url, body){
+  const b = form.querySelector("button[type=submit]"); b.disabled = true; msg("");
+  try{ await post(url, body); location.href = "/app.html"; }
+  catch(e){ msg(e.message); b.disabled = false; }
+}
+$("tabs").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if(b) show(b.dataset.tab); });
+$("login").addEventListener("submit", e => { e.preventDefault(); submit(e.target, "/api/login", {email:$("l-email").value, password:$("l-pass").value}); });
+$("register").addEventListener("submit", e => { e.preventDefault(); submit(e.target, "/api/register", {code:$("r-code").value, company:$("r-company").value, name:$("r-name").value, email:$("r-email").value, password:$("r-pass").value, consent:$("r-consent").checked}); });
+$("join").addEventListener("submit", e => { e.preventDefault(); submit(e.target, "/api/join", {invite, name:$("j-name").value, email:$("j-email").value, password:$("j-pass").value, consent:$("j-consent").checked}); });
+const rub = n => new Intl.NumberFormat("ru-RU").format(n) + " ₽";
+function updBtn(){ const c = document.querySelector('#plans input:checked'); if(c) $("b-go").textContent = "Перейти к оплате " + rub(+c.dataset.rub); }
+fetch("/api/pay/plans").then(r => r.json()).then(j => {
+  if(!j.enabled || invite) return;
+  $("buyTab").hidden = false;
+  $("plans").innerHTML = j.plans.map((p, i) => `<label class="plan"><input type="radio" name="plan" value="${p.id}" data-rub="${p.rub}"${i===j.plans.length-1?" checked":""}><span>${p.title.replace(/[<>&]/g,"")}</span><b>${rub(p.rub)}</b></label>`).join("");
+  $("plans").addEventListener("change", updBtn); updBtn();
+  if(location.hash === "#buy") show("buy");
+}).catch(() => {});
+$("buy").addEventListener("submit", async e => {
+  e.preventDefault(); const b = $("b-go"); b.disabled = true; msg("");
+  try{ const r = await post("/api/pay/checkout-new", {plan: document.querySelector('#plans input:checked').value, company:$("b-company").value, name:$("b-name").value, email:$("b-email").value, password:$("b-pass").value, offer:$("b-offer").checked, consent:$("b-consent").checked}); location.href = r.url; }
+  catch(err){ msg(err.message); b.disabled = false; }
+});
+if(invite){
+  $("tabs").hidden = true; show("join");
+  fetch("/api/invite-info?t=" + encodeURIComponent(invite)).then(r => r.json().then(j => ({ok:r.ok, j}))).then(({ok, j}) => {
+    if(ok) $("j-sub").textContent = "Вас пригласили в кабинет компании «" + j.company + "».";
+    else { msg(j.error || "Приглашение недействительно"); $("join").querySelector("button").disabled = true; }
+  }).catch(() => {});
+} else if(location.hash === "#register") show("register");
+else fetch("/api/me", {credentials:"same-origin"}).then(r => { if(r.ok) location.href = "/app.html"; }).catch(() => {});
+</script>
+</body>
+</html>

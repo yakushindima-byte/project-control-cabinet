@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Оплата — PROJECT CONTROL PRO</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap">
+<style>
+:root{--bg:#0B1F3A;--panel:#fff;--ink:#0F1B2D;--muted:#5B6A80;--accent:#1565C0;--ok:#11652B;--okBg:#D7F2DD;--bad:#A0101C;--badBg:#FBD3D6;
+  --f-ui:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--f-disp:"Unbounded","Golos Text",system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root{--bg:#060C17;--panel:#111A2A;--ink:#E6ECF5;--muted:#8C9AB0;--accent:#5B9BEF;--ok:#7EE0A0;--okBg:#123A22;--bad:#FF9AA4;--badBg:#46161C;color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5;display:flex;align-items:center;justify-content:center;padding:32px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}
+.card{background:var(--panel);border-radius:12px;padding:28px;max-width:440px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.25);text-align:center}
+h1{font-family:var(--f-disp);font-size:20px;font-weight:600;margin:14px 0 8px;text-wrap:balance}
+p{margin:0 0 14px;color:var(--muted)}
+.ico{width:56px;height:56px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700}
+.ok .ico{background:var(--okBg);color:var(--ok)} .bad .ico{background:var(--badBg);color:var(--bad)}
+.spin{width:44px;height:44px;border:4px solid rgba(127,140,160,.25);border-top-color:var(--accent);border-radius:50%;margin:6px auto;animation:s 1s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.spin{animation:none}}
+.btn{display:inline-block;background:#1565C0;color:#fff;text-decoration:none;font-weight:700;padding:11px 20px;border-radius:8px}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:20px;font-weight:700;letter-spacing:1px;background:rgba(127,140,160,.15);border-radius:8px;padding:10px;margin:0 0 14px;user-select:all;color:var(--ink)}
+.logo{font-family:var(--f-disp);font-weight:700;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main class="card" id="box" aria-live="polite">
+  <div class="logo">PROJECT CONTROL PRO</div>
+  <div class="spin" aria-hidden="true"></div>
+  <h1>Проверяем оплату…</h1>
+  <p>Обычно это занимает несколько секунд. Не закрывайте страницу.</p>
+</main>
+<script>
+const q = new URLSearchParams(location.search), order = q.get("order"), box = document.getElementById("box");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const until = d => new Date(d).toLocaleDateString("ru-RU");
+function view(cls, icon, title, text, extra){ box.className = "card " + cls; box.innerHTML = `<div class="logo">PROJECT CONTROL PRO</div><div class="ico" aria-hidden="true">${icon}</div><h1>${title}</h1><p>${text}</p>${extra||""}`; }
+let n = 0;
+async function check(){
+  n++;
+  try{
+    const r = await fetch("/api/pay/status?order=" + encodeURIComponent(order||""), {credentials:"same-origin"}); const j = await r.json();
+    if(!r.ok) return view("bad", "!", "Заказ не найден", esc(j.error || "Проверьте ссылку"), `<a class="btn" href="/login.html">Ко входу</a>`);
+    if(j.status === "paid"){
+      if(j.code) return view("ok", "✓", "Оплата прошла", "Эта почта уже была зарегистрирована, поэтому мы выдали код на " + j.days + " дн. Войдите в кабинет и введите его в разделе «Команда и доступ».", `<div class="code">${esc(j.code)}</div><a class="btn" href="/login.html">Войти</a>`);
+      if(j.kind === "new" && j.loggedIn){ view("ok", "✓", "Оплата прошла, кабинет создан", "Доступ до " + until(j.accessUntil) + ". Открываем кабинет…", `<a class="btn" href="/app.html">Открыть кабинет</a>`); setTimeout(() => location.href = "/app.html", 2500); return; }
+      if(j.kind === "new") return view("ok", "✓", "Оплата прошла, кабинет создан", "Войдите с почтой и паролем, которые указали при покупке.", `<a class="btn" href="/login.html">Войти</a>`);
+      return view("ok", "✓", "Доступ продлён", "Кабинет работает до " + until(j.accessUntil) + ".", `<a class="btn" href="/app.html#team">Вернуться в кабинет</a>`);
+    }
+    if(j.status === "failed") return view("bad", "✕", "Оплата не прошла", "Деньги не списаны. Попробуйте ещё раз или другой картой.", `<a class="btn" href="${j.kind==="renew"?"/app.html#team":"/login.html#buy"}">Попробовать снова</a>`);
+  }catch(e){}
+  if(q.get("fail") && n > 3) return view("bad", "✕", "Оплата не прошла", "Платёж отменён или отклонён банком.", `<a class="btn" href="/login.html#buy">Попробовать снова</a>`);
+  if(n > 60) return view("bad", "…", "Банк ещё не подтвердил оплату", "Если деньги списались, доступ включится автоматически в течение нескольких минут — обновите страницу. Вопросы — на Boosty.", `<a class="btn" href="">Обновить</a>`);
+  setTimeout(check, 2500);
+}
+check();
+</script>
+</body>
+</html>
