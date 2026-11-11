@@ -335,7 +335,7 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
   .tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .tools > select[data-ui="proj"], .tools > input[type="search"]{grid-column:1 / -1;width:100%;max-width:none}
   .tools > select, .tools > input{width:100%;min-width:0;font-size:16px;height:40px}
-  .tools .legend{display:none}
+  .tools .legend{grid-column:1 / -1;margin-left:0}
 }
 @media (max-width:520px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .tile b{font-size:17px} .top h1{font-size:16px}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
@@ -701,6 +701,7 @@ let cur = "dash";
 const ui = { proj:{}, q:{}, f:{}, svod:"", sort:{}, limit:{}, pin:{}, card:null };
 const TABLES = {};            // последние описания таблиц: для карточки строки, сортировки и истории
 const LIMIT = 150;            // строк за раз — чтобы большие таблицы не тормозили
+const MOBLIST = false;   // на телефоне — полные таблицы, как на компьютере (список с карточкой отключён)
 const isMob = () => innerWidth < 720;
 const cellVal = (o, c, i) => c.calc ? c.calc(i) : o.rows[i][c.k];
 function fmtRaw(c, v){
@@ -764,7 +765,7 @@ function table(o){
   const lim = ui.limit[o.id] || LIMIT, vis = idx.slice(0, lim), pin = ui.pin[o.id];
   if(pin){ const pi = o.rows.findIndex(r => r && r._id===pin); if(pi>=0 && !vis.includes(pi)) vis.push(pi); }   // новая строка видна, даже если не проходит фильтр
   o._vis = vis;
-  const mob = isMob() && o.mob, cols = mob ? o.mob.map(k => o.cols.find(c => c.k===k)).filter(Boolean) : o.cols, del = o.del && !mob;
+  const mob = MOBLIST && isMob() && o.mob, cols = mob ? o.mob.map(k => o.cols.find(c => c.k===k)).filter(Boolean) : o.cols, del = o.del && !mob;
   const num = c => ["money","int","pct","num","bar"].includes(c.t);
   const th = (c, cls) => `<th class="${cls}" data-sort="${o.id}:${c.k}" title="Сортировать"${srt && srt.k===c.k ? ` aria-sort="${srt.dir>0?"ascending":"descending"}"` : ""}>${esc(c.h)}${srt && srt.k===c.k ? `<span class="srt" aria-hidden="true">${srt.dir>0?"▲":"▼"}</span>` : ""}</th>`;
   let h;
@@ -1427,7 +1428,7 @@ document.addEventListener("click", e => {
     send([{t:"add", a:path, row, at: path==="payments" ? "start" : "end"}]);
     ui.pin[tid] = row._id; render(true); toast("Строка добавлена");
     const o = TABLES[tid];
-    if(o && isMob() && o.mob) openCard(tid, arr.indexOf(row));
+    if(o && MOBLIST && isMob() && o.mob) openCard(tid, arr.indexOf(row));
     else { const tr = focusRow(row._id); if(tr) tr.classList.add("flash"); }
     return; }
   const del = e.target.closest("[data-del]");
