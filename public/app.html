@@ -175,7 +175,7 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .g-lab{padding:5px 10px;font-size:12px;line-height:1.25;border-right:1px solid var(--line);position:sticky;left:0;background:var(--surface);z-index:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .g-lab small{color:var(--muted);margin-right:6px;font-variant-numeric:tabular-nums}
 .g-tr{position:relative}
-.g-wk{position:absolute;top:0;bottom:0;border-left:1px solid var(--line2)}
+.g-row:not(.g-head) .g-tr{background-image:repeating-linear-gradient(to right, transparent 0, transparent calc(100% / 26 - 1px), var(--line2) calc(100% / 26 - 1px), var(--line2) calc(100% / 26))}
 .g-now{position:absolute;top:0;bottom:0;background:var(--todaySoft);z-index:0}
 .g-bar{position:absolute;top:7px;height:14px;border-radius:3px;background:var(--bar);overflow:hidden;z-index:1}
 .g-bar s{display:block;height:100%;background:var(--barDone)}
@@ -237,6 +237,64 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .sheetlist a i{width:9px;height:9px;border-radius:2px;flex:none;align-self:center}
 .sheetlist a span{color:var(--muted);font-size:12px}
 
+.t th[data-sort]{cursor:pointer;user-select:none}
+.t th[data-sort]:hover{filter:brightness(1.3)}
+.t th .srt{display:inline-block;margin-left:4px;font-size:9px}
+.t tr.flash td{animation:fl 1.6s ease-out}
+@keyframes fl{from{box-shadow:inset 0 0 0 9999px rgba(242,183,5,.35)}to{box-shadow:inset 0 0 0 9999px rgba(242,183,5,0)}}
+.more{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:8px}
+.toast.act{pointer-events:auto;display:flex;gap:12px;align-items:center}
+.toast button{border:1px solid rgba(255,255,255,.45);background:transparent;color:#fff;font:inherit;font-weight:700;border-radius:6px;padding:3px 10px;cursor:pointer}
+.toast button:hover{background:rgba(255,255,255,.14)}
+.btn.lg{height:42px;padding:0 14px;font-size:14px}
+.btn.danger{color:var(--badInk)}
+.btn[disabled]{opacity:.45;cursor:default}
+/* список на телефоне и карточка строки */
+.t.mob{table-layout:fixed;width:100%}
+.t.mob td{white-space:normal;height:auto;padding:9px 5px;line-height:1.3;font-size:13px;overflow-wrap:anywhere}
+.t.mob th{padding:7px 4px;font-size:10.5px;line-height:1.25;white-space:normal;overflow-wrap:normal;word-break:normal}
+.t.mob td.n,.t.mob td.dt{white-space:nowrap}
+.t.mob td small{display:block;font-size:11px;color:var(--muted);line-height:1.3;margin-top:1px}
+.t.mob .pill{font-size:10.5px;padding:2px 6px;white-space:normal;line-height:1.25;overflow-wrap:normal;word-break:normal}
+.t.mob tbody td{font-size:13px;-webkit-hyphens:auto;hyphens:auto}
+.t.mob tr.sub td{font-size:12px;overflow:visible;text-overflow:clip}
+.t.mob tr[data-card]{cursor:pointer}
+.t.mob tr.sub td{position:static}
+.t.mob .pill{white-space:normal;text-align:center;line-height:1.25;padding:2px 6px}
+.cardbg{position:fixed;inset:0;background:rgba(6,12,23,.55);z-index:70;display:flex;align-items:flex-end;justify-content:center}
+.rowcard{background:var(--surface);color:var(--ink);width:100%;max-width:560px;max-height:calc(100% - env(safe-area-inset-top,0px) - 20px);border-radius:14px 14px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -10px 40px rgba(0,0,0,.3)}
+.rowcard header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.rowcard header b{flex:1;min-width:0;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rowcard header small{display:block;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.4px}
+.rowcard .body{overflow:auto;padding:12px 16px 16px;display:grid;gap:11px;-webkit-overflow-scrolling:touch}
+.rowcard .f{display:grid;gap:3px;min-width:0}
+.rowcard .f label{font-size:12px;color:var(--muted)}
+.rowcard .f input,.rowcard .f select{font-size:16px;height:44px;border:1px solid var(--inputLine);background:var(--inputBg);border-radius:8px;padding:0 10px;width:100%;min-width:0;color:var(--ink)}
+.rowcard .f input[disabled],.rowcard .f select[disabled]{background:var(--neutral);color:var(--muted)}
+.rowcard .f .o{background:var(--calc);color:var(--calcInk);border-radius:8px;padding:10px;font-size:15px;font-weight:600;min-height:42px;font-variant-numeric:tabular-nums}
+.rowcard .f .o .mbar{justify-content:flex-start}
+.rowcard footer{display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.rowcard footer .sp{flex:1}
+@media (min-width:720px){.cardbg{align-items:center}.rowcard{border-radius:14px;max-height:86vh}}
+/* итог расчёта КП — всегда под рукой */
+.kpbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:none;align-items:center;gap:12px;padding:9px max(16px,env(safe-area-inset-right,0px)) calc(9px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));font-size:12.5px;line-height:1.25;text-decoration:none;box-shadow:0 -6px 20px rgba(0,0,0,.18)}
+.kpbar b{font-size:14px}
+.kpbar .d b{font-family:var(--f-disp);font-size:16px;display:block}
+.kpbar span{margin-left:auto;text-align:right}
+.kpbar.g{background:var(--good);color:var(--goodInk)} .kpbar.w{background:var(--warn);color:var(--warnInk)} .kpbar.b{background:var(--bad);color:var(--badInk)}
+@media (max-width:1250px){.kpbar.on:not(.hid){display:flex} .content.haskpbar{padding-bottom:96px}}
+/* история изменений */
+.hday{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:14px 0 6px;border-bottom:1px solid var(--line)}
+.hrow{display:grid;grid-template-columns:48px 150px minmax(0,1fr);gap:12px;padding:7px 0;border-bottom:1px solid var(--line2);font-size:13px;align-items:baseline}
+.hrow time{color:var(--muted);font-variant-numeric:tabular-nums}
+.hrow .who{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow .sh{color:var(--accent);font-weight:600}
+.hrow del{color:var(--muted)}
+.hrow ins{text-decoration:none;font-weight:600}
+@media (max-width:720px){.hrow{grid-template-columns:44px minmax(0,1fr)} .hrow .who{grid-column:2} .hrow .txt{grid-column:2}}
+.sharerow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line2)}
+.sharerow .acts{display:flex;gap:6px;flex-wrap:wrap}
+.banner.info{background:var(--calc);color:var(--calcInk)}
 .banner{background:var(--warn);color:var(--warnInk);border-radius:10px;padding:12px 14px;font-size:13.5px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .banner b{font-weight:700}
 .start{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -267,10 +325,17 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
   .grid2,.buy{grid-template-columns:1fr}
   .try{grid-template-columns:1fr}
   .top .sub{display:none}
+  .top{top:calc(env(safe-area-inset-top,0px) - var(--hide,0px))}
   .top .ctrl{gap:6px}
   #demochip{order:1} #loginTop{order:2} #buyTop{order:3} #logout{order:3} .repdate{order:4}
   .g-row{grid-template-columns:150px minmax(0,1fr)}
   .form{grid-template-columns:1fr}
+}
+@media (max-width:719px){
+  .tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .tools > select[data-ui="proj"], .tools > input[type="search"]{grid-column:1 / -1;width:100%;max-width:none}
+  .tools > select, .tools > input{width:100%;min-width:0;font-size:16px;height:40px}
+  .tools .legend{display:none}
 }
 @media (max-width:520px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .tile b{font-size:17px} .top h1{font-size:16px}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
@@ -294,6 +359,8 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
   </div>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<div id="cardbox"></div>
+<a class="kpbar" id="kpbar" href="#kp" aria-label="К итогам расчёта"></a>
 
 <script src="/vendor/chart.umd.js"></script>
 <script>
@@ -313,7 +380,7 @@ function compute(S) {
   const startD = blank(st.startDate) ? dn("2000-01-01") : dn(st.startDate);
   const target = num(st.target), crit = num(st.crit), tax = num(st.tax), hz = num(st.horizon), lag = num(st.lagTol);
   const gs = blank(st.ganttStart) ? rep - wd2(rep) + 1 - 28 : dn(st.ganttStart) - wd2(dn(st.ganttStart)) + 1;
-  const R = { rep, startD, gantt: gs };
+  const R = { repN: rep, startD, gantt: gs };   // repN — отчётная дата номером дня (R.rep занят заменами)
   const prjBy = {}; S.projects.forEach(p => { if (p.code) prjBy[p.code] = p; });
   const objOf = c => blank(c) ? "" : (prjBy[c] ? prjBy[c].name : "код не найден");
 
@@ -586,8 +653,8 @@ async function flush(){
   catch(e){ toast(e.message || "Не удалось сохранить"); try{ await reload(true); }catch(_){} }
   sending = false; if(queue.length) flush();
 }
-async function reload(keep){ const d = await api("GET","/api/data"); S = d.data; VER = d.version; RO = d.readonly; render(keep); }
-const typing = () => { const a = document.activeElement; return a && ["INPUT","SELECT","TEXTAREA"].includes(a.tagName) && document.getElementById("view").contains(a); };
+async function reload(keep){ const d = await api("GET","/api/data"); S = d.data; VER = d.version; RO = d.readonly; keepDirty = true; try{ render(keep); } finally { keepDirty = false; } }
+const typing = () => { const a = document.activeElement; return a && ["INPUT","SELECT","TEXTAREA"].includes(a.tagName) && (document.getElementById("view").contains(a) || document.getElementById("cardbox").contains(a)); };
 async function poll(){
   if(document.hidden || sending || queue.length) return;
   try{ const v = await api("GET","/api/version"); if((v.version!==VER || v.readonly!==RO) && !typing()) await reload(true); }catch(e){}
@@ -601,6 +668,7 @@ const money = v => (v===null||v===undefined||v==="") ? "" : (Math.round(v)===0 ?
 const rub = v => nf0.format(Math.round(v||0)) + " ₽";
 const pct = (v,d=1) => (v===null||v===undefined||v==="") ? "" : (v*100).toFixed(d).replace(".",",") + "%";
 const fdate = n => { if(n===null||n===undefined||n==="") return ""; const s = typeof n==="number" ? ds(n) : String(n); const [y,m,d]=s.split("-"); return `${d}.${m}.${y}`; };
+const sdate = n => { const s = fdate(n); return s ? s.slice(0,6) + s.slice(8) : ""; };   // 05.03.26 — для узких экранов
 const vatL = v => v==="Без НДС" ? "Без НДС" : (v===""||v===null||v===undefined) ? "" : Math.round(v*100)+"%";
 const MON = ["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"];
 
@@ -627,10 +695,18 @@ const SHEETS = [
   {id:"kp", t:"Расчёт КП", g:"Тендер", c:"#6A1B9A", sub:"До подачи заявки: себестоимость, рентабельность и допустимое снижение от НМЦК."},
   {id:"setup", t:"Настройки", g:"Тендер", c:"#6B7A90", sub:"Отчётная дата, остаток денег, пороги маржи и справочники."},
 ];
-if(CAB) SHEETS.push({id:"team", t:"Команда и доступ", g:"Аккаунт", c:"#6B7A90", sub:"Срок доступа, сотрудники и приглашения, смена пароля."});
+if(CAB) SHEETS.push({id:"history", t:"История изменений", g:"Аккаунт", c:"#6B7A90", sub:"Кто, когда и что поменял в кабинете."}, {id:"team", t:"Команда и доступ", g:"Аккаунт", c:"#6B7A90", sub:"Срок доступа, сотрудники и приглашения, смена пароля."});
 const SH = Object.fromEntries(SHEETS.map(s=>[s.id,s]));
 let cur = "dash";
-const ui = { proj:{}, q:{}, f:{}, svod:"" };
+const ui = { proj:{}, q:{}, f:{}, svod:"", sort:{}, limit:{}, pin:{}, card:null };
+const TABLES = {};            // последние описания таблиц: для карточки строки, сортировки и истории
+const LIMIT = 150;            // строк за раз — чтобы большие таблицы не тормозили
+const isMob = () => innerWidth < 720;
+const cellVal = (o, c, i) => c.calc ? c.calc(i) : o.rows[i][c.k];
+function fmtRaw(c, v){
+  if(v===null||v===undefined||v==="") return "";
+  switch(c.t){ case "money": return money(v); case "date": return fdate(v); case "pct": return pct(v, 0); case "num": return esc(String(v).replace(".",",")); default: return esc(c.o==="vat" ? vatL(v) : v); }
+}
 
 /* ---------- таблица */
 const OPTS = {
@@ -671,38 +747,83 @@ function fmtCell(c, v){
   }
 }
 function table(o){
-  // o: {arr, rows (S-array), cols, filter(i)->bool, sums:[keys], add:fn, del:true, id}
-  const idx = o.rows.map((_,i)=>i).filter(i => !o.filter || o.filter(i));
+  // o: {id, arr, rows (массив из S), cols, filter(i), sums:[ключи], add, del, mob:[ключи столбцов для телефона]}
   if(RO) o = Object.assign({}, o, {del:false, add:false});
-  const tw = o.cols.reduce((a,c)=>a+(c.w||80),0) + (o.del?30:0);
-  let h = `<div class="tw" data-tw="${o.id}"><table class="t" style="width:max(100%,${tw}px)"><colgroup>${o.del?'<col style="width:30px">':""}${o.cols.map(c=>`<col style="width:${c.w||80}px">`).join("")}</colgroup><thead><tr>`;
-  if(o.del) h += `<th class="stk" aria-label="Удалить"></th>`;
-  o.cols.forEach((c,j) => h += `<th class="${c.calc?"c":""}${j===0&&!o.del?" stk":""}">${esc(c.h)}</th>`);
-  h += `</tr></thead><tbody>`;
+  TABLES[o.id] = o;
+  const all = o.rows.map((_,i)=>i).filter(i => !o.filter || o.filter(i));
+  const srt = ui.sort[o.id], sc = srt && o.cols.find(c => c.k===srt.k);
+  let idx = all;
+  if(sc){
+    const norm = v => (v===null||v===undefined||v==="") ? null : (sc.t==="date" && typeof v==="string" ? dn(v) : v);
+    const key = new Map(all.map(i => [i, norm(cellVal(o, sc, i))]));
+    idx = all.slice().sort((a,b) => { const x = key.get(a), y = key.get(b);
+      if(x===null || y===null) return x===y ? a-b : (x===null ? 1 : -1);
+      const r = (typeof x==="number" && typeof y==="number") ? x-y : String(x).localeCompare(String(y), "ru", {numeric:true});
+      return r ? r*srt.dir : a-b; });
+  }
+  const lim = ui.limit[o.id] || LIMIT, vis = idx.slice(0, lim), pin = ui.pin[o.id];
+  if(pin){ const pi = o.rows.findIndex(r => r && r._id===pin); if(pi>=0 && !vis.includes(pi)) vis.push(pi); }   // новая строка видна, даже если не проходит фильтр
+  o._vis = vis;
+  const mob = isMob() && o.mob, cols = mob ? o.mob.map(k => o.cols.find(c => c.k===k)).filter(Boolean) : o.cols, del = o.del && !mob;
+  const num = c => ["money","int","pct","num","bar"].includes(c.t);
+  const th = (c, cls) => `<th class="${cls}" data-sort="${o.id}:${c.k}" title="Сортировать"${srt && srt.k===c.k ? ` aria-sort="${srt.dir>0?"ascending":"descending"}"` : ""}>${esc(c.h)}${srt && srt.k===c.k ? `<span class="srt" aria-hidden="true">${srt.dir>0?"▲":"▼"}</span>` : ""}</th>`;
+  let h;
+  const w = c => c.t==="date" ? 76 : c.t==="money" ? 88 : c.t==="status" ? 94 : c.t==="bar" ? 84 : c.t==="pct" ? 62 : ["proj","code","id"].includes(c.k) ? 56 : 0;
+  if(mob){
+    h = `<div class="tw" data-tw="${o.id}"><table class="t mob"><colgroup>${cols.map(c => w(c) ? `<col style="width:${w(c)}px">` : "<col>").join("")}</colgroup><thead><tr>${cols.map(c => th(c, c.calc?"c":"")).join("")}</tr></thead><tbody>`;
+  } else {
+    const tw = cols.reduce((a,c)=>a+(c.w||80),0) + (del?30:0);
+    h = `<div class="tw" data-tw="${o.id}"><table class="t" style="width:max(100%,${tw}px)"><colgroup>${del?'<col style="width:30px">':""}${cols.map(c=>`<col style="width:${c.w||80}px">`).join("")}</colgroup><thead><tr>`;
+    if(del) h += `<th class="stk" aria-label="Удалить"></th>`;
+    cols.forEach((c,j) => h += th(c, (c.calc?"c":"") + (j===0&&!del?" stk":"")));
+    h += `</tr></thead><tbody>`;
+  }
   if(o.sums){
-    h += `<tr class="sub">${o.del?"<td></td>":""}`;
-    o.cols.forEach((c,j) => {
-      if(j===0){ h += `<td>Итого: ${idx.length}</td>`; return; }
-      if(o.sums.includes(c.k)){ const s = idx.reduce((a,i)=>a+(+((c.calc? c.calc(i) : o.rows[i][c.k])||0)),0); h += `<td class="n">${money(s)}</td>`; }
+    h += `<tr class="sub">${del?"<td></td>":""}`;
+    cols.forEach((c,j) => {
+      if(j===0){ h += `<td>${mob ? "Итого" : "Итого: " + all.length}</td>`; return; }
+      if(o.sums.includes(c.k)){ const sum = all.reduce((a,i)=>a+(+(cellVal(o,c,i)||0)),0); h += `<td class="n">${money(sum)}</td>`; }
       else h += "<td></td>";
     });
     h += "</tr>";
   }
-  idx.forEach(i => {
-    const row = o.rows[i];
-    h += "<tr>";
-    if(o.del) h += `<td class="stk ctr"><button class="del" data-del="${o.arr}" data-i="${i}" title="Удалить строку" aria-label="Удалить строку">×</button></td>`;
-    o.cols.forEach((c,j) => {
-      const stk = j===0 && !o.del ? " stk" : "";
-      if(c.calc){ const v = c.calc(i); const al = ["money","int","pct","num","bar"].includes(c.t) ? " n" : ["status","date","vat"].includes(c.t)||c.ctr ? " ctr" : ""; h += `<td class="c${al}${stk}">${fmtCell(c, v)}</td>`; }
+  vis.forEach(i => {
+    const row = o.rows[i], rid = `data-rid="${esc(row._id||"")}"`;
+    if(mob){
+      const main = cols.find(c => !w(c)), sub = o.mobSub ? (row[o.mobSub] || "") : "";
+      h += `<tr data-card="${o.id}" data-i="${i}" ${rid} tabindex="0">` + cols.map(c => `<td class="${c.calc?"c":""}${num(c)?" n":c.t==="date"?" dt":c.t==="status"?" ctr":""}">${c.t==="date" ? sdate(c.calc ? c.calc(i) : row[c.k]) : c.calc ? fmtCell(c, c.calc(i)) : fmtRaw(c, row[c.k])}${c===main && sub ? `<small>${esc(sub)}</small>` : ""}</td>`).join("") + "</tr>";
+      return;
+    }
+    h += `<tr ${rid}>`;
+    if(del) h += `<td class="stk ctr"><button class="del" data-del="${o.arr}" data-i="${i}" title="Удалить строку" aria-label="Удалить строку">×</button></td>`;
+    cols.forEach((c,j) => {
+      const stk = j===0 && !del ? " stk" : "";
+      if(c.calc){ const al = num(c) ? " n" : ["status","date","vat"].includes(c.t)||c.ctr ? " ctr" : ""; h += `<td class="c${al}${stk}">${fmtCell(c, c.calc(i))}</td>`; }
       else h += `<td class="e${stk}">${cellIn(o.arr, i, c, row[c.k])}</td>`;
     });
     h += "</tr>";
   });
-  if(!idx.length) h += `<tr><td colspan="${o.cols.length+(o.del?1:0)}" style="color:var(--muted);padding:14px">${o.rows.length ? "Нет строк по выбранному фильтру" : (RO ? "Пока пусто" : "Пока пусто — нажмите «+ Добавить строку» ниже")}</td></tr>`;
+  if(!vis.length) h += `<tr><td colspan="${cols.length+(del?1:0)}" style="color:var(--muted);padding:14px">${o.rows.length ? "Нет строк по выбранному фильтру" : (RO ? "Пока пусто" : "Пока пусто — нажмите «+ Добавить строку» ниже")}</td></tr>`;
   h += "</tbody></table></div>";
-  if(o.add) h += `<button class="btn sm addrow" data-add="${o.arr}" type="button">+ Добавить строку</button>`;
+  const shown = Math.min(lim, idx.length);
+  if(idx.length > shown) h += `<div class="more">Показано ${shown} из ${idx.length}. <button class="btn sm" data-more="${o.id}" type="button">Показать ещё ${Math.min(LIMIT, idx.length-shown)}</button><button class="btn sm ghost" data-more="${o.id}" data-all="1" type="button">Показать все</button></div>`;
+  if(o.add) h += `<button class="btn sm addrow" data-add="${o.arr}" data-tid="${o.id}" type="button">+ Добавить строку</button>`;
   return h;
+}
+/* карточка строки: все поля одной строки столбиком — основной способ ввода на телефоне */
+function openCard(id, i){ const o = TABLES[id]; if(!o || !o.rows[i]) return; ui.card = {id, rid:o.rows[i]._id}; renderCard(); }
+function closeCard(){ ui.card = null; renderCard(); }
+function renderCard(){
+  const box = document.getElementById("cardbox"), c = ui.card, o = c && TABLES[c.id], i = o ? o.rows.findIndex(r => r._id===c.rid) : -1;
+  if(i < 0){ ui.card = null; if(box.firstChild){ box.innerHTML = ""; document.body.style.overflow = ""; } return; }
+  const row = o.rows[i], pos = o._vis.indexOf(i), prev = o._vis[pos-1], next = o._vis[pos+1];
+  const title = [row.proj || row.code, row.name || row.what || row.pos || row.stage || row.alt || row.role].filter(Boolean).join(" · ") || "Новая строка";
+  let h = `<div class="cardbg" data-cardclose="1"><div class="rowcard" role="dialog" aria-modal="true" aria-label="Строка: ${esc(title)}"><header><b><small>${esc((SH[cur]||{}).t||"")}${pos>=0 ? ` · ${pos+1} из ${o._vis.length}` : ""}</small>${esc(title)}</b><button class="btn sm ghost" data-cardclose="1" type="button" aria-label="Закрыть">✕</button></header><div class="body">`;
+  o.cols.forEach(col => { h += `<div class="f"><label>${esc(col.h)}</label>${col.calc ? `<div class="o">${fmtCell(col, col.calc(i)) || "—"}</div>` : cellIn(o.arr, i, col, row[col.k])}</div>`; });
+  h += `</div><footer>${o.del ? `<button class="btn lg danger" data-del="${o.arr}" data-i="${i}" type="button">Удалить</button>` : ""}<span class="sp"></span>
+    <button class="btn lg" data-cardgo="${prev ?? ""}" type="button"${prev===undefined?" disabled":""} aria-label="Предыдущая строка">←</button><button class="btn lg" data-cardgo="${next ?? ""}" type="button"${next===undefined?" disabled":""} aria-label="Следующая строка">→</button>
+    <button class="btn lg pri" data-cardclose="1" type="button">Готово</button></footer></div></div>`;
+  if(box.firstChild){ const t = document.createElement("div"); t.innerHTML = h; morphKids(box, t); } else { box.innerHTML = h; document.body.style.overflow = "hidden"; }
 }
 function projFilter(id, extra=""){
   const v = ui.proj[id] || "";
@@ -730,16 +851,16 @@ function gantt(rows){
   let pm = -1;
   for(let k=0;k<W;k++){
     const d = G0 + k*7, dt = new Date(d*86400000), m = dt.getUTCMonth();
-    const now = R.rep>=d && R.rep<d+7;
+    const now = R.repN>=d && R.repN<d+7;
     if(m!==pm){ h += `<span class="mo" style="left:${x(d)}%">${MON[m]}</span>`; pm=m; }
     h += `<span class="wk${now?" now":""}" style="left:${x(d)}%">${String(dt.getUTCDate()).padStart(2,"0")}</span>`;
   }
   h += `</div></div>`;
-  const nowL = x(R.rep - ((R.rep - G0) % 7));
+  const inScale = R.repN>=G0 && R.repN<G0+span, nowL = x(R.repN - ((R.repN - G0) % 7)), allRows = rows.length;
+  rows = rows.slice(0, 80);
   rows.forEach(r => {
     h += `<div class="g-row"><div class="g-lab" title="${esc(r.label)}"><small>${esc(r.id)}</small>${esc(r.label)}</div><div class="g-tr">`;
-    h += `<span class="g-now" style="left:${nowL}%;width:${100/W}%"></span>`;
-    for(let k=1;k<W;k++) h += `<span class="g-wk" style="left:${k/W*100}%"></span>`;
+    if(inScale) h += `<span class="g-now" style="left:${nowL}%;width:${100/W}%"></span>`;
     if(r.s!==null && r.e!==null){
       const a = Math.max(0, x(r.s)), b = Math.min(100, x(r.e+1));
       if(b>0 && a<100){
@@ -751,7 +872,7 @@ function gantt(rows){
     }
     h += `</div></div>`;
   });
-  h += `</div></div><div class="g-legend"><span><i style="background:var(--barDone)"></i>выполнено</span><span><i style="background:var(--bar)"></i>осталось</span><span><i style="background:var(--barLag)"></i>отставание</span><span><i style="background:var(--barBad)"></i>просрочено / старт сорван</span>${rows.some(r=>r.eq)?'<span><i style="background:var(--barEq)"></i>риск поставки</span>':""}<span><i style="background:var(--todaySoft);border:1px solid var(--today)"></i>неделя отчёта</span></div>`;
+  h += `</div></div><div class="g-legend"><span><i style="background:var(--barDone)"></i>выполнено</span><span><i style="background:var(--bar)"></i>осталось</span><span><i style="background:var(--barLag)"></i>отставание</span><span><i style="background:var(--barBad)"></i>просрочено / старт сорван</span>${rows.some(r=>r.eq)?'<span><i style="background:var(--barEq)"></i>риск поставки</span>':""}<span><i style="background:var(--todaySoft);border:1px solid var(--today)"></i>неделя отчёта</span>${allRows>80 ? `<span>Показаны первые 80 строк из ${allRows} — выберите объект в фильтре</span>` : ""}</div>`;
   return h;
 }
 
@@ -780,7 +901,8 @@ V.dash = () => {
     <a href="#setup"><em>1. НАСТРОЙКИ</em>Остаток денег на счёте и дата начала учёта, пороги маржи.</a>
     <a href="#projects"><em>2. ПРОЕКТЫ</em>Объекты и договоры. Код проекта связывает все листы.</a>
     <a href="#budget"><em>3. БЮДЖЕТ</em>План затрат по статьям — или перенесите из Расчёта КП.</a>
-    <a href="#payments"><em>4. ПЛАТЕЖИ</em>Поступления и расходы — факт и деньги посчитаются сами.</a></div></section>`) : `<section class="try" aria-label="Попробуйте сами"><div class="lbl">Попробуйте<br>сами</div>
+    <a href="#payments"><em>4. ПЛАТЕЖИ</em>Поступления и расходы — факт и деньги посчитаются сами.</a></div>
+    ${RO ? "" : `<div class="inl" style="margin-top:12px"><button class="btn" id="exLoad" type="button">Загрузить пример: 8 объектов</button><span class="note" style="margin:0">Готовая компания с платежами, закупками и графиком — чтобы посмотреть, как всё связано. Пример удаляется одной кнопкой.</span></div>`}</section>`) : `<section class="try" aria-label="Попробуйте сами"><div class="lbl">Попробуйте<br>сами</div>
     <a href="#payments"><em>ПЛАТЕЖИ</em>Поставьте «Оплачено» у плановой оплаты — пересчитаются факт бюджета, деньги на счёте и прибыль.</a>
     <a href="#schedule"><em>ГРАФИК РАБОТ</em>Сотрите «Факт начало» у работы — увидите «Старт сорван» и новый прогноз окончания этапа в ППР.</a>
     <a href="#kp"><em>РАСЧЁТ КП</em>Снизьте цену заявки — сразу видно рентабельность и ответ: брать тендер или нет.</a>
@@ -799,7 +921,7 @@ V.dash = () => {
     {h:"Готовность", k:"ready", calc:i=>R.an[i].ready, t:"bar", w:96},
     {h:"Статус", k:"st", calc:i=>R.an[i].st, t:"status", w:96},
   ];
-  h += table({id:"dash", arr:"projects", rows:S.projects, cols, filter:i=>!!S.projects[i].code}) + `</section>
+  h += table({id:"dash", mob:["code","name","margin","st"], arr:"projects", rows:S.projects, cols, filter:i=>!!S.projects[i].code}) + `</section>
   <section class="grid2">
     <div class="card"><h2 class="sec-h">Движение денег по месяцам</h2><div class="chartbox"><canvas id="ch1" aria-label="Поступления, платежи и остаток по месяцам"></canvas></div></div>
     <div class="card"><h2 class="sec-h">Статус проектов</h2><div class="chartbox"><canvas id="ch2" aria-label="Количество объектов по статусам"></canvas></div></div>
@@ -814,7 +936,7 @@ V.analysis = () => {
     c("Чистая прибыль, ₽","net","money",110,{neg:1}), c("Получено от заказчика, ₽","recv","money",110), c("Оплачено расходов, ₽","paidExp","money",110), c("Деньги по объекту, ₽","cash","money",110,{neg:1}),
     c("Долг заказчика, ₽","debt","money",110), c("Отклонение от бюджета, ₽","devB","money",110,{sign:1}), c("Просрочено работ","slip","int",80,{hot:1}), c("Риск поставок","risk","int",80,{hot:1}),
     c("Готовность работ","ready","bar",100), c("Статус","st","status",90)];
-  let h = projFilter("analysis") + table({id:"analysis", arr:"projects", rows:S.projects, cols, filter:i=>S.projects[i].code && match("analysis", S.projects[i]),
+  let h = projFilter("analysis") + table({id:"analysis", mob:["code","name","profit","margin"], arr:"projects", rows:S.projects, cols, filter:i=>S.projects[i].code && match("analysis", S.projects[i]),
     sums:["contract","plan","fact","fc","profit","net","recv","paidExp","cash","debt","devB"]});
   h += `<p class="note">«Риск» — маржа ниже критической (${pct(S.settings.crit,0)}) или убыток. «Внимание» — маржа ниже целевой (${pct(S.settings.target,0)}), просрочка работ или риск поставок. Итого портфеля: маржа ${pct(R.tot.margin)}.</p>`;
   return h;
@@ -827,7 +949,7 @@ V.projects = () => {
     {h:"Договор без НДС, ₽",k:"noVat",calc:i=>R.an[i].noVat,t:"money",w:115}, {h:"Дней до сдачи",k:"dl",calc:i=>R.an[i].daysLeft,t:"num",w:80},
     {h:"Статус проекта",k:"st",calc:i=>R.an[i].st,t:"status",w:100},
   ];
-  return projFilter("projects") + table({id:"projects", arr:"projects", rows:S.projects, cols, filter:i=>match("projects",S.projects[i]), sums:["amt","noVat"], add:1, del:1});
+  return projFilter("projects") + table({id:"projects", mob:["code","name","amt","st"], arr:"projects", rows:S.projects, cols, filter:i=>match("projects",S.projects[i]), sums:["amt","noVat"], add:1, del:1});
 };
 V.budget = () => {
   const cols = [
@@ -847,7 +969,7 @@ V.budget = () => {
   h += `<tr class="tot"><td class="stk" style="background:var(--navy)">ИТОГО</td><td class="n">${money(tot.plan)}</td><td class="n">${money(tot.fact)}</td><td class="n">${money(tot.fc)}</td><td class="n">${money(tot.dev)}</td><td></td></tr></tbody></table></div>`;
   if(Math.round(R.outOfBudget)!==0) h += `<p class="note neg">Оплаты по объектам вне бюджета: ${rub(R.outOfBudget)} — оплаты с кодом проекта без статьи или со статьёй, которой нет в бюджете объекта.</p>`;
   h += `</section><section>` + projFilter("budget", selFilter("budget","st","Статус",["Перерасход","Экономия","В бюджете","Дубль статьи"])) +
-    table({id:"budget", arr:"budget", rows:S.budget, cols, filter:i=>match("budget",S.budget[i]) && (!ui.f.budgetst || R.bud[i].st===ui.f.budgetst), sums:["plan","paid","korr","fact","own","left","fc","dev"], add:1, del:1}) + `</section>`;
+    table({id:"budget", mob:["art","plan","fact","st"], mobSub:"proj", arr:"budget", rows:S.budget, cols, filter:i=>match("budget",S.budget[i]) && (!ui.f.budgetst || R.bud[i].st===ui.f.budgetst), sums:["plan","paid","korr","fact","own","left","fc","dev"], add:1, del:1}) + `</section>`;
   return h;
 };
 V.payments = () => {
@@ -865,7 +987,7 @@ V.payments = () => {
   const inc = idx.reduce((a,i)=>a+(S.payments[i].type==="Поступление"?+S.payments[i].amt||0:0),0), out = idx.reduce((a,i)=>a+(S.payments[i].type==="Расход"?+S.payments[i].amt||0:0),0);
   return projFilter("payments", selFilter("payments","type","Тип",["Поступление","Расход"]) + selFilter("payments","ctrl","Контроль",["Просрочено","Скоро срок","Ожидается","Оплачено","Укажите дату","Укажите статью","Отменено"])) +
     `<p class="note" style="margin:-2px 2px 8px">По фильтру: поступления <b class="pos">${rub(inc)}</b> · расходы <b class="neg">${rub(out)}</b>. Без проекта — общие расходы компании (аренда, зарплата АУП).</p>` +
-    table({id:"payments", arr:"payments", rows:S.payments, cols, filter:f, sums:["amt"], add:1, del:1});
+    table({id:"payments", mob:["date","what","amt","ctrl"], mobSub:"proj", arr:"payments", rows:S.payments, cols, filter:f, sums:["amt"], add:1, del:1});
 };
 V.purchases = () => {
   const cols = [
@@ -879,7 +1001,7 @@ V.purchases = () => {
     {h:"ID замены",k:"repl",t:"sel",o:"repl",w:90}, {h:"Согласование замены",k:"rs",calc:i=>R.buy[i].rs,t:"status",w:125},
   ];
   return projFilter("purchases", selFilter("purchases","ctrl","Контроль",["Срыв монтажа","Задержка","Впритык","Ждёт согласования","Отказ в замене","В срок","Получено"])) +
-    table({id:"purchases", arr:"purchases", rows:S.purchases, cols, filter:i=>match("purchases",S.purchases[i]) && (!ui.f.purchasesctrl || R.buy[i].ctrl===ui.f.purchasesctrl), sums:["cost"], add:1, del:1}) +
+    table({id:"purchases", mob:["pos","fc","ctrl"], mobSub:"proj", arr:"purchases", rows:S.purchases, cols, filter:i=>match("purchases",S.purchases[i]) && (!ui.f.purchasesctrl || R.buy[i].ctrl===ui.f.purchasesctrl), sums:["cost"], add:1, del:1}) +
     `<p class="note">«Срыв монтажа» — прогноз поставки позже начала работы по графику. Попробуйте сдвинуть «Прогноз поставки» или «План начало» работы в Графике.</p>`;
 };
 V.replacements = () => {
@@ -893,7 +1015,7 @@ V.replacements = () => {
     {h:"Дата ответа",k:"ans",t:"date",w:122}, {h:"Письмо / документ",k:"doc",w:170}, {h:"ID работы (график)",k:"work",t:"sel",o:"works",w:90},
     {h:"Начало работы по графику",k:"ws",calc:i=>R.rep[i].ws,t:"date",w:95}, {h:"Контроль",k:"ctrl",calc:i=>R.rep[i].ctrl,t:"status",w:130},
   ];
-  return projFilter("replacements") + table({id:"replacements", arr:"repl", rows:S.repl, cols, filter:i=>match("replacements",S.repl[i]), sums:["diff"], add:1, del:1});
+  return projFilter("replacements") + table({id:"replacements", mob:["alt","due","ctrl"], mobSub:"proj", arr:"repl", rows:S.repl, cols, filter:i=>match("replacements",S.repl[i]), sums:["diff"], add:1, del:1});
 };
 V.ppr = () => {
   const man = i => R.stage[i].nw>0;
@@ -908,8 +1030,13 @@ V.ppr = () => {
   ];
   const f = i => match("ppr",S.stages[i]);
   const g = S.stages.map((s,i)=>i).filter(i=>S.stages[i].id && f(i)).map(i => ({id:S.stages[i].id, label:`${S.stages[i].proj} · ${S.stages[i].stage}`, s:dn(S.stages[i].ps), e:dn(S.stages[i].pf), prog:R.stage[i].prog, st:R.stage[i].st}));
-  return projFilter("ppr") + table({id:"ppr", arr:"stages", rows:S.stages, cols, filter:f, add:1, del:1}) +
-    `<p class="note">Серые поля «вручную» отключены, если к этапу привязаны работы в Графике — тогда всё считается из них.</p><section style="margin-top:16px"><h2 class="sec-h">Диаграмма Ганта — этапы</h2>${gantt(g)}</section>`;
+  const sp = ui.proj.ppr || "";
+  const share = CAB ? `<section class="card" style="margin-top:16px"><h2 class="sec-h">Ссылка для заказчика</h2>
+    <p class="note" style="margin:0 0 10px;max-width:70ch">Заказчик откроет ссылку и увидит этапы своего объекта: сроки, готовность, статус и диаграмму Ганта. Без денег, без других объектов и без входа в кабинет. Данные по ссылке всегда актуальные.</p>
+    ${RO ? "" : (sp ? `<button class="btn pri" data-share="${esc(sp)}" type="button">Создать ссылку по объекту ${esc(sp)}</button>` : `<p class="note" style="margin:0">Чтобы создать ссылку, выберите объект в фильтре над таблицей.</p>`)}
+    <div id="shareList" data-keep="1"></div></section>` : "";
+  return projFilter("ppr") + table({id:"ppr", mob:["stage","cprog","st"], mobSub:"proj", arr:"stages", rows:S.stages, cols, filter:f, add:1, del:1}) +
+    `<p class="note">Серые поля «вручную» отключены, если к этапу привязаны работы в Графике — тогда всё считается из них.</p><section style="margin-top:16px"><h2 class="sec-h">Диаграмма Ганта — этапы</h2>${gantt(g)}</section>${share}`;
 };
 V.schedule = () => {
   const cols = [
@@ -923,7 +1050,7 @@ V.schedule = () => {
   ];
   const f = i => match("schedule",S.works[i]) && (!ui.f.schedulest || R.work[i].st===ui.f.schedulest);
   const g = S.works.map((s,i)=>i).filter(i=>S.works[i].id && f(i)).map(i => ({id:S.works[i].id, label:`${S.works[i].proj} · ${S.works[i].name} — ${S.works[i].exec||""}`, s:dn(S.works[i].ps), e:dn(S.works[i].pf), prog:R.work[i].prog, st:R.work[i].st, eq:R.work[i].equip==="Риск поставки"}));
-  return projFilter("schedule", selFilter("schedule","st","Статус",["Старт сорван","Просрочено","Отставание","В работе","Не начато","Готово"])) + table({id:"schedule", arr:"works", rows:S.works, cols, filter:f, add:1, del:1}) +
+  return projFilter("schedule", selFilter("schedule","st","Статус",["Старт сорван","Просрочено","Отставание","В работе","Не начато","Готово"])) + table({id:"schedule", mob:["name","prog","st"], mobSub:"proj", arr:"works", rows:S.works, cols, filter:f, add:1, del:1}) +
     `<section style="margin-top:16px"><h2 class="sec-h">Диаграмма Ганта — работы по бригадам</h2>${gantt(g)}</section>`;
 };
 V.kp = () => {
@@ -945,11 +1072,11 @@ V.kp = () => {
   </div><p class="note">${O.flag ? "Договор без НДС: входящий НДС поставщиков — ваш расход, затраты считаются с НДС." : "Договор с НДС: затраты считаются без НДС."}</p></section>`;
   const fotCols = [{h:"Должность / раздел работ",k:"role",w:200},{h:"Кол-во, чел.",k:"n",t:"num",w:75},{h:"Занятость, %",k:"load",t:"pct",w:80},{h:"Кол-во, мес.",k:"months",t:"num",w:75},{h:"Ставка в мес., ₽",k:"rate",t:"money",w:110},
     {h:"ФОТ, ₽",k:"g",calc:i=>O.fot[i].g,t:"money",w:105},{h:"Взносы, ₽",k:"h",calc:i=>O.fot[i].h,t:"money",w:100},{h:"Итого, ₽",k:"t",calc:i=>O.fot[i].t,t:"money",w:110},{h:"Статья",k:"art",t:"sel",o:"cost",w:110}];
-  h += `<section class="blk"><h3>1. Оплата труда основного персонала (со страховыми взносами)</h3>${table({id:"kpfot", arr:"kp.fot", rows:K.fot, cols:fotCols, sums:["g","h","t"], add:1, del:1})}</section>`;
+  h += `<section class="blk"><h3>1. Оплата труда основного персонала (со страховыми взносами)</h3>${table({id:"kpfot", mob:["role","n","t"], arr:"kp.fot", rows:K.fot, cols:fotCols, sums:["g","h","t"], add:1, del:1})}</section>`;
   K.blocks.forEach((b,bi) => {
     const cols = [{h:"Наименование затрат",k:"name",w:230},{h:"Ед. изм.",k:"unit",t:"sel",o:"unit",w:75},{h:"Кол-во",k:"qty",t:"num",w:75},{h:"Ставка НДС",k:"vat",t:"sel",o:"vat",w:85},
       {h:"Цена за ед. с НДС, ₽",k:"price",t:"money",w:110},{h:"Сумма с НДС, ₽",k:"g",calc:i=>O.blocks[bi].rows[i].g,t:"money",w:115},{h:"Сумма без НДС, ₽",k:"h",calc:i=>O.blocks[bi].rows[i].h,t:"money",w:115},{h:"Статья затрат",k:"art",t:"sel",o:"cost",w:130}];
-    h += `<section class="blk"><h3>${esc(b.title.replace(/^(\d+\. )(.)(.*)$/,(m,a,c,r)=>a+c+r.toLowerCase()))}</h3>${table({id:"kpb"+bi, arr:"kp.blocks."+bi+".rows", rows:b.rows, cols, sums:["g","h"], add:1, del:1})}</section>`;
+    h += `<section class="blk"><h3>${esc(b.title.replace(/^(\d+\. )(.)(.*)$/,(m,a,c,r)=>a+c+r.toLowerCase()))}</h3>${table({id:"kpb"+bi, mob:["name","qty","g"], arr:"kp.blocks."+bi+".rows", rows:b.rows, cols, sums:["g","h"], add:1, del:1})}</section>`;
   });
   h += `<section class="card"><h2 class="sec-h">Перенос в бюджет проекта — план по статьям <span class="rt">${Math.round(O.transferSum-r.cost)===0?"✓ сходится с себестоимостью":"проверьте статьи"}</span></h2>
     <div class="tw" data-tw="tr" style="max-height:none"><table class="t"><thead><tr><th class="c stk" style="min-width:170px">Статья затрат</th><th class="c" style="min-width:130px">План, ₽</th></tr></thead><tbody>
@@ -993,7 +1120,7 @@ V.setup = () => {
 };
 V.team = () => {
   const until = ME ? new Date(ME.accessUntil) : null, own = ME && ME.role==="owner";
-  const st = ME.blocked ? pill("Приостановлен") : RO ? `<span class="pill p-b">Закончился</span>` : `<span class="pill p-g">Активен</span>`;
+  const st = ME.blocked ? pill("Приостановлен") : !ME.active ? `<span class="pill p-b">Закончился</span>` : `<span class="pill p-g">Активен</span>`;
   return `<section class="card"><h2 class="sec-h">Доступ</h2>
     <p style="margin:0 0 10px">Компания <b>${esc(ME.company)}</b> · доступ до <b>${until ? until.toLocaleDateString("ru-RU") : ""}</b> ${st}</p>
     ${own && PAY.enabled ? `<div class="inl" style="margin-bottom:12px">${PAY.plans.map(p => `<button class="btn pri" type="button" data-renew="${esc(p.id)}">Продлить на ${esc(p.title)} — ${nf0.format(p.rub)} ₽</button>`).join("")}</div><p class="note" style="margin:-4px 0 12px">Оплата картой или через СБП на странице Т-Банка, срок продлится сразу после оплаты.</p>` : ""}
@@ -1001,23 +1128,78 @@ V.team = () => {
       ${PAY.enabled ? "" : `<a class="btn" href="${esc(BUY_URL)}" target="_blank" rel="noopener">Купить продление на Boosty</a>`}</form>
       <p class="note">Код продления добавляет дни к текущему сроку. Данные сохраняются и после окончания доступа — их можно смотреть, но не менять.</p>` : `<p class="note">Продлевает доступ владелец кабинета.</p>`}
   </section>
-  <section class="card"><h2 class="sec-h">Сотрудники</h2><div id="teamList" class="note">Загружаю…</div>
-    ${own ? `<div style="margin-top:12px" class="inl"><button class="btn pri" id="inviteBtn" type="button">Пригласить сотрудника</button><span class="note" style="margin:0">Ссылка действует 7 дней и подходит одному человеку.</span></div><div id="inviteOut" style="margin-top:10px"></div>` : ""}
+  <section class="card"><h2 class="sec-h">Сотрудники</h2><div id="teamList" data-keep="1" class="note">Загружаю…</div>
+    ${own ? `<div style="margin-top:12px" class="inl"><button class="btn pri" data-invite="member" type="button">Пригласить сотрудника</button><button class="btn" data-invite="viewer" type="button">Пригласить наблюдателя</button></div>
+      <p class="note" style="max-width:72ch">Сотрудник вносит и меняет данные. Наблюдатель только смотрит — так удобно показать кабинет директору, учредителю или бухгалтеру. Ссылка-приглашение действует 7 дней и подходит одному человеку.</p><div id="inviteOut" data-keep="1" style="margin-top:10px"></div>` : ""}
   </section>
   <section class="card"><h2 class="sec-h">Ваш пароль</h2><p class="note" style="margin:0 0 8px">${esc(ME.name)} · ${esc(ME.email)}</p>
     <form class="inl" id="pwForm"><input type="password" id="pwOld" placeholder="Текущий пароль" autocomplete="current-password" aria-label="Текущий пароль"><input type="password" id="pwNew" placeholder="Новый пароль, от 8 символов" autocomplete="new-password" aria-label="Новый пароль"><button class="btn" type="submit">Сменить</button></form>
   </section>`;
 };
+const ROLE = {owner:"Владелец", member:"Сотрудник", viewer:"Наблюдатель"};
 async function loadTeam(){
   const box = document.getElementById("teamList"); if(!box) return;
   try{
     const t = await api("GET","/api/team"), own = ME.role==="owner";
     box.className = "";
-    box.innerHTML = `<div class="tw" style="max-height:none"><table class="t" style="width:100%"><thead><tr><th>Имя</th><th>Почта</th><th>Роль</th><th>Последний вход</th>${own?"<th></th>":""}</tr></thead><tbody>${t.members.map(m=>`<tr><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td class="ctr">${m.role==="owner"?"Владелец":"Сотрудник"}</td><td class="ctr">${m.last_login?new Date(m.last_login).toLocaleString("ru-RU",{dateStyle:"short",timeStyle:"short"}):"—"}</td>${own?`<td class="ctr">${m.role!=="owner"?`<button class="btn sm ghost" data-rm="${m.id}" data-name="${esc(m.name)}" type="button">Удалить</button>`:""}</td>`:""}</tr>`).join("")}</tbody></table></div>`;
+    box.innerHTML = `<div class="tw" style="max-height:none"><table class="t" style="width:100%"><thead><tr><th>Имя</th><th>Почта</th><th>Роль</th><th>Последний вход</th>${own?"<th></th>":""}</tr></thead><tbody>${t.members.map(m=>`<tr><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td class="${own && m.role!=="owner" ? "e" : "ctr"}">${own && m.role!=="owner" ? `<select data-role="${m.id}" aria-label="Роль: ${esc(m.name)}"><option value="member"${m.role==="member"?" selected":""}>Сотрудник</option><option value="viewer"${m.role==="viewer"?" selected":""}>Наблюдатель</option></select>` : (ROLE[m.role]||m.role)}</td><td class="ctr">${m.last_login?new Date(m.last_login).toLocaleString("ru-RU",{dateStyle:"short",timeStyle:"short"}):"—"}</td>${own?`<td class="ctr">${m.role!=="owner"?`<button class="btn sm ghost" data-rm="${m.id}" data-name="${esc(m.name)}" type="button">Удалить</button>`:""}</td>`:""}</tr>`).join("")}</tbody></table></div>`;
   }catch(e){ box.textContent = e.message; }
 }
+/* ---------- ссылки для заказчика */
+async function loadShares(){
+  const box = document.getElementById("shareList"); if(!box) return;
+  try{
+    const r = await api("GET","/api/shares");
+    box.innerHTML = r.shares.map(x => { const url = location.origin + "/share.html?t=" + encodeURIComponent(x.token), pr = S.projects.find(p => p.code===x.proj);
+      return `<div class="sharerow"><div><b>${esc(x.proj)}${pr ? " · " + esc(pr.name) : " · объект удалён"}</b><div class="linkbox" style="margin-top:4px">${esc(url)}</div></div><div class="acts"><button class="btn sm" data-copy="${esc(url)}" type="button">Копировать</button><a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">Открыть</a>${RO ? "" : `<button class="btn sm ghost" data-unshare="${esc(x.token)}" type="button">Отключить</button>`}</div></div>`; }).join("");
+  }catch(e){ box.textContent = e.message; }
+}
+/* ---------- история изменений */
+const ARRL = {projects:"Проекты", budget:"Бюджет", payments:"Платежи", purchases:"Закупки", repl:"Замены", stages:"ППР", works:"График работ"};
+const SETL = {company:["Название компании"], repDate:["Отчётная дата","date"], startCash:["Остаток денег на начало учёта","money"], startDate:["Дата начала учёта","date"], target:["Целевая маржа","pct"], crit:["Критическая маржа","pct"], tax:["Налог на прибыль","pct"], horizon:["Горизонт контроля платежей","num"], lagTol:["Допустимое отставание","pct"], ganttStart:["Начало шкалы Ганта","date"]};
+const KPL = {obj:["Объект"], cust:["Заказчик"], link:["Ссылка на закупку"], s:["Дата начала работ","date"], e:["Дата окончания работ","date"], nmck:["НМЦК","money"], vat:["Ставка НДС","pct"], price:["Наша цена","money"], ins:["Страховые взносы","pct"], reserve:["Резерв","pct"]};
+const LISTL = {systems:"Системы", cost:"Статьи затрат", stages:"Этапы проекта", exec:"Исполнители", contr:"Контрагенты", units:"Ед. изм.", pms:"Руководители", reasons:"Причины замены", delays:"Причины срыва сроков"};
+let COLMAP = null;
+function colOf(a, k){
+  if(!COLMAP){ ["projects","budget","payments","purchases","replacements","ppr","schedule","kp"].forEach(v => { try{ V[v](); }catch(e){} });
+    COLMAP = {}; Object.values(TABLES).forEach(o => o.cols.forEach(c => { if(!c.calc) (COLMAP[o.arr] = COLMAP[o.arr] || {})[c.k] = c; })); }
+  return (COLMAP[a] || {})[k];
+}
+function histText(op){
+  const sheet = a => `<span class="sh">${ARRL[a] || (String(a).startsWith("kp") ? "Расчёт КП" : esc(a))}</span>`;
+  const val = (c, v) => (v===null||v===undefined||v==="") ? "" : (c ? fmtRaw(c, v) : esc(v));
+  const diff = (name, o, n) => !o ? `${name}: <ins>${n}</ins>` : !n ? `${name}: очищено <del>${o}</del>` : `${name}: <del>${o}</del> → <ins>${n}</ins>`;
+  const lab = op.label ? ` «${esc(op.label)}»` : "";
+  switch(op.t){
+    case "set": { const c = colOf(op.a, op.k); return `${sheet(op.a)}${lab} — ${diff(esc(c ? c.h : op.k), val(c, op.old), val(c, op.new))}`; }
+    case "add": return `${sheet(op.a)} — добавлена строка${lab}`;
+    case "del": return `${sheet(op.a)} — удалена строка${lab}`;
+    case "obj": { const L = (op.o==="kp" ? KPL : SETL)[op.k] || [op.k], c = {t:L[1]}; return `<span class="sh">${op.o==="kp" ? "Расчёт КП" : "Настройки"}</span> — ${diff(esc(L[0]), val(c, op.old), val(c, op.new))}`; }
+    case "list": return `<span class="sh">Справочник «${LISTL[op.l]||esc(op.l)}»</span> — добавлено <ins>${esc(op.v)}</ins>`;
+    case "listDel": return `<span class="sh">Справочник «${LISTL[op.l]||esc(op.l)}»</span> — убрано <del>${esc(op.v)}</del>`;
+    case "example": return op.action==="load" ? "Загружен учебный пример" : "Учебный пример очищен";
+    default: return esc(op.t);
+  }
+}
+let HIST = [], histMore = false;
+async function loadHist(more){
+  const box = document.getElementById("histList"); if(!box) return;
+  try{
+    const r = await api("GET","/api/history" + (more && HIST.length ? "?before=" + HIST[HIST.length-1].id : ""));
+    HIST = more ? HIST.concat(r.items) : r.items; histMore = r.more;
+    let h = "", day = "";
+    const same = (a, b) => a.user_name===b.user_name && a.op.t===b.op.t && ((a.op.t==="set" && a.op.a===b.op.a && a.op.k===b.op.k && (a.op.id ? a.op.id===b.op.id : a.op.label===b.op.label)) || (a.op.t==="obj" && a.op.o===b.op.o && a.op.k===b.op.k)) && Math.abs(new Date(a.at) - new Date(b.at)) < 120000;
+    const list = []; HIST.forEach(x => { const p = list[list.length-1]; if(p && same(p.last, x)){ p.op = Object.assign({}, p.op, {old:x.op.old}); p.last = x; } else list.push({user_name:x.user_name, at:x.at, op:x.op, last:x}); });
+    list.forEach(x => { const d = new Date(x.at), dl = d.toLocaleDateString("ru-RU", {day:"numeric", month:"long", year:"numeric"});
+      if(dl!==day){ h += `<div class="hday">${dl}</div>`; day = dl; }
+      h += `<div class="hrow"><time>${d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}</time><span class="who">${esc(x.user_name||"")}</span><span class="txt">${histText(x.op)}</span></div>`; });
+    box.className = ""; box.innerHTML = h || `<p class="note">Изменений пока нет. Здесь появится запись о каждой правке: кто, когда и что поменял.</p>`;
+    if(histMore) box.innerHTML += `<button class="btn sm" id="histMore" type="button" style="margin-top:12px">Показать более ранние</button>`;
+  }catch(e){ box.className = "note"; box.textContent = e.message; }
+}
+V.history = () => `<section class="card"><div class="inl" style="justify-content:space-between"><h2 class="sec-h" style="margin:0">Последние изменения</h2><button class="btn sm" id="histReload" type="button">Обновить</button></div><div id="histList" data-keep="1" class="note" style="margin-top:6px">Загружаю…</div></section>`;
 function copyText(text, btn){
-  const done = () => { if(btn){ const o = btn.textContent; btn.textContent = "Скопировано"; setTimeout(()=>btn.textContent=o, 1500); } };
+  const done = () => { if(btn && btn.textContent!=="Скопировано"){ const o = btn.textContent; btn.textContent = "Скопировано"; setTimeout(()=>btn.textContent=o, 1500); } };
   try{ navigator.clipboard.writeText(text).then(done, ()=>{}); }catch(e){}
 }
 V.buy = () => {
@@ -1067,29 +1249,88 @@ function nav(){
   SHEETS.forEach(s => { if(s.g!==g){ h += `<div class="grp">${s.g}</div>`; g = s.g; } h += `<a href="#${s.id}" class="${cur===s.id?"on":""}"><i style="background:${s.c}"></i>${s.t}${counts[s.id]?`<span class="cnt">${counts[s.id]}</span>`:""}</a>`; });
   if(CAB){
     const until = new Date(ME.accessUntil).toLocaleDateString("ru-RU");
-    h += `</nav><div class="sidecta"><div class="box"><b>${RO ? "Доступ закончился" : "Доступ до " + until}</b><p>${esc(ME.name)} · ${ME.role==="owner"?"владелец":"сотрудник"}</p><a class="btn pri wide" href="#team">${RO ? "Продлить" : "Команда и доступ"}</a></div></div>`;
+    h += `</nav><div class="sidecta"><div class="box"><b>${!ME.active ? "Доступ закончился" : "Доступ до " + until}</b><p>${esc(ME.name)} · ${(ROLE[ME.role]||"").toLowerCase()}</p><a class="btn pri wide" href="#team">${!ME.active && ME.role==="owner" ? "Продлить" : "Команда и доступ"}</a></div></div>`;
   } else if(LOGIN_URL) h += `</nav><div class="sidecta"><div class="box"><b>Свой онлайн-кабинет</b><p>Ваши объекты в этом же интерфейсе: данные на сервере, сотрудники, вход с телефона.</p><a class="btn pri wide" href="/login.html#buy">Купить доступ</a><a href="/pricing.html" style="display:block;text-align:center;margin-top:8px;font-size:12px;color:var(--navyMuted)">Тарифы и условия</a></div></div>`;
   else h += `</nav><div class="sidecta"><div class="box"><b>Excel-версия</b><p>Этот же инструмент в одном файле: демо, чистая версия и инструкция.</p><a class="btn pri wide" href="#buy">Подробнее</a></div></div>`;
   document.getElementById("side").innerHTML = h;
   document.getElementById("mnav").innerHTML = SHEETS.map(s=>`<a href="#${s.id}" class="${cur===s.id?"on":""}">${s.t}</a>`).join("") + (CAB ? "" : LOGIN_URL ? `<a href="/login.html#buy">Купить</a>` : `<a href="#buy" class="${cur==="buy"?"on":""}">Excel-версия</a>`);
 }
-function render(keepScroll){
+/* Обновление страницы без пересоздания: поля ввода остаются теми же элементами,
+   поэтому курсор и Tab не сбиваются после каждого пересчёта. */
+let keepDirty = false;     // при фоновой подгрузке не трогаем поле, в котором человек сейчас печатает
+function morph(a, b){
+  if(a.nodeType !== b.nodeType || a.nodeName !== b.nodeName){ a.replaceWith(b); return; }
+  if(a.nodeType !== 1){ if(a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+  if(a.nodeName === "CANVAS") return;
+  if(a.dataset.keep && b.dataset.keep && a.id === b.id) return;
+  for(const at of Array.from(a.attributes)) if(!b.hasAttribute(at.name)) a.removeAttribute(at.name);
+  for(const at of Array.from(b.attributes)) if(a.getAttribute(at.name) !== at.value) a.setAttribute(at.name, at.value);
+  if(a.nodeName === "INPUT"){ const v = b.getAttribute("value") ?? ""; if(a.value !== v && !(keepDirty && a === document.activeElement)) a.value = v; return; }
+  if(a.nodeName === "SELECT"){ if(a.innerHTML !== b.innerHTML) a.innerHTML = b.innerHTML; if(!(keepDirty && a === document.activeElement)){ const o = b.querySelector("option[selected]"); a.value = o ? o.value : ""; } return; }
+  morphKids(a, b);
+}
+function morphKids(a, b){
+  const nk = Array.from(b.childNodes), key = n => n.nodeType === 1 && n.dataset.rid;
+  let keyed = null;
+  if(nk.some(key)){ keyed = new Map(); a.childNodes.forEach(n => { if(key(n)) keyed.set(n.dataset.rid, n); }); }
+  let cur = a.firstChild;
+  for(const n of nk){
+    let m = null;
+    if(keyed && key(n)){ m = keyed.get(n.dataset.rid) || null; if(m) keyed.delete(n.dataset.rid); }
+    else if(cur && !(keyed && key(cur))) m = cur;
+    if(!m){ a.insertBefore(n, cur); continue; }
+    if(m === cur) cur = cur.nextSibling;
+    else { try{ a.moveBefore ? a.moveBefore(m, cur) : a.insertBefore(m, cur); }catch(e){ a.insertBefore(m, cur); } }
+    morph(m, n);
+  }
+  while(cur){ const nx = cur.nextSibling; a.removeChild(cur); cur = nx; }
+}
+let shown = null;
+function banners(){
+  if(!CAB) return "";
+  let h = "";
+  if(!ME.active) h += `<div class="banner" role="status"><span><b>${ME.blocked ? "Доступ приостановлен." : "Доступ закончился " + new Date(ME.accessUntil).toLocaleDateString("ru-RU") + "."}</b> Данные можно смотреть, но не менять. ${ME.role==="owner" ? (PAY.enabled ? "Продлите доступ онлайн или введите код." : "Продлите подписку на Boosty и введите новый код.") : "Попросите владельца кабинета продлить доступ."}</span>${ME.role==="owner" && cur!=="team" ? `<a class="btn sm" href="#team">${PAY.enabled ? "Продлить" : "Ввести код"}</a>` : ""}</div>`;
+  else if(ME.role==="viewer") h += `<div class="banner info" role="status"><span><b>Режим просмотра.</b> Вы видите все данные кабинета, но не можете их менять. Права выдаёт владелец кабинета.</span></div>`;
+  if(S.example) h += `<div class="banner info" role="status"><span><b>Это учебный пример.</b>${cur==="dash" ? " Меняйте что угодно — посмотрите, как связаны листы. Когда будете готовы вести свои объекты, очистите кабинет." : ""}</span>${RO ? "" : `<button class="btn sm" id="exClear" type="button">${cur==="dash" ? "Очистить и начать со своих данных" : "Очистить"}</button>`}</div>`;
+  return h;
+}
+function render(keep){
   R = compute(S); KP = computeKP(S.kp, S);
-  const sc = {}; if(keepScroll) document.querySelectorAll("[data-tw]").forEach(el => sc[el.dataset.tw] = [el.scrollLeft, el.scrollTop]);
-  const y = window.scrollY;
   const sh = SH[cur] || {t:"Excel-версия", sub:"Что входит в комплект и как купить."};
   document.getElementById("h1").textContent = sh.t; document.getElementById("hsub").textContent = sh.sub;
   document.title = CAB ? sh.t + " — кабинет PROJECT CONTROL PRO" : (cur==="dash" ? "PROJECT CONTROL PRO" : sh.t + " — PROJECT CONTROL PRO");
-  const rd = document.getElementById("repdate"); rd.value = S.settings.repDate || ""; rd.disabled = RO;
+  const rd = document.getElementById("repdate"); if(!(keepDirty && rd === document.activeElement)) rd.value = S.settings.repDate || ""; rd.disabled = RO;
   nav();
-  const banner = CAB && RO ? `<div class="banner" role="status"><span><b>${ME.blocked ? "Доступ приостановлен." : "Доступ закончился " + new Date(ME.accessUntil).toLocaleDateString("ru-RU") + "."}</b> Данные можно смотреть, но не менять. ${ME.role==="owner" ? (PAY.enabled ? "Продлите доступ онлайн или введите код." : "Продлите подписку на Boosty и введите новый код.") : "Попросите владельца кабинета продлить доступ."}</span>${ME.role==="owner" && cur!=="team" ? `<a class="btn sm" href="#team">${PAY.enabled ? "Продлить" : "Ввести код"}</a>` : ""}</div>` : "";
-  document.getElementById("view").innerHTML = banner + V[cur]() + `<datalist id="dl-contr">${S.lists.contr.map(x=>`<option value="${esc(x)}">`).join("")}</datalist>`;
-  if(keepScroll){ document.querySelectorAll("[data-tw]").forEach(el => { const s = sc[el.dataset.tw]; if(s){ el.scrollLeft = s[0]; el.scrollTop = s[1]; } }); window.scrollTo(0, y); }
-  else window.scrollTo(0,0);
-  drawCharts();
-  if(cur==="team") loadTeam();
+  const view = document.getElementById("view"), act = document.activeElement;
+  const html = banners() + V[cur]() + `<datalist id="dl-contr">${S.lists.contr.map(x=>`<option value="${esc(x)}">`).join("")}</datalist>`;
+  const soft = keep && shown === cur && view.firstChild;
+  if(soft){ const t = document.createElement("main"); t.innerHTML = html; morphKids(view, t);
+    if(act && act !== document.body && act.isConnected){ if(document.activeElement === document.body) act.focus({preventScroll:true}); if(view.contains(act) && act.dataset.a) act.scrollIntoView({block:"nearest", inline:"nearest"}); } }
+  else { view.innerHTML = html; if(!keep) window.scrollTo(0,0); }
+  shown = cur;
+  renderCard(); kpBar(); mobHeader(); drawCharts();
+  if(!soft && CAB){ if(cur==="team") loadTeam(); if(cur==="ppr") loadShares(); if(cur==="history") loadHist(); }
 }
-let tt; function toast(t){ const el = document.getElementById("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(tt); tt = setTimeout(()=>el.classList.remove("on"), 1600); }
+/* на телефоне прилипает только лента листов, а не вся шапка */
+function mobHeader(){ const top = document.querySelector(".top"), m = document.getElementById("mnav"); top.style.setProperty("--hide", innerWidth <= 900 && m.offsetTop > 8 ? (m.offsetTop - 8) + "px" : "0px"); }
+/* итог расчёта КП — планка внизу экрана, пока блок «Решение» не виден */
+function kpVis(){ const el = document.getElementById("kpbar"); if(!el.classList.contains("on")) return; const r = document.querySelector("#view .res"); el.classList.toggle("hid", !r || r.getBoundingClientRect().top < innerHeight - 90); }
+function kpBar(){
+  const el = document.getElementById("kpbar"), on = cur==="kp" && KP && KP.res;
+  document.getElementById("view").classList.toggle("haskpbar", !!on);
+  if(!on){ el.className = "kpbar"; return; }
+  const r = KP.res, dc = r.decision==="Брать" ? "g" : r.decision==="Пограничный" ? "w" : "b";
+  el.className = "kpbar on " + dc;
+  el.innerHTML = `<div class="d"><small>Решение</small><b>${esc(r.decision||"—")}</b></div><span>Рентабельность <b>${pct(r.rent)}</b><br>Допустимое снижение <b>${pct(r.allowed)}</b></span>`;
+  kpVis();
+}
+let tt, undo = null;
+function toast(t, act){
+  const el = document.getElementById("toast"); if(!act) undo = null;
+  el.classList.toggle("act", !!act);
+  if(act) el.innerHTML = `<span>${esc(t)}</span><button type="button" id="undoBtn">${esc(act)}</button>`; else el.textContent = t;
+  el.classList.add("on"); clearTimeout(tt); tt = setTimeout(()=>{ el.classList.remove("on","act"); undo = null; }, act ? 8000 : 1600);
+}
 function parseVal(t, v){
   if(t==="money"||t==="num"){ const s = String(v).replace(/[\s ]/g,"").replace(",","."); if(s==="") return ""; const n = parseFloat(s); return isNaN(n) ? "" : n; }
   if(t==="pct"){ const s = String(v).replace(/[\s%]/g,"").replace(",","."); if(s==="") return ""; const n = parseFloat(s); return isNaN(n) ? "" : n/100; }
@@ -1100,8 +1341,22 @@ function arrOf(path){ return path.split(".").reduce((o,k)=>o==null?undefined:o[k
 function afterEdit(msg){ render(true); toast(msg || (CAB ? "Сохранено" : "Пересчитано")); }
 function nextId(arr, key, prefix, pad){ let m = 0; arr.forEach(r => { const x = String(r[key]||""); if(x.startsWith(prefix)){ const n = parseInt(x.slice(prefix.length),10); if(n>m) m = n; } }); return prefix + String(m+1).padStart(pad,"0"); }
 
+const q1 = v => (window.CSS && CSS.escape) ? CSS.escape(v) : String(v).replace(/["\\]/g, "\\$&");
+function focusRow(id, k){
+  const tr = document.querySelector(`#view tr[data-rid="${q1(id)}"]`); if(!tr) return false;
+  const el = (k && tr.querySelector(`[data-k="${q1(k)}"]:not([disabled])`)) || tr.querySelector("input:not([disabled]),select:not([disabled])");
+  tr.scrollIntoView({block:"nearest"}); if(el){ el.focus({preventScroll:true}); if(el.select && el.type!=="date") el.select(); }
+  return tr;
+}
+function confirm2(btn, text){   // второе нажатие в течение 4 секунд = подтверждение
+  if(btn.dataset.sure==="1") return true;
+  const old = btn.textContent; btn.dataset.sure = "1"; btn.textContent = text;
+  setTimeout(()=>{ if(btn.isConnected && btn.dataset.sure==="1"){ btn.dataset.sure = ""; btn.textContent = old; } }, 4000);
+  return false;
+}
 document.addEventListener("change", e => {
   const el = e.target;
+  if(el.dataset.role){ api("POST","/api/team/"+el.dataset.role+"/role",{role:el.value}).then(()=>toast(el.value==="viewer" ? "Теперь только просмотр" : "Теперь может менять данные")).catch(err=>{ toast(err.message); loadTeam(); }); return; }
   if(RO && (el.id==="repdate" || el.dataset.a || el.dataset.kp || el.dataset.st)) return;
   if(el.id==="repdate"){ S.settings.repDate = el.value; send([{t:"obj",o:"settings",k:"repDate",v:el.value}]); return afterEdit("Отчёт пересчитан на " + fdate(el.value)); }
   if(el.dataset.a){
@@ -1110,28 +1365,56 @@ document.addEventListener("change", e => {
     if(el.tagName==="SELECT" && el.dataset.k==="vat") t = "vat";
     const v = parseVal(t, el.value);
     if(v===""||v===null) delete row[el.dataset.k]; else row[el.dataset.k] = v;
+    const tw = el.closest("[data-tw]"); if(tw) ui.pin[tw.dataset.tw] = row._id;      // строка, с которой работают, не пропадает из-за фильтра или сортировки
     const ops = [{t:"set", a:el.dataset.a, id:row._id, k:el.dataset.k, v: v===""?null:v}];
     if(t==="combo" && v && el.getAttribute("list")==="dl-contr" && !S.lists.contr.includes(v)){ S.lists.contr.push(v); ops.push({t:"list", l:"contr", v}); send(ops); return afterEdit("Контрагент «"+v+"» добавлен в справочник"); }
     send(ops); return afterEdit();
   }
   if(el.dataset.kp){ const v = parseVal(el.dataset.t, el.value); S.kp[el.dataset.kp] = (el.dataset.t==="money"&&v==="") ? "" : v; send([{t:"obj",o:"kp",k:el.dataset.kp,v:S.kp[el.dataset.kp]}]); return afterEdit(); }
   if(el.dataset.st){ const k = el.dataset.st; S.settings[k] = parseVal(el.dataset.t, el.value); send([{t:"obj",o:"settings",k,v:S.settings[k]}]); return afterEdit(); }
-  if(el.dataset.ui==="proj"){ ui.proj[el.dataset.id] = el.value; render(); }
-  if(el.dataset.ui==="f"){ ui.f[el.dataset.id] = el.value; render(true); }
+  if(el.dataset.ui==="proj"){ ui.proj[el.dataset.id] = el.value; delete ui.limit[el.dataset.id]; ui.pin = {}; render(true); }
+  if(el.dataset.ui==="f"){ ui.f[el.dataset.id] = el.value; ui.pin = {}; render(true); }
 });
 document.addEventListener("submit", e => {
   const f = e.target; e.preventDefault();
-  if(f.dataset.ladd){ if(RO) return; const inp = f.querySelector("input"), v = inp.value.trim(), L = S.lists[f.dataset.ladd]; if(!v) return; if(L.includes(v)){ toast("Уже есть в списке"); return; } L.push(v); send([{t:"list", l:f.dataset.ladd, v}]); afterEdit("Добавлено в список"); const n = document.querySelector(`form[data-ladd="${f.dataset.ladd}"] input`); if(n) n.focus(); return; }
+  if(f.dataset.ladd){ if(RO) return; const inp = f.querySelector("input"), v = inp.value.trim(), L = S.lists[f.dataset.ladd]; if(!v) return; if(L.includes(v)){ toast("Уже есть в списке"); return; } L.push(v); send([{t:"list", l:f.dataset.ladd, v}]); afterEdit("Добавлено в список"); const n = document.querySelector(`form[data-ladd="${f.dataset.ladd}"] input`); if(n){ n.value = ""; n.focus(); } return; }
   if(f.id==="redeemForm"){ const code = document.getElementById("redeemCode").value; api("POST","/api/redeem",{code}).then(async r => { ME = await api("GET","/api/me"); await reload(); toast(`Доступ продлён на ${r.days} дн.`); }).catch(err => toast(err.message)); return; }
   if(f.id==="pwForm"){ api("POST","/api/password",{old:document.getElementById("pwOld").value, password:document.getElementById("pwNew").value}).then(()=>{ f.reset(); toast("Пароль изменён"); }).catch(err=>toast(err.message)); return; }
 });
-let qT; document.addEventListener("input", e => { const el = e.target; if(el.dataset.ui==="q"){ clearTimeout(qT); qT = setTimeout(()=>{ ui.q[el.dataset.id] = el.value; const pos = el.selectionStart; render(true); const n = document.querySelector(`[data-ui="q"][data-id="${el.dataset.id}"]`); if(n){ n.focus(); n.setSelectionRange(pos,pos); } }, 220); } });
+let qT; document.addEventListener("input", e => { const el = e.target; if(el.dataset.ui==="q"){ clearTimeout(qT); qT = setTimeout(()=>{ ui.q[el.dataset.id] = el.value; ui.pin = {}; render(true); }, 220); } });
+/* Enter — на строку ниже в том же столбце, Shift+Enter — выше; Esc закрывает карточку */
+document.addEventListener("keydown", e => {
+  const el = e.target;
+  if(e.key==="Escape" && ui.card){ closeCard(); return; }
+  if(e.key!=="Enter" || e.isComposing || !el.matches) return;
+  if(el.matches("tr[data-card]")){ e.preventDefault(); openCard(el.dataset.card, +el.dataset.i); return; }
+  if(el.tagName!=="INPUT" || !el.dataset.a || el.getAttribute("list")) return;
+  e.preventDefault();
+  if(el.closest("#cardbox")){ el.blur(); return; }
+  const tr = el.closest("tr[data-rid]"); if(!tr) return;
+  const id = tr.dataset.rid, k = el.dataset.k;
+  el.blur();                                   // фиксирует значение и пересчитывает
+  const now = document.querySelector(`#view tr[data-rid="${q1(id)}"]`); if(!now) return;
+  let to = now; do { to = e.shiftKey ? to.previousElementSibling : to.nextElementSibling; } while(to && !(to.dataset.rid && to.querySelector(`[data-k="${q1(k)}"]:not([disabled])`)));
+  focusRow((to || now).dataset.rid, k);
+});
 document.addEventListener("click", e => {
   const go = e.target.closest("[data-go]");
   if(go){ const [s, f] = go.dataset.go.split(":"); if(f && s==="payments"){ ui.f.paymentsctrl = f; } location.hash = s; return; }
+  const srt = e.target.closest("th[data-sort]");
+  if(srt){ const [id, k] = srt.dataset.sort.split(":"), c = ui.sort[id];
+    if(!c || c.k!==k) ui.sort[id] = {k, dir:1}; else if(c.dir===1) c.dir = -1; else delete ui.sort[id];
+    ui.pin = {}; render(true); return; }
+  const more = e.target.closest("[data-more]");
+  if(more){ const id = more.dataset.more; ui.limit[id] = more.dataset.all ? 1e9 : (ui.limit[id] || LIMIT) + LIMIT; render(true); return; }
+  if(e.target.id==="undoBtn"){ const u = undo; undo = null; if(!u || RO) return; const arr = arrOf(u.path); if(!arr) return; const at = Math.min(u.i, arr.length);
+    arr.splice(at, 0, u.row); send([{t:"add", a:u.path, row:u.row, at}]); afterEdit("Строка возвращена"); const tr = focusRow(u.row._id); if(tr) tr.classList.add("flash"); return; }
+  if(e.target.dataset.cardclose){ closeCard(); return; }
+  const cg = e.target.closest("[data-cardgo]");
+  if(cg){ if(ui.card && cg.dataset.cardgo!==""){ const a = document.activeElement; if(a && a.blur) a.blur(); openCard(ui.card.id, +cg.dataset.cardgo); const b = document.querySelector("#cardbox .body"); if(b) b.scrollTop = 0; } return; }
   const add = e.target.closest("[data-add]");
-  if(add){ if(RO) return; const path = add.dataset.add, arr = arrOf(path); const row = {_id: rid()};
-    const p = Object.entries(ui.proj).find(([k])=>k===cur); const pr = p ? p[1] : "";
+  if(add){ if(RO) return; const path = add.dataset.add, tid = add.dataset.tid, arr = arrOf(path); const row = {_id: rid()};
+    const pr = ui.proj[cur] || "";
     if(path==="payments"){ row.date = S.settings.repDate || ds(todayN()); row.type = "Расход"; row.status = "План"; if(pr) row.proj = pr; }
     else if(path==="budget"||path==="purchases"||path==="repl"||path==="stages"||path==="works"){ if(pr) row.proj = pr; }
     if(path==="repl") row.id = nextId(arr,"id","ЗМ-",3);
@@ -1141,20 +1424,39 @@ document.addEventListener("click", e => {
     if(path==="kp.fot") row.art = "ФОТ";
     if(path.startsWith("kp.blocks.")){ const b = S.kp.blocks[+path.split(".")[2]]; row.vat = b.def_vat; row.art = b.def_art; row.unit = "шт"; }
     if(path==="payments") arr.unshift(row); else arr.push(row);
-    send([{t:"add", a:path, row, at: path==="payments" ? "start" : "end"}]); render(true);
-    if(path!=="payments"){ const tw = add.previousElementSibling; const tws = document.querySelectorAll(`[data-tw]`); tws.forEach(t=>{ if(t.querySelector(`[data-a="${path}"]`)) t.scrollTop = t.scrollHeight; }); }
-    toast("Строка добавлена"); return; }
+    send([{t:"add", a:path, row, at: path==="payments" ? "start" : "end"}]);
+    ui.pin[tid] = row._id; render(true); toast("Строка добавлена");
+    const o = TABLES[tid];
+    if(o && isMob() && o.mob) openCard(tid, arr.indexOf(row));
+    else { const tr = focusRow(row._id); if(tr) tr.classList.add("flash"); }
+    return; }
   const del = e.target.closest("[data-del]");
-  if(del){ if(RO) return; const arr = arrOf(del.dataset.del), row = arr[+del.dataset.i]; if(!row) return; arr.splice(+del.dataset.i, 1); send([{t:"del", a:del.dataset.del, id:row._id}]); return afterEdit("Строка удалена"); }
+  if(del){ if(RO) return; const path = del.dataset.del, arr = arrOf(path), i = +del.dataset.i, row = arr[i]; if(!row) return;
+    arr.splice(i, 1); send([{t:"del", a:path, id:row._id}]); render(true);
+    toast("Строка удалена", "Вернуть"); undo = {path, i, row}; return; }
+  const card = e.target.closest("tr[data-card]");
+  if(card){ openCard(card.dataset.card, +card.dataset.i); return; }
   const ldel = e.target.closest("[data-ldel]");
   if(ldel){ if(RO) return; const L = S.lists[ldel.dataset.ldel], i = L.indexOf(ldel.dataset.v); if(i>=0){ L.splice(i,1); send([{t:"listDel", l:ldel.dataset.ldel, v:ldel.dataset.v}]); afterEdit("Убрано из списка"); } return; }
   if(e.target.id==="logout"){ api("POST","/api/logout").finally(()=>location.href="/login.html"); return; }
-  if(e.target.id==="inviteBtn"){ api("POST","/api/team/invite").then(r => { const url = location.origin + "/login.html?invite=" + encodeURIComponent(r.token); document.getElementById("inviteOut").innerHTML = `<p class="note" style="margin:0 0 6px">Отправьте эту ссылку сотруднику — по ней он зарегистрируется в вашем кабинете:</p><div class="inl"><div class="linkbox" style="flex:1 1 300px">${esc(url)}</div><button class="btn sm" type="button" id="copyInvite" data-url="${esc(url)}">Копировать</button></div>`; }).catch(err => toast(err.message)); return; }
+  const inv = e.target.closest("[data-invite]");
+  if(inv){ const role = inv.dataset.invite; api("POST","/api/team/invite",{role}).then(r => { const url = location.origin + "/login.html?invite=" + encodeURIComponent(r.token);
+      document.getElementById("inviteOut").innerHTML = `<p class="note" style="margin:0 0 6px">Отправьте эту ссылку ${role==="viewer" ? "наблюдателю — он сможет только смотреть" : "сотруднику — он сможет вносить и менять данные"}:</p><div class="inl"><div class="linkbox" style="flex:1 1 300px">${esc(url)}</div><button class="btn sm" type="button" data-copy="${esc(url)}">Копировать</button></div>`; }).catch(err => toast(err.message)); return; }
+  const cp = e.target.closest("[data-copy]");
+  if(cp){ copyText(cp.dataset.copy, cp); return; }
+  const shr = e.target.closest("[data-share]");
+  if(shr){ shr.disabled = true; api("POST","/api/shares",{proj:shr.dataset.share}).then(r => { toast(r.existed ? "Ссылка по этому объекту уже есть" : "Ссылка создана"); return loadShares(); }).catch(err => toast(err.message)).finally(()=>{ shr.disabled = false; }); return; }
+  const ush = e.target.closest("[data-unshare]");
+  if(ush){ if(!confirm2(ush, "Точно отключить?")) return; api("DELETE","/api/shares/"+encodeURIComponent(ush.dataset.unshare)).then(()=>{ toast("Ссылка отключена"); loadShares(); }).catch(err=>toast(err.message)); return; }
+  if(e.target.id==="exLoad"){ e.target.disabled = true; api("POST","/api/example",{action:"load"}).then(async ()=>{ await reload(); toast("Пример загружен"); }).catch(err => { e.target.disabled = false; toast(err.message); }); return; }
+  if(e.target.id==="exClear"){ if(!confirm2(e.target, "Точно? Удалится всё, что сейчас есть в кабинете")) return; api("POST","/api/example",{action:"clear"}).then(async ()=>{ ui.proj = {}; ui.q = {}; ui.f = {}; await reload(); toast("Кабинет очищен"); }).catch(err => toast(err.message)); return; }
+  if(e.target.id==="histMore"){ loadHist(true); return; }
+  if(e.target.id==="histReload"){ loadHist(); return; }
+  if(e.target.closest("#kpbar")){ e.preventDefault(); const r = document.querySelector("#view .res"); if(r) r.scrollIntoView({behavior:"smooth", block:"start"}); return; }
   const rn = e.target.closest("[data-renew]");
   if(rn){ rn.disabled = true; api("POST","/api/pay/checkout-renew",{plan:rn.dataset.renew}).then(r => { location.href = r.url; }).catch(err => { rn.disabled = false; toast(err.message); }); return; }
-  if(e.target.id==="copyInvite"){ copyText(e.target.dataset.url, e.target); return; }
   const rm = e.target.closest("[data-rm]");
-  if(rm){ if(rm.dataset.sure!=="1"){ rm.dataset.sure="1"; rm.textContent = "Точно удалить?"; setTimeout(()=>{ if(rm.isConnected){ rm.dataset.sure=""; rm.textContent="Удалить"; } }, 4000); return; }
+  if(rm){ if(!confirm2(rm, "Точно удалить?")) return;
     api("DELETE","/api/team/"+rm.dataset.rm).then(()=>{ toast("Сотрудник удалён"); loadTeam(); }).catch(err=>toast(err.message)); return; }
   if(e.target.closest("#reset")){ document.getElementById("resetbox").innerHTML = `<span class="demo-q">Сбросить?</span><button class="demo-reset" id="resetYes" type="button">Да</button><button class="demo-reset" id="resetNo" type="button">Нет</button>`; return; }
   if(e.target.id==="resetNo"){ document.getElementById("resetbox").innerHTML = `<button class="demo-reset" id="reset" type="button" title="Вернуть исходные демо-данные"><span aria-hidden="true">↺</span> Сбросить</button>`; return; }
@@ -1168,8 +1470,11 @@ document.addEventListener("click", e => {
     send(ops); ui.proj.budget = code; location.hash = "budget"; toast(`Создан ${code}: договор и бюджет`); return;
   }
 });
+let wasMob = isMob();
+window.addEventListener("resize", () => { if(!S) return; if(isMob() !== wasMob){ wasMob = isMob(); render(true); } else { mobHeader(); kpVis(); } });
+window.addEventListener("scroll", kpVis, {passive:true});
 function route(){ if(!S) return; const h = location.hash.slice(1);
-  if(LOGIN_URL && h==="buy"){ location.replace("/pricing.html"); return; } cur = (V[h] && !(CAB && h==="buy") && !(!CAB && h==="team")) ? h : "dash"; render(); }
+  if(LOGIN_URL && h==="buy"){ location.replace("/pricing.html"); return; } cur = (V[h] && !(CAB && h==="buy") && !(!CAB && (h==="team" || h==="history"))) ? h : "dash"; ui.card = null; ui.pin = {}; render(); }
 window.addEventListener("hashchange", route);
 if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", ()=>drawCharts());
 new MutationObserver(()=>drawCharts()).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
@@ -1186,6 +1491,7 @@ async function boot(){
     ME = await api("GET","/api/me");
     const d = await api("GET","/api/data"); S = d.data; VER = d.version; RO = d.readonly;
     try{ PAY = await api("GET","/api/pay/plans"); }catch(e){}
+    if(ME.role==="viewer"){ SHEETS.splice(SHEETS.findIndex(x => x.id==="history"), 1); delete V.history; }
   }catch(e){ document.getElementById("view").innerHTML = `<div class="banner">${esc(e.message)}</div>`; return; }
   route();
   setInterval(poll, 15000);

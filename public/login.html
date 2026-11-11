@@ -144,7 +144,7 @@ $("buy").addEventListener("submit", async e => {
 if(invite){
   $("tabs").hidden = true; show("join");
   fetch("/api/invite-info?t=" + encodeURIComponent(invite)).then(r => r.json().then(j => ({ok:r.ok, j}))).then(({ok, j}) => {
-    if(ok) $("j-sub").textContent = "Вас пригласили в кабинет компании «" + j.company + "».";
+    if(ok) $("j-sub").textContent = "Вас пригласили в кабинет компании «" + j.company + "»" + (j.role === "viewer" ? " как наблюдателя: вы сможете смотреть все данные, но не менять их." : ".");
     else { msg(j.error || "Приглашение недействительно"); $("join").querySelector("button").disabled = true; }
   }).catch(() => {});
 } else if(location.hash === "#register") show("register");

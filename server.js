@@ -10,6 +10,7 @@ const http = require("http");
 const https = require("https");
 const tls = require("tls");
 const TEMPLATE = require("./template.json");
+const DEMO = require("./demo.json");
 
 const PORT = +process.env.PORT || 8080;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
@@ -52,6 +53,15 @@ async function migrate() {
     days int not null, amount int not null, email text, name text, company_name text, pass text, client_hash text,
     status text not null default 'new', bank_status text, payment_id text, code text,
     created_at timestamptz not null default now(), paid_at timestamptz);
+  alter table invites add column if not exists role text not null default 'member';
+  create table if not exists changes (
+    id bigserial primary key, company_id int not null references companies(id) on delete cascade,
+    user_id int, user_name text, at timestamptz not null default now(), op jsonb not null);
+  create index if not exists changes_company on changes(company_id, id desc);
+  create table if not exists shares (
+    token text primary key, company_id int not null references companies(id) on delete cascade,
+    proj text not null, created_by int, created_at timestamptz not null default now());
+  create index if not exists shares_company on shares(company_id);
   create index if not exists users_company on users(company_id);
   create index if not exists sessions_user on sessions(user_id);`);
 }
@@ -131,8 +141,10 @@ const auth = wrap(async (req, res, next) => {
   if (!r.rowCount) fail(401, "Сессия закончилась, войдите снова");
   const u = r.rows[0];
   u.active = !u.blocked && new Date(u.access_until) > new Date();
+  u.canEdit = u.active && u.role !== "viewer";
   req.user = u; next();
 });
+const editor = (req, res, next) => req.user.canEdit ? next() : next(new HttpErr(403, !req.user.active ? (req.user.blocked ? "Доступ приостановлен" : "Доступ закончился — продлите его, чтобы вносить изменения") : "У вас доступ только для просмотра"));
 const owner = (req, res, next) => req.user.role === "owner" ? next() : next(new HttpErr(403, "Доступно только владельцу кабинета"));
 const admin = wrap(async (req, res, next) => {
   const t = cookie(req, "pcp_admin");
@@ -188,7 +200,7 @@ app.post("/api/join", wrap(async (req, res) => {
     const i = await c.query("select * from invites where token_hash=$1 for update", [th]);
     if (!i.rowCount || i.rows[0].used_at || new Date(i.rows[0].expires) < new Date()) fail(400, "Приглашение недействительно или устарело. Попросите новое");
     if ((await c.query("select 1 from users where email=$1", [email])).rowCount) fail(400, "Такая почта уже зарегистрирована");
-    const u = await c.query("insert into users(company_id,email,name,pass,role,last_login) values($1,$2,$3,$4,'member',now()) returning id", [i.rows[0].company_id, email, name, hashPass(password)]);
+    const u = await c.query("insert into users(company_id,email,name,pass,role,last_login) values($1,$2,$3,$4,$5,now()) returning id", [i.rows[0].company_id, email, name, hashPass(password), i.rows[0].role === "viewer" ? "viewer" : "member"]);
     await c.query("update invites set used_at=now() where token_hash=$1", [th]);
     await c.query("commit");
     await newSession(req, res, u.rows[0].id, false);
@@ -197,9 +209,9 @@ app.post("/api/join", wrap(async (req, res) => {
 }));
 
 app.get("/api/invite-info", wrap(async (req, res) => {
-  const r = await q("select c.name from invites i join companies c on c.id=i.company_id where i.token_hash=$1 and i.used_at is null and i.expires>now()", [sha(String(req.query.t || ""))]);
+  const r = await q("select c.name, i.role from invites i join companies c on c.id=i.company_id where i.token_hash=$1 and i.used_at is null and i.expires>now()", [sha(String(req.query.t || ""))]);
   if (!r.rowCount) fail(404, "Приглашение недействительно или устарело");
-  res.json({ company: r.rows[0].name });
+  res.json({ company: r.rows[0].name, role: r.rows[0].role });
 }));
 
 app.post("/api/login", wrap(async (req, res) => {
@@ -221,7 +233,7 @@ app.post("/api/logout", wrap(async (req, res) => {
 
 app.get("/api/me", auth, (req, res) => {
   const u = req.user;
-  res.json({ id: u.id, email: u.email, name: u.name, role: u.role, company: u.company, accessUntil: u.access_until, blocked: u.blocked, active: u.active });
+  res.json({ id: u.id, email: u.email, name: u.name, role: u.role, company: u.company, accessUntil: u.access_until, blocked: u.blocked, active: u.active, canEdit: u.canEdit });
 });
 
 app.post("/api/password", auth, wrap(async (req, res) => {
@@ -243,9 +255,15 @@ app.get("/api/team", auth, wrap(async (req, res) => {
 app.post("/api/team/invite", auth, owner, wrap(async (req, res) => {
   const n = await q("select count(*)::int n from invites where company_id=$1 and created_at>now()-interval '1 day'", [req.user.company_id]);
   if (n.rows[0].n >= 30) fail(429, "Слишком много приглашений за сутки");
-  const t = token(18);
-  await q("insert into invites(token_hash,company_id,created_by,expires) values($1,$2,$3,now()+($4||' days')::interval)", [sha(t), req.user.company_id, req.user.id, String(INVITE_DAYS)]);
-  res.json({ token: t, days: INVITE_DAYS });
+  const t = token(18), role = req.body.role === "viewer" ? "viewer" : "member";
+  await q("insert into invites(token_hash,company_id,created_by,expires,role) values($1,$2,$3,now()+($4||' days')::interval,$5)", [sha(t), req.user.company_id, req.user.id, String(INVITE_DAYS), role]);
+  res.json({ token: t, days: INVITE_DAYS, role });
+}));
+app.post("/api/team/:id/role", auth, owner, wrap(async (req, res) => {
+  const role = req.body.role === "viewer" ? "viewer" : req.body.role === "member" ? "member" : fail(400, "Неверная роль");
+  const r = await q("update users set role=$1 where id=$2 and company_id=$3 and role<>'owner'", [role, +req.params.id, req.user.company_id]);
+  if (!r.rowCount) fail(404, "Сотрудник не найден");
+  res.json({ ok: true });
 }));
 app.delete("/api/team/:id", auth, owner, wrap(async (req, res) => {
   const id = +req.params.id;
@@ -273,11 +291,11 @@ app.post("/api/redeem", auth, owner, wrap(async (req, res) => {
 /* ---------- данные */
 app.get("/api/data", auth, wrap(async (req, res) => {
   const r = await q("select data, version from company_data where company_id=$1", [req.user.company_id]);
-  res.json({ data: r.rows[0].data, version: r.rows[0].version, readonly: !req.user.active });
+  res.json({ data: r.rows[0].data, version: r.rows[0].version, readonly: !req.user.canEdit });
 }));
 app.get("/api/version", auth, wrap(async (req, res) => {
   const r = await q("select version from company_data where company_id=$1", [req.user.company_id]);
-  res.json({ version: r.rows[0].version, readonly: !req.user.active });
+  res.json({ version: r.rows[0].version, readonly: !req.user.canEdit });
 }));
 
 const ARR_RE = /^(projects|budget|payments|purchases|repl|stages|works|kp\.fot|kp\.blocks\.[0-3]\.rows)$/;
@@ -298,51 +316,61 @@ function arrAt(doc, p) {
   return a;
 }
 const okId = id => typeof id === "string" && /^[A-Za-z0-9_-]{4,40}$/.test(id);
+const rowLabel = r => [r.proj || r.code, r.name || r.what || r.pos || r.stage || r.orig || r.role || r.contr || r.id].filter(Boolean).join(" · ").slice(0, 90);
+// применяет операцию и возвращает запись для журнала (или null, если ничего не изменилось)
 function applyOp(doc, op) {
   switch (op && op.t) {
     case "set": {
       const a = arrAt(doc, op.a), row = a.find(r => r._id === op.id);
-      if (!row) return; // строку уже удалили — правка не нужна
+      if (!row) return null; // строку уже удалили — правка не нужна
       if (!KEY_RE.test(op.k)) fail(400, "Неверное поле");
-      const v = val(op.v); if (v === undefined) delete row[op.k]; else row[op.k] = v;
-      return;
+      const old = row[op.k], v = val(op.v);
+      if (v === undefined) delete row[op.k]; else row[op.k] = v;
+      return old === v ? null : { t: "set", a: op.a, id: row._id, k: op.k, old: old ?? null, new: v ?? null, label: rowLabel(row) };
     }
     case "add": {
       const a = arrAt(doc, op.a);
       if (a.length >= 5000) fail(400, "Слишком много строк");
       const src = op.row || {}, row = {};
       if (!okId(src._id)) fail(400, "Неверная строка");
-      if (a.some(r => r._id === src._id)) return;
+      if (a.some(r => r._id === src._id)) return null;
       row._id = src._id;
       for (const [k, v0] of Object.entries(src)) { if (k === "_id") continue; if (!KEY_RE.test(k)) fail(400, "Неверное поле"); const v = val(v0); if (v !== undefined) row[k] = v; }
-      if (op.at === "start") a.unshift(row); else a.push(row);
-      return;
+      if (op.at === "start") a.unshift(row);
+      else if (Number.isInteger(op.at) && op.at >= 0) a.splice(Math.min(op.at, a.length), 0, row); // возврат удалённой строки на место
+      else a.push(row);
+      return { t: "add", a: op.a, label: rowLabel(row) };
     }
     case "del": {
       const a = arrAt(doc, op.a), i = a.findIndex(r => r._id === op.id);
-      if (i >= 0) a.splice(i, 1);
-      return;
+      if (i < 0) return null;
+      const [row] = a.splice(i, 1);
+      return { t: "del", a: op.a, label: rowLabel(row) };
     }
     case "obj": {
       const keys = op.o === "settings" ? SETTINGS_KEYS : op.o === "kp" ? KP_KEYS : null;
       if (!keys || !keys.has(op.k)) fail(400, "Неверный параметр");
-      const v = val(op.v), obj = doc[op.o];
-      if (v === undefined) obj[op.k] = ""; else obj[op.k] = v;
-      return;
+      const v = val(op.v), obj = doc[op.o], old = obj[op.k];
+      obj[op.k] = v === undefined ? "" : v;
+      return (old ?? "") === obj[op.k] ? null : { t: "obj", o: op.o, k: op.k, old: old ?? null, new: obj[op.k] };
     }
     case "list": case "listDel": {
       if (!LISTS.has(op.l)) fail(400, "Неверный справочник");
-      const v = str(op.v, 150); if (!v) return;
+      const v = str(op.v, 150); if (!v) return null;
       const L = doc.lists[op.l] || (doc.lists[op.l] = []);
-      if (op.t === "list") { if (!L.includes(v) && L.length < 500) L.push(v); }
-      else { const i = L.indexOf(v); if (i >= 0) L.splice(i, 1); }
-      return;
+      if (op.t === "list") { if (L.includes(v) || L.length >= 500) return null; L.push(v); }
+      else { const i = L.indexOf(v); if (i < 0) return null; L.splice(i, 1); }
+      return { t: op.t, l: op.l, v };
     }
     default: fail(400, "Неизвестная операция");
   }
 }
-app.post("/api/ops", auth, wrap(async (req, res) => {
-  if (!req.user.active) fail(403, req.user.blocked ? "Доступ приостановлен" : "Доступ закончился — продлите его, чтобы вносить изменения");
+async function logChanges(c, user, log) {
+  if (!log.length) return;
+  await c.query("insert into changes(company_id,user_id,user_name,op) select $1,$2,$3,x from jsonb_array_elements($4::jsonb) x", [user.company_id, user.id, user.name, JSON.stringify(log)]);
+  if (Math.random() < 0.02) await c.query("delete from changes where company_id=$1 and id < (select id from changes where company_id=$1 order by id desc offset 5000 limit 1)", [user.company_id]);
+}
+app.post("/api/ops", auth, editor, wrap(async (req, res) => {
   const ops = req.body.ops;
   if (!Array.isArray(ops) || !ops.length || ops.length > 500) fail(400, "Нет изменений");
   const c = await pool.connect();
@@ -350,15 +378,89 @@ app.post("/api/ops", auth, wrap(async (req, res) => {
     await c.query("begin");
     const r = await c.query("select data, version from company_data where company_id=$1 for update", [req.user.company_id]);
     const doc = r.rows[0].data;
-    ops.forEach(op => applyOp(doc, op));
+    const log = ops.map(op => applyOp(doc, op)).filter(Boolean);
     const json = JSON.stringify(doc);
     if (json.length > MAX_DOC) fail(400, "Слишком много данных в кабинете");
     const u = await c.query("update company_data set data=$1, version=version+1, updated_at=now(), updated_by=$2 where company_id=$3 returning version", [json, req.user.id, req.user.company_id]);
+    await logChanges(c, req.user, log);
     await c.query("commit");
     res.json({ version: u.rows[0].version, prev: r.rows[0].version });
   } catch (e) { await c.query("rollback").catch(() => {}); throw e; } finally { c.release(); }
 }));
 
+
+/* ---------- история изменений */
+app.get("/api/history", auth, wrap(async (req, res) => {
+  if (req.user.role === "viewer") fail(403, "История доступна сотрудникам с правом изменения");
+  const before = +req.query.before || 0;
+  const r = await q(`select id, user_name, at, op from changes where company_id=$1 ${before ? "and id<$2" : ""} order by id desc limit 200`, before ? [req.user.company_id, before] : [req.user.company_id]);
+  res.json({ items: r.rows, more: r.rowCount === 200 });
+}));
+
+/* ---------- пример данных в пустом кабинете */
+const MAIN = ["projects", "budget", "payments", "purchases", "repl", "stages", "works"];
+const newRowId = () => crypto.randomBytes(8).toString("hex");
+app.post("/api/example", auth, editor, wrap(async (req, res) => {
+  const action = req.body.action;
+  const c = await pool.connect();
+  try {
+    await c.query("begin");
+    const r = await c.query("select data from company_data where company_id=$1 for update", [req.user.company_id]);
+    const cur = r.rows[0].data; let doc;
+    if (action === "load") {
+      if (MAIN.some(k => (cur[k] || []).length)) fail(400, "Пример можно загрузить только в пустой кабинет");
+      doc = JSON.parse(JSON.stringify(DEMO));
+      doc.settings.company = cur.settings.company || req.user.company; doc.example = true;
+      [...MAIN.map(k => doc[k]), doc.kp.fot, ...doc.kp.blocks.map(b => b.rows)].forEach(a => a.forEach(row => { row._id = newRowId(); }));
+    } else if (action === "clear") {
+      if (!cur.example) fail(400, "В кабинете нет загруженного примера");
+      doc = JSON.parse(JSON.stringify(TEMPLATE)); doc.settings.company = cur.settings.company || req.user.company;
+      await c.query("delete from shares where company_id=$1", [req.user.company_id]);
+    } else fail(400, "Неизвестное действие");
+    const u = await c.query("update company_data set data=$1, version=version+1, updated_at=now(), updated_by=$2 where company_id=$3 returning version", [JSON.stringify(doc), req.user.id, req.user.company_id]);
+    await logChanges(c, req.user, [{ t: "example", action }]);
+    await c.query("commit");
+    res.json({ version: u.rows[0].version });
+  } catch (e) { await c.query("rollback").catch(() => {}); throw e; } finally { c.release(); }
+}));
+
+/* ---------- ссылка на ППР для заказчика (только чтение, без денег) */
+app.get("/api/shares", auth, wrap(async (req, res) => {
+  const r = await q("select token, proj, created_at from shares where company_id=$1 order by created_at", [req.user.company_id]);
+  res.json({ shares: r.rows });
+}));
+app.post("/api/shares", auth, editor, wrap(async (req, res) => {
+  const proj = str(req.body.proj, 40); if (!proj) fail(400, "Выберите объект");
+  const d = await q("select data from company_data where company_id=$1", [req.user.company_id]);
+  if (!(d.rows[0].data.projects || []).some(p => p.code === proj)) fail(404, "Объект не найден");
+  const ex = await q("select token from shares where company_id=$1 and proj=$2", [req.user.company_id, proj]);
+  if (ex.rowCount) return res.json({ token: ex.rows[0].token, existed: true });
+  if ((await q("select count(*)::int n from shares where company_id=$1", [req.user.company_id])).rows[0].n >= 200) fail(400, "Слишком много ссылок");
+  const t = token(18);
+  await q("insert into shares(token,company_id,proj,created_by) values($1,$2,$3,$4)", [t, req.user.company_id, proj, req.user.id]);
+  res.json({ token: t });
+}));
+app.delete("/api/shares/:token", auth, editor, wrap(async (req, res) => {
+  const r = await q("delete from shares where token=$1 and company_id=$2", [String(req.params.token), req.user.company_id]);
+  if (!r.rowCount) fail(404, "Ссылка не найдена");
+  res.json({ ok: true });
+}));
+app.get("/api/share", wrap(async (req, res) => {
+  limit("share:" + req.ip, 300);
+  const r = await q(`select s.proj, c.name company, c.blocked, d.data from shares s join companies c on c.id=s.company_id join company_data d on d.company_id=s.company_id where s.token=$1`, [str(req.query.t, 60)]);
+  if (!r.rowCount || r.rows[0].blocked) fail(404, "Ссылка не действует. Попросите у подрядчика новую");
+  const { proj, company, data } = r.rows[0];
+  const p = (data.projects || []).find(x => x.code === proj);
+  if (!p) fail(404, "Объект удалён из кабинета подрядчика");
+  const pick = (o, keys) => Object.fromEntries(keys.filter(k => o[k] !== undefined).map(k => [k, o[k]]));
+  res.json({
+    company: data.settings.company || company,
+    project: pick(p, ["code", "name", "cust", "sys", "s", "e"]),
+    settings: pick(data.settings, ["repDate", "lagTol", "ganttStart"]),
+    stages: (data.stages || []).filter(x => x.proj === proj).map(x => pick(x, ["id", "proj", "stage", "ps", "pf", "fs", "ff", "prog"])),
+    works: (data.works || []).filter(x => x.proj === proj).map(x => pick(x, ["id", "proj", "sid", "vol", "done", "ps", "pf", "fs", "ff"])),
+  });
+}));
 
 /* ---------- оплата через интернет-эквайринг Т-Банка */
 const TB = {
@@ -567,7 +669,7 @@ app.post("/api/admin/users/:id/reset", admin, wrap(async (req, res) => {
 /* ---------- страницы */
 app.get("/health", wrap(async (req, res) => { await q("select 1"); res.type("text").send("ok"); }));
 const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
-app.use(["/app.html", "/login.html", "/admin.html", "/pay.html"], (req, res, next) => { res.set("Content-Security-Policy", CSP); res.set("Cache-Control", "no-cache"); next(); });
+app.use(["/app.html", "/login.html", "/admin.html", "/pay.html", "/share.html"], (req, res, next) => { res.set("Content-Security-Policy", CSP); res.set("Cache-Control", "no-cache"); next(); });
 app.get(["/app", "/login", "/admin", "/pricing", "/offer", "/privacy"], (req, res) => res.redirect(req.path + ".html"));
 app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"], setHeaders: (res, p) => { if (p.endsWith(".html")) res.set("Cache-Control", "no-cache"); } }));
 

@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Ход работ по объекту</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230B1F3A'/%3E%3Crect x='7' y='17' width='4' height='8' fill='%235B9BEF'/%3E%3Crect x='14' y='12' width='4' height='13' fill='%235B9BEF'/%3E%3Crect x='21' y='7' width='4' height='18' fill='%23F2B705'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#F2F4F8; --surface:#FFFFFF; --ink:#0F1B2D; --muted:#5B6A80; --line:#DCE2EA; --line2:#E9EDF3;
+  --navy:#0B1F3A; --navyInk:#DCE8FA; --navyMuted:#8FA6C6; --accent:#1565C0;
+  --good:#D7F2DD; --goodInk:#11652B; --warn:#FFF0C2; --warnInk:#8A5A00; --bad:#FBD3D6; --badInk:#A0101C;
+  --info:#DCEAFB; --infoInk:#15457A; --neutral:#E7EAEE; --neutralInk:#4B5563;
+  --bar:#A9CBF2; --barDone:#1565C0; --barBad:#E57373; --barLag:#FFB74D; --today:#F2B705; --todaySoft:#FFF3C4; --cGreen:#2E7D32;
+  --shadow:0 1px 2px rgba(11,31,58,.06),0 4px 14px rgba(11,31,58,.05);
+  --f-ui:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; --f-disp:"Unbounded","Golos Text",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#0A111D; --surface:#111A2A; --ink:#E6ECF5; --muted:#8C9AB0; --line:#22314A; --line2:#1A2639;
+  --navy:#060C17; --navyInk:#DCE8FA; --navyMuted:#7D93B3; --accent:#5B9BEF;
+  --good:#123A22; --goodInk:#7EE0A0; --warn:#3B2F0E; --warnInk:#F5C95A; --bad:#46161C; --badInk:#FF9AA4;
+  --info:#152E50; --infoInk:#9CC3FF; --neutral:#202B3B; --neutralInk:#AAB5C5;
+  --bar:#2C4C78; --barDone:#5B9BEF; --barBad:#C65757; --barLag:#D68A2C; --today:#F2B705; --todaySoft:#3A3110; --cGreen:#5BBF6A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark }}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.hero{background:var(--navy);color:#fff;padding:calc(26px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) 30px max(20px,env(safe-area-inset-left,0px))}
+.wrap{max-width:1080px;margin:0 auto}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--today)}
+h1{font-family:var(--f-disp);font-size:clamp(20px,3.4vw,30px);line-height:1.2;margin:8px 0 12px;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:13px;color:var(--navyInk)}
+.meta span b{font-weight:600;color:#fff}
+.meta small{display:block;font-size:11px;color:var(--navyMuted);letter-spacing:.3px}
+main{padding:20px max(20px,env(safe-area-inset-right,0px)) 40px max(20px,env(safe-area-inset-left,0px))}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);min-width:0}
+.tile small{display:block;font-size:11.5px;color:var(--muted);font-weight:600}
+.tile b{display:block;font-family:var(--f-disp);font-size:22px;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.tile span{font-size:12px;color:var(--muted)}
+.tile .pb{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:8px}
+.tile .pb i{display:block;height:100%;background:var(--cGreen)}
+.tile b.warn{color:var(--warnInk)} .tile b.badc{color:var(--badInk)}
+h2{font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin:26px 0 10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{background:var(--navy);color:#fff;font-size:11px;font-weight:600;text-align:left;padding:9px 12px;white-space:nowrap}
+td{padding:10px 12px;border-top:1px solid var(--line2);vertical-align:middle}
+td.d,th.d{text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.late{color:var(--badInk);font-weight:600}
+.nm b{font-weight:600} .nm small{display:block;color:var(--muted);font-size:11.5px}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;white-space:nowrap;line-height:1.5}
+.p-g{background:var(--good);color:var(--goodInk)} .p-w{background:var(--warn);color:var(--warnInk)} .p-b{background:var(--bad);color:var(--badInk)} .p-i{background:var(--info);color:var(--infoInk)} .p-n{background:var(--neutral);color:var(--neutralInk)}
+.mbar{display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums;font-weight:600}
+.mbar u{display:block;flex:1;min-width:50px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.mbar u s{display:block;height:100%;background:var(--cGreen)}
+.cards{display:none;gap:10px}
+.st{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.st header{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.st header b{font-size:15px;line-height:1.3}
+.st dl{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin:10px 0 0}
+.st dt{font-size:11px;color:var(--muted)} .st dd{margin:0;font-size:13px;font-variant-numeric:tabular-nums}
+.gantt{overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:var(--shadow)}
+.g-in{position:relative}
+.g-row{display:grid;grid-template-columns:220px minmax(0,1fr);border-bottom:1px solid var(--line2);min-height:30px}
+.g-row:last-child{border-bottom:0}
+.g-lab{padding:6px 12px;font-size:12px;line-height:1.3;border-right:1px solid var(--line);position:sticky;left:0;background:var(--surface);z-index:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-tr{position:relative}
+.g-row:not(.g-head) .g-tr{background-image:repeating-linear-gradient(to right, transparent 0, transparent calc(100% / var(--w) - 1px), var(--line2) calc(100% / var(--w) - 1px), var(--line2) calc(100% / var(--w)))}
+.g-now{position:absolute;top:0;bottom:0;background:var(--todaySoft);z-index:0}
+.g-bar{position:absolute;top:8px;height:14px;border-radius:3px;background:var(--bar);overflow:hidden;z-index:1}
+.g-bar s{display:block;height:100%;background:var(--barDone)}
+.g-bar.bad{background:var(--barBad)} .g-bar.bad s{background:transparent} .g-bar.lag{background:var(--barLag)}
+.g-tail{position:absolute;top:13px;height:4px;border-radius:0 2px 2px 0;z-index:1;background:repeating-linear-gradient(90deg,var(--barBad) 0 4px,transparent 4px 7px)}
+.g-head{position:sticky;top:0;z-index:3;background:var(--navy);color:#fff;font-size:10px}
+.g-head .g-lab{background:var(--navy);color:#fff;font-weight:600;font-size:11px}
+.g-head .g-tr{height:34px}
+.g-head .wk{position:absolute;top:16px;font-size:9.5px;transform:translateX(3px);color:#B9C7DC;font-variant-numeric:tabular-nums}
+.g-head .mo{position:absolute;top:3px;font-weight:700;transform:translateX(3px);color:#fff}
+.g-head .wk.now{color:var(--today);font-weight:700}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:5px;vertical-align:1px}
+.empty{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:28px;text-align:center;color:var(--muted)}
+footer{max-width:1080px;margin:28px auto 0;font-size:12px;color:var(--muted);display:flex;gap:8px 16px;flex-wrap:wrap;justify-content:space-between}
+footer a{color:var(--accent)}
+@media (max-width:820px){
+  .tiles{grid-template-columns:1fr 1fr} .tile b{font-size:18px}
+  .tablecard{display:none} .cards{display:grid}
+  .g-row{grid-template-columns:130px minmax(0,1fr)}
+}
+@media print{ .hero{-webkit-print-color-adjust:exact;print-color-adjust:exact} .gantt{overflow:visible} body{background:#fff} }
+</style>
+</head>
+<body>
+<div class="hero"><div class="wrap">
+  <div class="eyebrow">Ход работ по объекту</div>
+  <h1 id="h1">Загружаю…</h1>
+  <div class="meta" id="meta"></div>
+</div></div>
+<main><div class="wrap" id="view"></div>
+<footer><span id="upd"></span><span>Страница только для просмотра. Сформирована в <a href="/" rel="noopener">PROJECT CONTROL PRO</a></span></footer>
+</main>
+<script>
+/* PROJECT CONTROL PRO — расчётное ядро (повторяет формулы Excel-версии). Даты — номера дней (UTC). */
+const DAY = 86400000;
+function dn(s) { if (s === null || s === undefined || s === "") return null; if (typeof s === "number") return s; const [y, m, d] = String(s).slice(0, 10).split("-").map(Number); if (!y || !m || !d) return null; return Math.round(Date.UTC(y, m - 1, d) / DAY); }
+function ds(n) { if (n === null || n === undefined) return ""; const t = new Date(n * DAY); return t.toISOString().slice(0, 10); }
+function wd2(n) { return ((n + 3) % 7 + 7) % 7 + 1; } // ПН=1
+function num(v) { return (v === null || v === undefined || v === "" || isNaN(+v)) ? 0 : +v; }
+function blank(v) { return v === null || v === undefined || v === ""; }
+function vatRate(v) { return (blank(v) || v === "Без НДС") ? 0 : +v; }
+function todayN() { const t = new Date(); return Math.round(Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) / DAY); }
+
+function compute(S) {
+  const st = S.settings;
+  const rep = blank(st.repDate) ? todayN() : dn(st.repDate);
+  const startD = blank(st.startDate) ? dn("2000-01-01") : dn(st.startDate);
+  const target = num(st.target), crit = num(st.crit), tax = num(st.tax), hz = num(st.horizon), lag = num(st.lagTol);
+  const gs = blank(st.ganttStart) ? rep - wd2(rep) + 1 - 28 : dn(st.ganttStart) - wd2(dn(st.ganttStart)) + 1;
+  const R = { repN: rep, startD, gantt: gs };   // repN — отчётная дата номером дня (R.rep занят заменами)
+  const prjBy = {}; S.projects.forEach(p => { if (p.code) prjBy[p.code] = p; });
+  const objOf = c => blank(c) ? "" : (prjBy[c] ? prjBy[c].name : "код не найден");
+
+  // ---------- Платежи
+  R.pay = S.payments.map(p => {
+    const o = {};
+    if (blank(p.type)) return o;
+    const a = dn(p.date), j = dn(p.fdate);
+    o.obj = blank(p.proj) ? "Общие расходы компании" : objOf(p.proj);
+    if (p.status === "Отменено") o.ctrl = "Отменено";
+    else if (p.status === "Оплачено") o.ctrl = j === null ? "Укажите дату" : (p.type === "Расход" && !blank(p.proj) && blank(p.art) ? "Укажите статью" : "Оплачено");
+    else o.ctrl = a === null ? "Укажите срок" : a < rep ? "Просрочено" : a - rep <= hz ? "Скоро срок" : "Ожидается";
+    if (p.status === "Отменено") o.dds = null;
+    else if (p.status === "Оплачено") o.dds = j === null ? a : j;
+    else o.dds = a === null ? null : Math.max(a, rep);
+    o.days = (a !== null && p.status === "План") ? a - rep : null;
+    return o;
+  });
+  const paid = (fn) => S.payments.reduce((s, p, i) => s + (p.status === "Оплачено" && fn(p, i) ? num(p.amt) : 0), 0);
+
+  // ---------- Бюджет
+  const cnt = {}; S.budget.forEach(b => { if (!blank(b.proj)) { const k = b.proj + "|" + b.art; cnt[k] = (cnt[k] || 0) + 1; } });
+  R.bud = S.budget.map(b => {
+    if (blank(b.proj)) return {};
+    const o = { obj: objOf(b.proj) };
+    o.paid = blank(b.art) ? 0 : paid(p => p.proj === b.proj && p.art === b.art && p.type === "Расход");
+    o.fact = o.paid + num(b.korr);
+    o.left = blank(b.own) ? Math.max(0, num(b.plan) - o.fact) : num(b.own);
+    o.fc = o.fact + o.left; o.dev = o.fc - num(b.plan);
+    o.osv = num(b.plan) === 0 ? 0 : o.fact / num(b.plan);
+    o.st = cnt[b.proj + "|" + b.art] > 1 ? "Дубль статьи" : o.dev > 0 ? "Перерасход" : o.dev < 0 ? "Экономия" : "В бюджете";
+    return o;
+  });
+  R.svod = (proj) => {
+    const rows = S.lists.cost.map(art => {
+      let plan = 0, fact = 0, fc = 0;
+      S.budget.forEach((b, i) => { if (b.art === art && !blank(b.proj) && (!proj || b.proj === proj)) { plan += num(b.plan); fact += R.bud[i].fact; fc += R.bud[i].fc; } });
+      const dev = fc - plan;
+      return { art, plan, fact, fc, dev, st: plan === 0 ? "" : dev > 0 ? "Перерасход" : dev < 0 ? "Экономия" : "В бюджете" };
+    });
+    return rows;
+  };
+  R.outOfBudget = paid(p => p.type === "Расход" && !blank(p.proj)) - R.bud.reduce((s, o) => s + num(o.paid), 0);
+
+  // ---------- График работ (детально) — база
+  const wById = {}; S.works.forEach((w, i) => { if (w.id) wById[w.id] = i; });
+  R.work = S.works.map(w => {
+    if (blank(w.id)) return {};
+    const o = {};
+    const ps = dn(w.ps), pf = dn(w.pf), fs = dn(w.fs), ff = dn(w.ff);
+    o.prog = blank(w.vol) ? null : (num(w.vol) === 0 ? 0 : Math.min(1, num(w.done) / num(w.vol)));
+    const pr = num(o.prog);
+    o.shift = ps === null ? null : fs !== null ? fs - ps : (pr < 1 && ps < rep ? rep - ps : 0);
+    o.fc = pf === null ? null : ff !== null ? ff : pr >= 1 ? pf : pf + Math.max(0, num(o.shift));
+    const plan = (ps === null || pf === null) ? 0 : Math.max(0, Math.min(1, (rep - num(ps) + 1) / (pf - num(ps) + 1)));
+    if (pr >= 1) o.st = (ff !== null && ff > pf) ? "Сдано с опозданием" : "Готово";
+    else if (fs === null) o.st = num(ps) < rep ? "Старт сорван" : "Не начато";
+    else if (pf !== null && pf < rep) o.st = "Просрочено";
+    else o.st = (plan - pr > lag || num(o.fc) - num(pf) > 3) ? "Отставание" : "В работе";
+    o.plan = plan;
+    return o;
+  });
+  const workStart = id => (blank(id) || wById[id] === undefined) ? null : dn(S.works[wById[id]].ps);
+
+  // ---------- Замены
+  R.rep = S.repl.map(z => {
+    if (blank(z.id)) return {};
+    const o = { obj: objOf(z.proj) };
+    o.diff = (blank(z.p1) || blank(z.p2)) ? null : (num(z.p2) - num(z.p1)) * (blank(z.qty) ? 1 : num(z.qty));
+    o.ws = blank(z.work) ? null : workStart(z.work);
+    const due = dn(z.due);
+    if (z.status === "Согласовано") o.ctrl = blank(z.ans) ? "Укажите дату" : "Согласовано";
+    else if (z.status === "Отказ") o.ctrl = "Отказ";
+    else if (z.status === "Отозвано") o.ctrl = "Отменено";
+    else if (blank(z.status) || z.status === "Подготовка") o.ctrl = (o.ws !== null && o.ws - rep <= 21) ? "Срочно направить" : "Подготовка";
+    else if (due !== null && due < rep) o.ctrl = "Ответ просрочен";
+    else if (o.ws !== null && o.ws - rep <= 14) o.ctrl = "Риск для монтажа";
+    else o.ctrl = "Ждём ответа";
+    return o;
+  });
+  const repCtrl = id => { const i = S.repl.findIndex(z => z.id === id); return i < 0 ? "" : R.rep[i].ctrl; };
+
+  // ---------- Закупки
+  R.buy = S.purchases.map(b => {
+    if (blank(b.proj)) return {};
+    const o = { obj: objOf(b.proj) };
+    o.cost = num(b.qty) * num(b.price);
+    o.ws = workStart(b.work);
+    const K = dn(b.fc);
+    o.res = (o.ws === null || K === null) ? null : o.ws - K;
+    o.rs = blank(b.repl) ? "" : repCtrl(b.repl);
+    const base = () => K === null ? "Укажите срок" : K < rep ? "Задержка" : blank(b.work) ? "Нет связи с работой" : o.ws === null ? "Работа не найдена" : K > o.ws ? "Срыв монтажа" : o.res <= 3 ? "Впритык" : "В срок";
+    if (b.status === "Отменено") o.ctrl = "Отменено";
+    else if (b.status === "Получено") o.ctrl = "Получено";
+    else if (blank(b.repl)) o.ctrl = base();
+    else if (o.rs === "Отказ") o.ctrl = "Отказ в замене";
+    else if (o.rs === "") o.ctrl = "Замена не найдена";
+    else if (o.rs === "Согласовано") o.ctrl = base();
+    else o.ctrl = "Ждёт согласования";
+    return o;
+  });
+
+  // оборудование для работы
+  S.works.forEach((w, i) => {
+    if (blank(w.id)) return;
+    const bi = S.purchases.map((b, k) => k).filter(k => S.purchases[k].work === w.id);
+    const ri = S.repl.map((z, k) => k).filter(k => S.repl[k].work === w.id);
+    const risk = bi.some(k => ["Срыв монтажа", "Задержка", "Отказ в замене"].includes(R.buy[k].ctrl)) || ri.some(k => ["Ответ просрочен", "Риск для монтажа"].includes(R.rep[k].ctrl));
+    const wait = ri.some(k => ["Ждём ответа", "Подготовка", "Срочно направить"].includes(R.rep[k].ctrl));
+    R.work[i].equip = risk ? "Риск поставки" : wait ? "Ждёт замены" : bi.length === 0 ? "—" : bi.every(k => ["Получено", "Отменено"].includes(S.purchases[k].status)) ? "Получено" : "Ожидается";
+  });
+
+  // ---------- ППР (этапы)
+  const stById = {}; S.stages.forEach((s, i) => { if (s.id) stById[s.id] = i; });
+  R.stage = S.stages.map(s => {
+    if (blank(s.id)) return {};
+    const o = { obj: objOf(s.proj) };
+    const idx = S.works.map((w, k) => k).filter(k => S.works[k].sid === s.id);
+    o.nw = idx.length;
+    const ps = dn(s.ps), pf = dn(s.pf);
+    if (o.nw === 0) { o.fs = dn(s.fs); o.ff = dn(s.ff); o.prog = num(s.prog); }
+    else {
+      const fss = idx.map(k => dn(S.works[k].fs)).filter(x => x !== null);
+      o.fs = fss.length ? Math.min(...fss) : null;
+      o.ff = idx.some(k => R.work[k].prog !== null && R.work[k].prog < 1) ? null : Math.max(...idx.map(k => num(dn(S.works[k].ff))));
+      const pr = idx.map(k => R.work[k].prog).filter(x => x !== null);
+      o.prog = pr.length ? pr.reduce((a, b) => a + b, 0) / pr.length : 0;
+    }
+    o.plan = (ps === null || pf === null) ? null : Math.max(0, Math.min(1, (rep - ps + 1) / (pf - ps + 1)));
+    o.shift = ps === null ? null : o.fs !== null ? o.fs - ps : (o.prog < 1 && ps < rep ? rep - ps : 0);
+    if (pf === null) o.fc = null;
+    else if (o.ff !== null) o.fc = o.ff;
+    else if (o.prog >= 1) o.fc = pf;
+    else o.fc = Math.max(pf + Math.max(0, num(o.shift)), o.nw === 0 ? 0 : Math.max(...idx.map(k => num(R.work[k].fc))));
+    if (o.prog >= 1) o.st = (o.ff !== null && o.ff > pf) ? "Сдано с опозданием" : "Готово";
+    else if (o.fs === null) o.st = num(ps) < rep ? "Старт сорван" : "Не начато";
+    else if (pf < rep) o.st = "Просрочено";
+    else o.st = (num(o.plan) - o.prog > lag || o.fc - pf > 3) ? "Отставание" : "В работе";
+    return o;
+  });
+  S.works.forEach((w, i) => { if (!blank(w.id)) R.work[i].obj = objOf(w.proj); R.work[i].sname = blank(w.sid) ? "" : (stById[w.sid] === undefined ? "этап не найден" : S.stages[stById[w.sid]].stage); R.work[i].badStage = !blank(w.sid) && (stById[w.sid] === undefined || S.stages[stById[w.sid]].proj !== w.proj); });
+
+  // ---------- Анализ проектов
+  const isSlip = s => s === "Просрочено" || s === "Старт сорван";
+  R.an = S.projects.map(p => {
+    if (blank(p.code)) return {};
+    const c = p.code, o = { code: c, name: p.name, contract: num(p.amt) };
+    o.plan = 0; o.fact = 0; o.fc = 0;
+    S.budget.forEach((b, i) => { if (b.proj === c) { o.plan += num(b.plan); o.fact += R.bud[i].fact; o.fc += R.bud[i].fc; } });
+    o.profit = o.contract - o.fc; o.margin = o.contract === 0 ? 0 : o.profit / o.contract;
+    o.net = o.profit > 0 ? o.profit * (1 - tax) : o.profit;
+    o.recv = paid(x => x.proj === c && x.type === "Поступление");
+    o.paidExp = paid(x => x.proj === c && x.type === "Расход");
+    o.cash = o.recv - o.paidExp; o.debt = o.contract - o.recv; o.devB = o.fc - o.plan;
+    o.slip = S.works.filter((w, i) => w.proj === c && isSlip(R.work[i].st)).length + S.stages.filter((s, i) => s.proj === c && R.stage[i].nw === 0 && isSlip(R.stage[i].st)).length;
+    o.risk = S.purchases.filter((b, i) => b.proj === c && ["Срыв монтажа", "Задержка", "Отказ в замене"].includes(R.buy[i].ctrl)).length + S.repl.filter((z, i) => z.proj === c && ["Ответ просрочен", "Риск для монтажа"].includes(R.rep[i].ctrl)).length;
+    const pr = S.works.map((w, i) => w.proj === c ? R.work[i].prog : null).filter(x => x !== null);
+    o.ready = pr.length ? pr.reduce((a, b) => a + b, 0) / pr.length : null;
+    o.st = (o.profit < 0 || o.margin < crit) ? "Риск" : (o.margin < target || o.slip > 0 || o.risk > 0) ? "Внимание" : "В норме";
+    const vr = vatRate(p.vat); o.noVat = vr ? num(p.amt) / (1 + vr) : num(p.amt);
+    const e = dn(p.e); o.daysLeft = (e === null || p.stage === "Завершён") ? null : e - rep;
+    return o;
+  });
+  const A = R.an.filter(o => o.code);
+  const T = k => A.reduce((s, o) => s + num(o[k]), 0);
+  R.tot = { contract: T("contract"), plan: T("plan"), fact: T("fact"), fc: T("fc"), profit: T("profit"), net: T("net"), recv: T("recv"), paidExp: T("paidExp"), cash: T("cash"), debt: T("debt"), devB: T("devB"), slip: T("slip"), risk: T("risk"), n: A.length };
+  R.tot.margin = R.tot.contract === 0 ? 0 : R.tot.profit / R.tot.contract;
+
+  // ---------- Сводка директора
+  const inDds = (p, i, lo, hi) => { const d = R.pay[i].dds; return d !== null && d !== undefined && d >= lo && d <= hi; };
+  let cash = num(st.startCash);
+  S.payments.forEach((p, i) => { if (p.status === "Оплачено" && inDds(p, i, startD, rep)) cash += (p.type === "Поступление" ? 1 : p.type === "Расход" ? -1 : 0) * num(p.amt); });
+  const D = R.dash = { cash };
+  D.overdueN = R.pay.filter(o => o.ctrl === "Просрочено").length;
+  D.overdueSum = S.payments.reduce((s, p, i) => s + (R.pay[i].ctrl === "Просрочено" ? num(p.amt) : 0), 0);
+  const win = (t) => S.payments.reduce((s, p) => { const a = dn(p.date); return s + (p.type === t && p.status === "План" && a !== null && a >= rep && a <= rep + hz ? num(p.amt) : 0); }, 0);
+  D.toPay = win("Расход"); D.toGet = win("Поступление");
+  const bc = s => R.buy.filter(o => o.ctrl === s).length, rc = s => R.rep.filter(o => o.ctrl === s).length;
+  D.supply = bc("Срыв монтажа") + bc("Задержка") + bc("Отказ в замене") + rc("Ответ просрочен") + rc("Риск для монтажа");
+  D.onApproval = rc("Ждём ответа") + rc("Подготовка") + rc("Срочно направить"); D.tight = bc("Впритык");
+  const wc = s => R.work.filter(o => o.st === s).length + R.stage.filter(o => o.nw === 0 && o.st === s).length;
+  D.slips = wc("Просрочено") + wc("Старт сорван"); D.startFail = wc("Старт сорван"); D.lagging = wc("Отставание");
+  D.risk = A.filter(o => o.st === "Риск").length; D.attn = A.filter(o => o.st === "Внимание").length; D.ok = A.filter(o => o.st === "В норме").length;
+  // ДДС по месяцам
+  const rd = new Date(rep * DAY);
+  D.months = [];
+  for (let i = 0; i < 12; i++) {
+    const a = Math.round(Date.UTC(rd.getUTCFullYear(), rd.getUTCMonth() - 5 + i, 1) / DAY), b = Math.round(Date.UTC(rd.getUTCFullYear(), rd.getUTCMonth() - 4 + i, 1) / DAY);
+    let inc = 0, out = 0;
+    S.payments.forEach((p, k) => { const d = R.pay[k].dds; if (d !== null && d !== undefined && d >= a && d < b && d >= startD) { if (p.type === "Поступление") inc += num(p.amt); else if (p.type === "Расход") out += num(p.amt); } });
+    D.months.push({ a, inc, out });
+  }
+  let bal = num(st.startCash);
+  S.payments.forEach((p, k) => { const d = R.pay[k].dds; if (d !== null && d !== undefined && d < D.months[0].a && d >= startD) bal += (p.type === "Поступление" ? 1 : p.type === "Расход" ? -1 : 0) * num(p.amt); });
+  D.months.forEach(m => { bal += m.inc - m.out; m.bal = bal; });
+  return R;
+}
+
+// ---------- Расчёт КП
+function computeKP(K, S) {
+  const st = S.settings, o = {};
+  const s = dn(K.s), e = dn(K.e);
+  o.dur = (s === null || e === null) ? null : Math.round((e - s + 1) / 30.4 * 10) / 10;
+  o.price = blank(K.price) ? num(K.nmck) : num(K.price);
+  o.red = num(K.nmck) === 0 ? null : 1 - o.price / num(K.nmck);
+  o.flag = (K.vat === "Без НДС" || num(K.vat) === 0) ? 1 : 0;
+  o.priceNo = o.flag ? o.price : o.price / (1 + num(K.vat));
+  o.fot = K.fot.map(f => { if (blank(f.role)) return {}; const g = num(f.n) * (blank(f.load) ? 1 : num(f.load)) * num(f.months) * num(f.rate); const h = g * num(K.ins); return { g, h, t: g + h }; });
+  o.fotT = { g: 0, h: 0, t: 0 }; o.fot.forEach(x => { o.fotT.g += num(x.g); o.fotT.h += num(x.h); o.fotT.t += num(x.t); });
+  o.blocks = K.blocks.map(b => {
+    const rows = b.rows.map(r => { if (blank(r.name) || blank(r.price)) return {}; const g = (blank(r.qty) ? 1 : num(r.qty)) * num(r.price); const vr = vatRate(r.vat); return { g, h: vr ? g / (1 + vr) : g }; });
+    const t = { g: 0, h: 0 }; rows.forEach(x => { t.g += num(x.g); t.h += num(x.h); });
+    return { rows, t, basis: o.flag ? t.g : t.h };
+  });
+  const [eq, spec, sub, oth] = o.blocks.map(b => b.basis);
+  o.res = { fot: o.fotT.t, eq, spec, sub, oth };
+  o.res.reserve = (o.fotT.t + eq + spec + sub + oth) * num(K.reserve);
+  o.res.cost = o.fotT.t + eq + spec + sub + oth + o.res.reserve;
+  o.res.gross = o.priceNo - o.res.cost;
+  o.res.rent = o.priceNo === 0 ? 0 : o.res.gross / o.priceNo;
+  o.res.tax = Math.max(0, o.res.gross) * num(st.tax);
+  o.res.net = o.res.gross - o.res.tax;
+  o.res.netRent = o.priceNo === 0 ? 0 : o.res.net / o.priceNo;
+  o.res.minPrice = o.res.cost === 0 ? 0 : o.res.cost / (1 - num(st.target)) * (o.flag ? 1 : 1 + num(K.vat));
+  o.res.allowed = num(K.nmck) === 0 ? null : 1 - o.res.minPrice / num(K.nmck);
+  o.res.decision = o.res.cost === 0 ? "" : o.res.rent >= num(st.target) ? "Брать" : o.res.rent >= num(st.crit) ? "Пограничный" : "Не выгодно";
+  o.transfer = S.lists.cost.map(art => {
+    let v = 0;
+    K.fot.forEach((f, i) => { if (f.art === art) v += num(o.fot[i].t); });
+    K.blocks.forEach((b, bi) => b.rows.forEach((r, ri) => { if (r.art === art) v += num(o.flag ? o.blocks[bi].rows[ri].g : o.blocks[bi].rows[ri].h); }));
+    if (art === "Прочие расходы") v += o.res.reserve;
+    return { art, v };
+  });
+  o.transferSum = o.transfer.reduce((s, x) => s + x.v, 0);
+  return o;
+}
+if (typeof module !== "undefined") module.exports = { compute, computeKP, dn, ds, wd2 };
+
+</script>
+<script>
+const TEMPLATE = {"settings": {"company": "", "repDate": "", "startCash": 0, "startDate": "", "target": 0.2, "crit": 0.1, "tax": 0.25, "horizon": 14, "lagTol": 0.1, "ganttStart": ""}, "lists": {"systems": ["СКС", "ЛВС", "СКУД", "СОТ", "СОПС", "СОУЭ", "ОС", "АПС", "ГГС", "Охранное освещение", "Домофония", "АСКУЭ", "Диспетчеризация", "Электрика"], "cost": ["Оборудование", "Материалы", "СМР", "ПНР", "Проектирование", "Субподряд", "Логистика", "Спецтехника", "Командировочные", "ФОТ", "Прочие расходы"], "stages": ["Проектирование", "Закупки", "Монтаж", "ПНР", "Сдача", "Завершён", "Приостановлен"], "exec": ["Бригада №1", "Бригада №2", "Бригада №3", "Инженер ПНР", "Субподрядчик", "Проектировщик", "Прораб"], "contr": ["ООО «СетевыеРешения»", "ООО «КабельПлюс»", "ООО «Безопасность»", "ООО «ЭнергоМир»", "ООО «ТехПром»", "ООО «СКУД-Сервис»", "ООО «Монтаж-Профи»", "ИП Морозов В.Е.", "ООО «ТрансЛогистик»", "ООО «Альфа Девелопмент»", "ООО «СтройГрад»", "АО «ТехноИнвест»", "ООО «СпортСтрой»", "МБУ «Управление образования»", "ООО «Горизонт»", "ООО «ВостокЛогистик»", "ГБУЗ «ГП №3»", "Арендодатель офиса", "Сотрудники (ФОТ АУП)"], "units": ["шт", "м", "компл.", "м.п.", "т", "кг", "уп.", "точка", "система", "услуга"], "pms": ["Иванов А.С.", "Петров К.В.", "Сидоров И.П.", "Кузнецова Е.А."], "reasons": ["Снято с производства", "Срок поставки", "Цена", "Нет в наличии", "Улучшенные характеристики", "По требованию заказчика", "Другое"], "delays": ["Поставка оборудования", "Не вышел подрядчик", "Нехватка людей", "Нет фронта работ", "Согласование замены", "Задержка заказчика", "Нет допуска / пропусков", "Погода", "Другое"]}, "projects": [], "budget": [], "payments": [], "purchases": [], "repl": [], "stages": [], "works": [], "kp": {"obj": "", "cust": "", "link": "", "s": "", "e": "", "nmck": "", "vat": 0.22, "price": "", "ins": 0.3, "reserve": 0.03, "fot": [], "blocks": [{"key": "eq", "title": "2. ОБОРУДОВАНИЕ И МАТЕРИАЛЫ (включая доставку)", "def_vat": 0.22, "def_art": "Оборудование", "rows": []}, {"key": "spec", "title": "3. АРЕНДА СПЕЦТЕХНИКИ, ОБОРУДОВАНИЯ, ПРИСПОСОБЛЕНИЙ", "def_vat": "Без НДС", "def_art": "Спецтехника", "rows": []}, {"key": "sub", "title": "4. СТОРОННИЙ СУБПОДРЯД", "def_vat": 0.22, "def_art": "Субподряд", "rows": []}, {"key": "oth", "title": "5. ПРОЧИЕ ЗАТРАТЫ НА РЕАЛИЗАЦИЮ ПРОЕКТА", "def_vat": "Без НДС", "def_art": "Прочие расходы", "rows": []}]}};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fdate = n => { if(n===null||n===undefined||n==="") return "—"; const s = typeof n==="number" ? ds(n) : String(n); const [y,m,d] = s.split("-"); return `${d}.${m}.${y}`; };
+const pct = v => Math.round((v||0)*100) + "%";
+const MON = ["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"];
+const CLS = {"Готово":"g", "Сдано с опозданием":"w", "Отставание":"w", "Просрочено":"b", "Старт сорван":"b", "В работе":"i", "Не начато":"n"};
+const NAME = {"Старт сорван":"Старт задерживается"};
+const pill = s => s ? `<span class="pill p-${CLS[s]||"n"}">${esc(NAME[s]||s)}</span>` : "";
+
+function show(d){
+  const S = JSON.parse(JSON.stringify(TEMPLATE));
+  Object.assign(S.settings, d.settings || {}); S.projects = [d.project]; S.stages = d.stages || []; S.works = d.works || [];
+  const R = compute(S), p = d.project;
+  document.title = "Ход работ: " + (p.name || p.code);
+  document.getElementById("h1").textContent = p.name || p.code;
+  const m = [];
+  if(p.cust) m.push(["Заказчик", p.cust]);
+  m.push(["Подрядчик", d.company]);
+  if(p.sys) m.push(["Система", p.sys]);
+  if(p.s || p.e) m.push(["Срок по договору", (p.s ? fdate(p.s) : "…") + " – " + (p.e ? fdate(p.e) : "…")]);
+  m.push(["Данные на", fdate(R.repN)]);
+  document.getElementById("meta").innerHTML = m.map(x => `<span><small>${x[0]}</small><b>${esc(x[1])}</b></span>`).join("");
+  document.getElementById("upd").textContent = "Данные на " + fdate(R.repN) + " — их вносит подрядчик, страница обновляется сама.";
+
+  const rows = S.stages.map((s,i) => ({s, r:R.stage[i]})).filter(x => x.s.id && x.s.stage)
+    .sort((a,b) => (dn(a.s.ps) ?? 1e9) - (dn(b.s.ps) ?? 1e9));
+  const view = document.getElementById("view");
+  if(!rows.length){ view.innerHTML = `<div class="empty">Подрядчик ещё не внёс этапы работ по этому объекту. Загляните позже.</div>`; return; }
+
+  let wsum = 0, psum = 0; rows.forEach(x => { const a = dn(x.s.ps), b = dn(x.s.pf), w = (a!==null && b!==null && b>=a) ? b-a+1 : 1; wsum += w; psum += w*Math.max(0,Math.min(1,x.r.prog||0)); });
+  const total = wsum ? psum/wsum : 0, done = rows.filter(x => (x.r.prog||0) >= 1).length;
+  const att = rows.filter(x => ["Отставание","Просрочено","Старт сорван"].includes(x.r.st)).length;
+  const pf = Math.max(...rows.map(x => dn(x.s.pf) ?? -1)), fc = Math.max(...rows.map(x => x.r.fc ?? -1)), late = pf>0 && fc>pf ? fc-pf : 0;
+  let h = `<div class="tiles">
+    <div class="tile"><small>Общая готовность</small><b>${pct(total)}</b><div class="pb"><i style="width:${total*100}%"></i></div></div>
+    <div class="tile"><small>Этапов завершено</small><b>${done} из ${rows.length}</b><span>${rows.filter(x => x.r.st==="В работе" || x.r.st==="Отставание").length} в работе</span></div>
+    <div class="tile"><small>Требуют внимания</small><b class="${att ? "warn" : ""}">${att}</b><span>${att ? "этапы с отставанием от плана" : "все этапы идут по плану"}</span></div>
+    <div class="tile"><small>Прогноз завершения</small><b class="${late ? "badc" : ""}">${fc>0 ? fdate(fc) : "—"}</b><span>${pf>0 ? "по плану " + fdate(pf) + (late ? `, позже на ${late} дн.` : "") : ""}</span></div>
+  </div>`;
+
+  h += `<h2>Этапы работ</h2><div class="card tablecard"><table><thead><tr><th>Этап</th><th class="d">План: старт – финиш</th><th class="d">Факт: старт</th><th class="d">Факт: финиш</th><th style="width:150px">Готовность</th><th class="d">Прогноз финиша</th><th class="d">Статус</th></tr></thead><tbody>`;
+  rows.forEach(({s, r}) => { const lt = r.fc!==null && dn(s.pf)!==null && r.fc > dn(s.pf);
+    h += `<tr><td class="nm"><b>${esc(s.stage)}</b>${r.nw ? `<small>работ в графике: ${r.nw}</small>` : ""}</td><td class="d">${fdate(s.ps)} – ${fdate(s.pf)}</td><td class="d">${fdate(r.fs)}</td><td class="d">${fdate(r.ff)}</td>
+      <td><span class="mbar">${pct(r.prog)}<u><s style="width:${Math.max(0,Math.min(1,r.prog||0))*100}%"></s></u></span></td><td class="d${lt ? " late" : ""}">${fdate(r.fc)}</td><td class="d">${pill(r.st)}</td></tr>`; });
+  h += `</tbody></table></div><div class="cards">`;
+  rows.forEach(({s, r}) => { const lt = r.fc!==null && dn(s.pf)!==null && r.fc > dn(s.pf);
+    h += `<div class="st"><header><b>${esc(s.stage)}</b>${pill(r.st)}</header><span class="mbar">${pct(r.prog)}<u><s style="width:${Math.max(0,Math.min(1,r.prog||0))*100}%"></s></u></span>
+      <dl><div><dt>План</dt><dd>${fdate(s.ps)} – ${fdate(s.pf)}</dd></div><div><dt>Прогноз финиша</dt><dd${lt ? ' style="color:var(--badInk);font-weight:600"' : ""}>${fdate(r.fc)}</dd></div><div><dt>Факт: старт</dt><dd>${fdate(r.fs)}</dd></div><div><dt>Факт: финиш</dt><dd>${fdate(r.ff)}</dd></div></dl></div>`; });
+  h += `</div>`;
+
+  // Гант: своя шкала по срокам объекта
+  const starts = rows.flatMap(x => [dn(x.s.ps), x.r.fs]).filter(v => v!==null && v!==undefined), ends = rows.flatMap(x => [dn(x.s.pf), x.r.fc, x.r.ff]).filter(v => v!==null && v!==undefined && v>0);
+  if(starts.length && ends.length){
+    let g0 = Math.min(...starts); g0 = g0 - wd2(g0) + 1 - 7;
+    const W = Math.max(8, Math.min(78, Math.ceil((Math.max(...ends) - g0 + 1) / 7) + 1)), span = W*7, x = d => (d - g0) / span * 100, step = W > 44 ? 2 : 1;
+    h += `<h2>График</h2><div class="gantt" style="--w:${W}"><div class="g-in" style="min-width:${Math.max(640, 220 + W*20)}px"><div class="g-row g-head"><div class="g-lab">Неделя с понедельника</div><div class="g-tr">`;
+    let pm = -1;
+    for(let k=0;k<W;k++){ const d = g0 + k*7, dt = new Date(d*86400000), mo = dt.getUTCMonth(), now = R.repN>=d && R.repN<d+7;
+      if(mo!==pm){ h += `<span class="mo" style="left:${x(d)}%">${MON[mo]}</span>`; pm = mo; }
+      if(k%step===0 || now) h += `<span class="wk${now?" now":""}" style="left:${x(d)}%">${String(dt.getUTCDate()).padStart(2,"0")}</span>`; }
+    h += `</div></div>`;
+    const inScale = R.repN >= g0 && R.repN < g0 + span, nowL = x(R.repN - ((R.repN - g0) % 7));
+    rows.forEach(({s, r}) => { const a0 = dn(s.ps), b0 = dn(s.pf);
+      h += `<div class="g-row"><div class="g-lab" title="${esc(s.stage)}">${esc(s.stage)}</div><div class="g-tr">${inScale ? `<span class="g-now" style="left:${nowL}%;width:${100/W}%"></span>` : ""}`;
+      if(a0!==null && b0!==null){ const a = Math.max(0, x(a0)), b = Math.min(100, x(b0+1));
+        if(b > a){ const cls = ["Просрочено","Старт сорван"].includes(r.st) ? "bad" : r.st==="Отставание" ? "lag" : "", dn1 = Math.max(0, Math.min(1, r.prog||0));
+          h += `<span class="g-bar ${cls}" style="left:${a}%;width:${b-a}%" title="${esc(s.stage)}: ${fdate(a0)} – ${fdate(b0)}, ${pct(dn1)}"><s style="width:${dn1*100}%"></s></span>`;
+          if(r.fc!==null && r.fc > b0 && dn1 < 1){ const t = Math.min(100, x(r.fc+1)); if(t > b) h += `<span class="g-tail" style="left:${b}%;width:${t-b}%" title="Прогноз финиша: ${fdate(r.fc)}"></span>`; } } }
+      h += `</div></div>`; });
+    h += `</div></div><div class="legend"><span><i style="background:var(--barDone)"></i>выполнено</span><span><i style="background:var(--bar)"></i>осталось по плану</span><span><i style="background:var(--barLag)"></i>отставание</span><span><i style="background:var(--barBad)"></i>просрочено</span><span><i style="background:repeating-linear-gradient(90deg,var(--barBad) 0 4px,transparent 4px 7px)"></i>прогноз позже плана</span><span><i style="background:var(--todaySoft);border:1px solid var(--today)"></i>текущая неделя</span></div>`;
+  }
+  view.innerHTML = h;
+}
+const token = new URLSearchParams(location.search).get("t") || "";
+function fail(msg){ document.getElementById("h1").textContent = "Ссылка не открывается"; document.getElementById("meta").innerHTML = ""; document.getElementById("view").innerHTML = `<div class="empty">${esc(msg)}</div>`; }
+async function loadShare(first){
+  try{
+    const r = await fetch("/api/share?t=" + encodeURIComponent(token), {headers:{"X-PCP":"1"}}); const j = await r.json().catch(() => ({}));
+    if(!r.ok){ if(first || r.status===404) fail(j.error || "Не удалось загрузить данные. Попробуйте обновить страницу."); return; }
+    show(j);
+  }catch(e){ if(first) fail("Нет связи с сервером. Проверьте интернет и обновите страницу."); }
+}
+if(!token) fail("В ссылке не хватает кода. Попросите подрядчика прислать её ещё раз.");
+else { loadShare(true); setInterval(() => { if(!document.hidden) loadShare(false); }, 5*60*1000); }
+</script>
+</body>
+</html>
