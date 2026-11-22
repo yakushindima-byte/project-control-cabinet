@@ -221,6 +221,13 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .ddsleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 .ddsleg i.pl{background:linear-gradient(90deg,rgba(46,125,50,.5) 50%,var(--cGreen) 50%)}
 .t.dds th.gapc{background:var(--cRed)}
+.t.dds tr.tsep td{border-top:2px solid var(--accent)}
+.t.dds tr.hd td.n{color:var(--ink);font-size:12.5px;letter-spacing:0;text-transform:none}
+.t.dds td small.dd{display:block;font-size:10px;font-weight:500;line-height:1;margin-top:-3px}
+.t.dds td.gap:has(small.dd){line-height:1.15;padding-top:3px}
+.tiles.t3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tw.ddsw{max-height:none}
+@media (max-width:720px){.tiles.t3{grid-template-columns:1fr}}
 @media (max-width:720px){.ddsl{grid-template-columns:1fr}.ddsv{flex-direction:column}.ddsv-n{text-align:left;padding:10px 0 0;border-left:0;border-top:1px solid rgba(0,0,0,.08)}.ddsv-n small{justify-content:flex-start}}
 
 /* ---------- Гант */
@@ -1376,7 +1383,7 @@ function ddsStrip(){
   const X = ddsBase(), g = X.gaps[0];
   if(g) return `<section><button type="button" class="ddsstrip bad" data-go="dds"><b>Кассовый разрыв: денег не хватит ${fdate(g.s)}</b><span>нужно найти ${rub(-g.min)}${g.rec ? ` · в плюс — ${fdate(g.rec)}` : ""}</span><em>ДДС →</em></button></section>`;
   if(X.low) return `<section><button type="button" class="ddsstrip warn" data-go="dds"><b>Ниже неснижаемого остатка ${fdate(X.low.d)}</b><span>${rub(X.low.bal)} при пороге ${rub(X.reserve)}</span><em>ДДС →</em></button></section>`;
-  return `<section><button type="button" class="ddsstrip" data-go="dds"><b>Денег хватает до ${fdate(X.end - 1)}</b><span>самая низкая точка ${rub(X.minAll.bal)} — ${fdate(X.minAll.d)}${X.margin ? ` · разрыв, если заказчики заплатят на ${X.margin} дн. позже` : ""}</span><em>ДДС →</em></button></section>`;
+  return `<section><button type="button" class="ddsstrip" data-go="dds"><b>Денег хватает до ${fdate(X.end - 1)}</b><span>меньше всего денег будет ${fdate(X.minAll.d)}: ${rub(X.minAll.bal)}${X.margin ? ` · разрыв, если заказчики заплатят на ${X.margin} дн. позже` : ""}</span><em>ДДС →</em></button></section>`;
 }
 V.dds = () => {
   const o = ddsOpts(), X = DDSX = ddsCalc(o), P = X.P, rep = R.repN, unit = o.step === "m" ? "месяц" : "неделю";
@@ -1386,40 +1393,41 @@ V.dds = () => {
     + sel("ddsstep", "Шаг", [["w", "По неделям"], ["m", "По месяцам"]])
     + sel("ddsdelay", "Проверка", [["0", "Заказчики платят в срок"], ["7", "Что если заказчики заплатят на 7 дн. позже"], ["14", "Что если на 14 дн. позже"], ["30", "Что если на 30 дн. позже"]]) + `</div>`;
   if(!X.ev.length) return h + `<section class="card"><p class="note" style="margin:0">Пока нет платежей${pr ? " по этому выбору" : ""}. Внесите поступления и расходы на листе <a href="#payments">«Платежи»</a> — ДДС посчитается сам.</p></section>`;
-  // 4. Таблица: 5 итоговых строк, расшифровка — по кнопке
-  const det = ui.f.ddsdet === "1";
+  const g = X.gaps[0];
+  const tile = (lab, val, sub, color, alarm) => `<div class="tile" style="--tc:${color}"><small>${lab}</small><b class="${alarm ? "alarm" : ""}">${val}</b><span>${sub}</span></div>`;
+  h += `<section><div class="tiles t3">
+    ${tile(pr ? "Деньги по выбору сейчас" : "На счёте сейчас", rub(X.fact), pr ? `получено − оплачено на ${fdate(rep)}` : `на ${fdate(rep)}`, "var(--cPurple)", X.fact < 0)}
+    ${tile("Ближайший кассовый разрыв", g ? fdate(g.s) : "Нет", g ? `не хватит ${rub(-g.min)}${g.rec ? `, деньги придут ${fdate(g.rec)}` : ""}` : `до ${fdate(X.end - 1)}${X.margin ? ` · появится, если заказчики заплатят на ${X.margin} дн. позже` : ""}`, g ? "var(--cRed)" : "var(--cGreen)", !!g)}
+    ${tile(`До ${fdate(X.end - 1)}`, `+${money(X.toGet)} / −${money(X.toPay)}`, `ожидаем поступлений / предстоит выплат${X.overIn ? ` · просрочено поступлений: ${money(X.overIn)}` : ""}`, "var(--accent)", false)}
+  </div></section>`;
   const cls = v => v < 0 ? "gap" : v < X.reserve ? "low" : "";
   const tip = it => it.slice(0, 12).map(e => { const p = S.payments[e.i]; return `${fdate(e.d)} · ${p.contr || ""} · ${p.what || ""} · ${rub(e.amt)}${e.plan ? " (план)" : ""}`; }).join("\n") + (it.length > 12 ? `\n… ещё ${it.length - 12}` : "");
   const td = (v, c = "", t = "") => `<td class="n ${c}"${t ? ` title="${esc(t)}"` : ""}>${money(v)}</td>`;
   const line = (c, lab, cells) => `<tr class="${c}"><td class="stk lbl">${lab}</td>${cells}</tr>`;
-  let t = `<section><h2 class="sec-h">Движение денег <span class="rt"><button type="button" class="btn sm" data-ddsdet="1">${det ? "Скрыть расшифровку" : "Показать по статьям и объектам"}</button></span></h2><div class="tw"><table class="t dds" style="width:max(100%,${200 + P.length * 96}px)"><colgroup><col style="width:200px">${P.map(() => '<col style="width:96px">').join("")}</colgroup>
-    <thead><tr><th class="stk">${o.step === "m" ? "Месяц" : "Неделя"}</th>${P.map(p => `<th class="${p.min < 0 && p.kind !== "fact" ? "gapc" : p.kind === "now" ? "now" : ""}">${p.l}<small>${p.min < 0 && p.kind !== "fact" ? "разрыв" : p.kind === "fact" ? "факт" : p.kind === "now" ? "сейчас" : "план"}</small></th>`).join("")}</tr></thead><tbody>`;
-  t += line("", "Было на начало", P.map(p => td(p.open, cls(p.open))).join(""));
-  t += line("", "+ Поступления", P.map(p => td(p.inc, "pos")).join(""));
-  t += line("", "− Выплаты", P.map(p => td(p.out, "neg")).join(""));
-  t += line("bal", "Стало на конец", P.map(p => td(p.close, cls(p.close))).join(""));
-  t += line("bal last", "Самая низкая точка", P.map(p => td(p.min, cls(p.min), `${fdate(p.minD)}`)).join(""));
-  if(det){
-    t += line("hd", "Поступления по объектам", P.map(() => "<td></td>").join(""));
-    X.inc.forEach(r => t += line("ch", esc(r.name), r.v.map((v, k) => td(v, "", tip(r.it[k]))).join("")));
-    t += line("hd", "Выплаты по статьям", P.map(() => "<td></td>").join(""));
-    X.out.forEach(r => t += line("ch", esc(r.name), r.v.map((v, k) => td(v, "", tip(r.it[k]))).join("")));
-  }
-  t += `</tbody></table></div><p class="note">«Самая низкая точка» — минимум остатка по дням внутри ${o.step === "m" ? "месяца" : "недели"}: разрыв бывает и тогда, когда к концу периода деньги уже пришли. Данные — из листа <a href="#payments">«Платежи»</a>; неоплаченные платежи с прошедшим сроком стоят на отчётную дату.</p></section>`;
-  // 3. График: один столбец на период — самый низкий остаток
-  const chart = `<section class="card"><h2 class="sec-h">Сколько денег на счёте — самая низкая точка за ${unit}</h2><div class="chartbox"><canvas id="chDds" aria-label="Самый низкий остаток денег по периодам"></canvas></div>
-    <div class="ddsleg"><span><i style="background:var(--cGreen)"></i>хватает</span>${X.reserve ? `<span><i style="background:#F2B705"></i>ниже порога ${money(X.reserve)} ₽</span>` : ""}<span><i style="background:var(--cRed)"></i>разрыв — денег нет</span><span><i class="pl"></i>факт · план</span></div></section>`;
+  let t = `<section><h2 class="sec-h">Движение денежных средств${pr ? ` <span class="rt">${esc(prName)}</span>` : ""}</h2><div class="tw ddsw"><table class="t dds" style="width:max(100%,${230 + P.length * 98}px)"><colgroup><col style="width:230px">${P.map(() => '<col style="width:98px">').join("")}</colgroup>
+    <thead><tr><th class="stk">Статья</th>${P.map(p => `<th class="${p.min < 0 && p.kind !== "fact" ? "gapc" : p.kind === "now" ? "now" : ""}">${p.l}<small>${p.min < 0 && p.kind !== "fact" ? "разрыв" : p.kind === "fact" ? "факт" : p.kind === "now" ? "сейчас" : "план"}</small></th>`).join("")}</tr></thead><tbody>`;
+  t += line("bal", "Остаток на начало", P.map(p => td(p.open, cls(p.open))).join(""));
+  t += line("hd", "Поступления", P.map(p => td(p.inc)).join(""));
+  X.inc.forEach(r => t += line("ch", esc(r.name), r.v.map((v, k) => td(v, "", tip(r.it[k]))).join("")));
+  t += line("hd", "Выплаты", P.map(p => td(p.out)).join(""));
+  X.out.forEach(r => t += line("ch", esc(r.name), r.v.map((v, k) => td(v, "", tip(r.it[k]))).join("")));
+  t += line("bal tsep", "Чистый поток", P.map(p => td(p.inc - p.out, p.inc - p.out < 0 ? "neg" : "pos")).join(""));
+  t += line("bal", "Остаток на конец", P.map(p => td(p.close, cls(p.close))).join(""));
+  t += line("bal", "Кассовый разрыв", P.map(p => p.min < 0 ? `<td class="n gap">${money(p.min)}<small class="dd">${ddsD(p.minD)}</small></td>` : "<td class=\"n\">–</td>").join(""));
+  t += `</tbody></table></div><p class="note">Кассовый разрыв — в какой-то день периода денег на счёте не хватает на выплаты; показан самый большой минус и его дата. Он бывает, даже если к концу периода остаток снова в плюсе. Наведите на сумму — увидите платежи. Данные — из листа <a href="#payments">«Платежи»</a>.</p></section>`;
+  const chart = `<section class="card"><h2 class="sec-h">Остаток на счёте на конец ${o.step === "m" ? "месяца" : "недели"}</h2><div class="chartbox"><canvas id="chDds" aria-label="Остаток денег по периодам"></canvas></div>
+    <div class="ddsleg"><span><i style="background:var(--cGreen)"></i>денег хватает</span>${X.reserve ? `<span><i style="background:#F2B705"></i>ниже неснижаемого остатка ${money(X.reserve)} ₽</span>` : ""}<span><i style="background:var(--cRed)"></i>в периоде кассовый разрыв</span><span><i class="pl"></i>бледные — факт</span></div></section>`;
   return h + t + chart;
 };
 function drawDds(grid){
   const X = DDSX, el = document.getElementById("chDds"); if(!X || !el) return;
   const tickM = v => Math.abs(v) >= 1e6 ? String(+(v / 1e6).toFixed(1)).replace(".", ",") + " млн" : nf0.format(v);
-  const col = v => v < 0 ? css("--cRed") : v < X.reserve ? "#F2B705" : css("--cGreen");
+  const col = p => p.min < 0 ? css("--cRed") : p.min < X.reserve ? "#F2B705" : css("--cGreen");
   const P = X.P;
-  charts.push(new Chart(el, {type:"bar", data:{labels:P.map(p => p.l), datasets:[{label:"Самый низкий остаток", data:P.map(p => p.min),
-      backgroundColor:P.map(p => p.kind === "fact" ? col(p.min) + "80" : col(p.min)), borderRadius:3}]},
+  charts.push(new Chart(el, {type:"bar", data:{labels:P.map(p => p.l), datasets:[{label:"Остаток на конец", data:P.map(p => p.close),
+      backgroundColor:P.map(p => p.kind === "fact" ? col(p) + "80" : col(p)), borderRadius:3}]},
     options:{maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{
-      title:c => P[c[0].dataIndex].l, label:c => { const p = P[c.dataIndex]; return [`Самая низкая точка: ${rub(p.min)} (${fdate(p.minD)})`, `Поступления: ${rub(p.inc)}`, `Выплаты: ${rub(p.out)}`, `На конец: ${rub(p.close)}`]; }}}},
+      title:c => P[c[0].dataIndex].l, label:c => { const p = P[c.dataIndex]; return [`Остаток на конец: ${rub(p.close)}`, `Поступления: ${rub(p.inc)}`, `Выплаты: ${rub(p.out)}`].concat(p.min < 0 ? [`Кассовый разрыв: ${rub(p.min)} (${fdate(p.minD)})`] : []); }}}},
       scales:{x:{grid:{display:false}, ticks:{maxRotation:0, autoSkip:true}}, y:{grid:{color:c => c.tick.value === 0 ? css("--muted") : grid}, ticks:{callback:tickM}}}}}));
 }
 let charts = [];
