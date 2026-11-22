@@ -286,6 +286,7 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .lists{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
 .lists .card h3{margin:0 0 8px;font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
 .lists ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:5px}
+.lists .card.wide{grid-column:1/-1}
 .lists li{font-size:12px;background:var(--calc);border-radius:5px;padding:2px 7px}
 
 /* ---------- витрина Excel */
@@ -1182,10 +1183,10 @@ V.setup = () => {
     ${f("Налог на прибыль / УСН, %","tax","pct","Налог на прибыль с 2025 г. — 25%")}${f("Горизонт контроля платежей, дней","horizon","num","Платежи в горизонте — «Скоро срок»")}
     ${f("Допустимое отставание от графика, %","lagTol","pct","Больше — статус «Отставание»")}${f("Начало шкалы Ганта (пусто — авто)","ganttStart","date","Авто: за 4 недели до отчётной даты")}
   </div></section><section><h2 class="sec-h">Справочники — подставляются в выпадающие списки</h2><div class="lists">`;
-  [["Системы","systems"],["Статьи затрат","cost"],["Этапы проекта","stages"],["Исполнители","exec"],["Руководители","pms"],["Причины замены","reasons"],["Причины срыва сроков","delays"],["Ед. изм.","units"]].forEach(([t,k]) => {
-    h += `<div class="card"><h3>${t}</h3><ul>${S.lists[k].map(x=>`<li>${esc(x)}${RO?"":`<button type="button" data-ldel="${k}" data-v="${esc(x)}" title="Убрать из списка" aria-label="Убрать ${esc(x)}">×</button>`}</li>`).join("")}</ul>${RO?"":`<form data-ladd="${k}"><input aria-label="Новое значение: ${t}" placeholder="Добавить…" maxlength="150"><button class="btn sm" type="submit">+</button></form>`}</div>`;
+  [["Системы","systems"],["Статьи затрат","cost"],["Этапы проекта","stages"],["Исполнители","exec"],["Руководители","pms"],["Причины замены","reasons"],["Причины срыва сроков","delays"],["Ед. изм.","units"],["Контрагенты — заказчики, поставщики, подрядчики","contr"]].forEach(([t,k]) => {
+    h += `<div class="card${k==="contr"?" wide":""}"><h3>${t}</h3><ul>${S.lists[k].map(x=>`<li>${esc(x)}${RO?"":`<button type="button" data-ldel="${k}" data-v="${esc(x)}" title="Убрать из списка" aria-label="Убрать ${esc(x)}">×</button>`}</li>`).join("")}</ul>${RO?"":`<form data-ladd="${k}"><input aria-label="Новое значение: ${t}" placeholder="Добавить…" maxlength="150"><button class="btn sm" type="submit">+</button></form>`}</div>`;
   });
-  return h + `</div><p class="note">Добавляйте свои значения через поле «Добавить…» под списком. Новые контрагенты добавляются и сами: просто впишите название в столбце «Контрагент» в Платежах или «Поставщик» в Закупках.${LOGIN_URL ? "" : " В Excel-версии справочники дополняются на листе «Настройки»."}</p></section>`;
+  return h + `</div><p class="note">Добавляйте свои значения через поле «Добавить…» под списком. Новые контрагенты добавляются и сами: просто впишите название в столбце «Контрагент» в Платежах или «Поставщик» в Закупках. Если убрать контрагента из списка, в уже внесённых платежах и закупках он останется — пропадёт только из подсказок.${LOGIN_URL ? "" : " В Excel-версии справочники дополняются на листе «Настройки»."}</p></section>`;
 };
 V.team = () => {
   const until = ME ? new Date(ME.accessUntil) : null, own = ME && ME.role==="owner";
