@@ -207,7 +207,21 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .ddsstrip.bad{border-left-color:var(--cRed);background:var(--bad);color:var(--badInk)}
 .ddsstrip.warn{border-left-color:#F2B705;background:var(--warn);color:var(--warnInk)}
 .ddsstrip em{font-style:normal;margin-left:auto;font-weight:700;white-space:nowrap}
-@media (max-width:720px){.ddsl{grid-template-columns:1fr}}
+.ddsv{display:flex;gap:16px;align-items:stretch;border-radius:10px;padding:16px 18px;border:1px solid var(--line);border-left:6px solid var(--cGreen);background:var(--surface)}
+.ddsv.bad{border-left-color:var(--cRed);background:var(--bad)} .ddsv.warn{border-left-color:#F2B705;background:var(--warn)}
+.ddsv small{display:flex;gap:8px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.ddsv .rt{text-transform:none;letter-spacing:0;font-weight:500}
+.ddsv-m{flex:1;min-width:0} .ddsv-m b{display:block;font-size:24px;font-weight:700;margin:4px 0 6px;color:var(--ink)}
+.ddsv.bad .ddsv-m b,.ddsv.bad .ddsv-n b{color:var(--badInk)}
+.ddsv-m span{font-size:14px;line-height:1.45;color:var(--ink)}
+.ddsv-n{text-align:right;padding-left:18px;border-left:1px solid rgba(0,0,0,.08);min-width:190px}
+.ddsv-n b{display:block;font-size:24px;font-weight:700;margin:4px 0 2px;white-space:nowrap;color:var(--ink)} .ddsv-n small{justify-content:flex-end}
+.ddsv-n span{font-size:12px;color:var(--muted)}
+.ddsleg{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+.ddsleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.ddsleg i.pl{background:linear-gradient(90deg,rgba(46,125,50,.5) 50%,var(--cGreen) 50%)}
+.t.dds th.gapc{background:var(--cRed)}
+@media (max-width:720px){.ddsl{grid-template-columns:1fr}.ddsv{flex-direction:column}.ddsv-n{text-align:left;padding:10px 0 0;border-left:0;border-top:1px solid rgba(0,0,0,.08)}.ddsv-n small{justify-content:flex-start}}
 
 /* ---------- Гант */
 .gantt{overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
@@ -1278,7 +1292,7 @@ V.buy = () => {
 /* ---------- ДДС: движение денег и кассовые разрывы (данные — лист «Платежи») */
 const ddsD = n => { const s = ds(n); return s.slice(8,10) + "." + s.slice(5,7); };
 let DDSX = null;            // последний расчёт листа ДДС — для графика
-function ddsOpts(){ return { step: ui.f.ddsstep || "w", delay: +(ui.f.ddsdelay || 0), noOver: ui.f.ddsover === "no", proj: ui.proj.dds || "", group: ui.f.ddsgroup || "art" }; }
+function ddsOpts(){ return { step: ui.f.ddsstep || "w", delay: +(ui.f.ddsdelay || 0), noOver: false, proj: ui.proj.dds || "", group: "art" }; }
 function ddsEvents(o){
   const rep = R.repN, startD = R.startD, ev = [];
   S.payments.forEach((p, i) => {
@@ -1360,81 +1374,78 @@ function ddsBase(){ return R._ddsb || (R._ddsb = ddsCalc({step:"w", delay:0, noO
 function ddsStrip(){
   if(!S.payments.length) return "";
   const X = ddsBase(), g = X.gaps[0];
-  if(g) return `<section><button type="button" class="ddsstrip bad" data-go="dds"><b>Кассовый разрыв ${fdate(g.s)}</b><span>остаток уйдёт до ${rub(g.min)}${g.rec ? `, в плюс — ${fdate(g.rec)}` : ""}${X.gaps.length > 1 ? ` · разрывов в ближайшие 3 месяца: ${X.gaps.length}` : ""}</span><em>ДДС →</em></button></section>`;
+  if(g) return `<section><button type="button" class="ddsstrip bad" data-go="dds"><b>Кассовый разрыв: денег не хватит ${fdate(g.s)}</b><span>нужно найти ${rub(-g.min)}${g.rec ? ` · в плюс — ${fdate(g.rec)}` : ""}</span><em>ДДС →</em></button></section>`;
   if(X.low) return `<section><button type="button" class="ddsstrip warn" data-go="dds"><b>Ниже неснижаемого остатка ${fdate(X.low.d)}</b><span>${rub(X.low.bal)} при пороге ${rub(X.reserve)}</span><em>ДДС →</em></button></section>`;
-  return `<section><button type="button" class="ddsstrip" data-go="dds"><b>Кассовых разрывов нет до ${fdate(X.end - 1)}</b><span>минимальный остаток ${rub(X.minAll.bal)} — ${fdate(X.minAll.d)}${X.margin === null ? "" : X.margin ? ` · разрыв, если заказчики заплатят на ${X.margin} дн. позже` : ""}</span><em>ДДС →</em></button></section>`;
+  return `<section><button type="button" class="ddsstrip" data-go="dds"><b>Денег хватает до ${fdate(X.end - 1)}</b><span>самая низкая точка ${rub(X.minAll.bal)} — ${fdate(X.minAll.d)}${X.margin ? ` · разрыв, если заказчики заплатят на ${X.margin} дн. позже` : ""}</span><em>ДДС →</em></button></section>`;
 }
 V.dds = () => {
-  const o = ddsOpts(), X = DDSX = ddsCalc(o), P = X.P, rep = R.repN;
+  const o = ddsOpts(), X = DDSX = ddsCalc(o), P = X.P, rep = R.repN, unit = o.step === "m" ? "месяц" : "неделю";
   const sel = (id, label, opts) => { const v = ui.f[id] || opts[0][0]; return `<select data-ui="f" data-id="${id}" aria-label="${label}">${opts.map(([k, t]) => `<option value="${k}"${k === v ? " selected" : ""}>${t}</option>`).join("")}</select>`; };
-  const tile = (lab, val, sub, color, alarm) => `<div class="tile" style="--tc:${color}"><small>${lab}</small><b class="${alarm ? "alarm" : ""}">${val}</b><span>${sub}</span></div>`;
   const pr = o.proj, prName = pr === "_gen" ? "общие расходы компании" : pr ? (S.projects.find(p => p.code === pr) || {}).name || pr : "";
   let h = `<div class="tools"><select data-ui="proj" data-id="dds" aria-label="Объект"><option value="">Вся компания</option><option value="_gen"${pr === "_gen" ? " selected" : ""}>Только общие расходы</option>${S.projects.filter(p => p.code).map(p => `<option value="${esc(p.code)}"${p.code === pr ? " selected" : ""}>${esc(p.code)} · ${esc(p.name)}</option>`).join("")}</select>`
     + sel("ddsstep", "Шаг", [["w", "По неделям"], ["m", "По месяцам"]])
-    + sel("ddsgroup", "Разрез", [["art", "Выплаты по статьям"], ["proj", "Выплаты по объектам"], ["contr", "По контрагентам"]])
-    + sel("ddsdelay", "Сценарий", [["0", "Заказчики платят в срок"], ["7", "Заказчики платят на 7 дн. позже"], ["14", "Заказчики платят на 14 дн. позже"], ["30", "Заказчики платят на 30 дн. позже"]])
-    + sel("ddsover", "Просроченные поступления", [["yes", "Просроченные поступления — сейчас"], ["no", "Просроченные поступления не придут"]]) + `</div>`;
-  if(!X.ev.length) return h + `<section class="card"><p class="note" style="margin:0">Пока нет платежей${pr ? " по этому выбору" : ""}. Внесите поступления и расходы на листе <a href="#payments">«Платежи»</a> — ДДС и кассовые разрывы посчитаются сами.</p></section>`;
-  const g = X.gaps[0];
-  h += `<section><div class="tiles">
-    ${tile(pr ? "Деньги по выбору" : "Деньги на счёте", rub(X.fact), pr ? `получено − оплачено на ${fdate(rep)}` : `на ${fdate(rep)}, по оплатам`, "var(--cPurple)", X.fact < 0)}
-    ${tile("Минимальный остаток", rub(X.minAll.bal), fdate(X.minAll.d), X.minAll.bal < 0 ? "var(--cRed)" : X.minAll.bal < X.reserve ? "#F2B705" : "var(--accent)", X.minAll.bal < 0)}
-    ${tile("Кассовый разрыв", g ? fdate(g.s) : "Нет", g ? `до ${rub(g.min)}, ${g.rec ? (g.rec - g.s) + " дн." : "без выхода в плюс"}` : `до ${fdate(X.end - 1)}`, g ? "var(--cRed)" : "var(--cGreen)", !!g)}
-    ${tile("Запас по оплатам заказчиков", g ? "—" : X.margin === null ? "> 90 дн." : X.margin + " дн.", g ? "разрыв уже есть" : "на сколько могут опоздать поступления без разрыва", g ? "var(--cRed)" : X.margin !== null && X.margin < 14 ? "#F2B705" : "var(--cGreen)")}
-    ${tile("Ожидаем поступлений", rub(X.toGet), X.overIn ? `из них просрочено: ${money(X.overIn)}` : `до ${fdate(X.end - 1)}`, "var(--cGreen)", false)}
-    ${tile("Предстоит выплат", rub(X.toPay), X.overOut ? `из них просрочено: ${money(X.overOut)}` : `до ${fdate(X.end - 1)}`, "var(--cOrange)", false)}
-  </div></section>`;
-  // что делать с разрывом
-  const li = e => { const p = S.payments[e.i]; return `<li><span>${fdate(e.d)} · ${esc(p.contr || p.what || "")}${p.proj ? ` · ${esc(p.proj)}` : ""}${e.over ? ` · <b class="neg">просрочено</b>` : ""}</span><b>${money(e.amt)}</b></li>`; };
+    + sel("ddsdelay", "Проверка", [["0", "Заказчики платят в срок"], ["7", "Что если заказчики заплатят на 7 дн. позже"], ["14", "Что если на 14 дн. позже"], ["30", "Что если на 30 дн. позже"]]) + `</div>`;
+  if(!X.ev.length) return h + `<section class="card"><p class="note" style="margin:0">Пока нет платежей${pr ? " по этому выбору" : ""}. Внесите поступления и расходы на листе <a href="#payments">«Платежи»</a> — ДДС посчитается сам.</p></section>`;
+  const g = X.gaps[0], who = pr ? `<span class="rt">${esc(prName)}</span>` : "";
+  // 1. Главный ответ: хватит денег или нет
   if(g){
-    const outs = X.ev.filter(e => !e.inc && e.plan && e.d >= rep && e.d <= g.minD).sort((a, b) => b.amt - a.amt).slice(0, 6);
-    const ins = X.ev.filter(e => e.inc && e.plan && e.d > g.s && e.d < X.end).sort((a, b) => a.d - b.d).slice(0, 6);
-    h += `<section class="card ddsgap"><h2 class="sec-h red">Кассовый разрыв ${fdate(g.s)}${pr ? " · " + esc(prName) : ""}</h2>
-      <p>${pr ? "По этому выбору выплаты обгоняют поступления: с" : "С"} ${fdate(g.s)} остаток уходит в минус и опускается до <b class="neg">${rub(g.min)}</b> (${fdate(g.minD)}). ${g.rec ? `В плюс выходит ${fdate(g.rec)} — через ${g.rec - g.s} дн.` : `До ${fdate(X.end - 1)} в плюс не выходит.`}${X.gaps.length > 1 ? ` Разрывов в горизонте: ${X.gaps.length}.` : ""}</p>
-      <p>${pr ? "Этот минус покрывается деньгами компании. " : ""}Чтобы закрыть разрыв, нужно <b>${rub(-g.min)}</b>: перенести часть выплат на даты после ${fdate(g.rec || X.end - 1)}, получить поступления до ${fdate(g.s)} или заранее договориться об овердрафте.</p>
-      <div class="ddsl"><div><h3>Крупные выплаты до дна разрыва</h3><ul>${outs.map(li).join("") || "<li><span>Нет плановых выплат</span></li>"}</ul></div>
-      <div><h3>Поступления, которые закрывают разрыв — ускорить</h3><ul>${ins.map(li).join("") || "<li><span>В горизонте поступлений нет</span></li>"}</ul></div></div></section>`;
+    h += `<section class="ddsv bad"><div class="ddsv-m"><small>Кассовый разрыв ${who}</small><b>Денег не хватит ${fdate(g.s)}</b>
+      <span>Остаток уйдёт в минус до <strong>${rub(g.min)}</strong>${g.rec ? ` и вернётся в плюс ${fdate(g.rec)} — через ${g.rec - g.s} дн.` : `, до ${fdate(X.end - 1)} в плюс не вернётся.`}${X.gaps.length > 1 ? ` Это первый из ${X.gaps.length} разрывов.` : ""}</span></div>
+      <div class="ddsv-n"><small>Нужно найти</small><b>${rub(-g.min)}</b><span>до ${fdate(g.s)}</span></div></section>`;
   } else if(X.low){
-    h += `<section class="card ddsgap warn"><h2 class="sec-h">Ниже неснижаемого остатка ${fdate(X.low.d)}</h2><p>Разрыва нет, но ${fdate(X.low.d)} на счёте останется ${rub(X.low.bal)} при пороге ${rub(X.reserve)}. Минимум — ${rub(X.minAll.bal)} (${fdate(X.minAll.d)}). Порог меняется в «Настройках».</p></section>`;
+    h += `<section class="ddsv warn"><div class="ddsv-m"><small>Разрыва нет, но денег мало ${who}</small><b>${fdate(X.low.d)} остаток упадёт ниже порога</b>
+      <span>Останется ${rub(X.low.bal)} при неснижаемом остатке ${rub(X.reserve)}. Самая низкая точка — ${rub(X.minAll.bal)}, ${fdate(X.minAll.d)}.</span></div>
+      <div class="ddsv-n"><small>Самый низкий остаток</small><b>${rub(X.minAll.bal)}</b><span>${fdate(X.minAll.d)}</span></div></section>`;
   } else {
-    h += `<section class="card ddsgap ok"><h2 class="sec-h">Кассовых разрывов нет до ${fdate(X.end - 1)}</h2><p>Минимальный остаток — ${rub(X.minAll.bal)} (${fdate(X.minAll.d)}). ${X.margin === null ? "Даже если заказчики заплатят на 90 дней позже, денег хватит." : `Разрыв появится, если заказчики заплатят на ${X.margin} дн. позже — проверьте сценарием выше.`}</p></section>`;
+    h += `<section class="ddsv ok"><div class="ddsv-m"><small>Кассовых разрывов нет ${who}</small><b>Денег хватает до ${fdate(X.end - 1)}</b>
+      <span>${X.margin === null ? "Даже если заказчики заплатят на 90 дней позже, денег хватит." : `Разрыв появится, если заказчики заплатят на <strong>${X.margin} дн.</strong> позже срока.`}</span></div>
+      <div class="ddsv-n"><small>Самый низкий остаток</small><b>${rub(X.minAll.bal)}</b><span>${fdate(X.minAll.d)}</span></div></section>`;
   }
-  h += `<section class="card"><h2 class="sec-h">Поступления, выплаты и остаток</h2><div class="chartbox"><canvas id="chDds" aria-label="Поступления, выплаты и остаток по периодам"></canvas></div></section>`;
-  // таблица ДДС
-  const balCls = v => v < 0 ? "gap" : v < X.reserve ? "low" : "";
+  // 2. Что делать — только если есть разрыв
+  if(g){
+    const li = e => { const p = S.payments[e.i]; return `<li><span>${fdate(e.d)} · ${esc(p.contr || p.what || "")}${p.proj ? ` · ${esc(p.proj)}` : ""}${e.over ? ` · <b class="neg">просрочено</b>` : ""}</span><b>${money(e.amt)}</b></li>`; };
+    const outs = X.ev.filter(e => !e.inc && e.plan && e.d >= rep && e.d <= g.minD).sort((a, b) => b.amt - a.amt).slice(0, 5);
+    const ins = X.ev.filter(e => e.inc && e.plan && e.d > g.s && e.d < X.end).sort((a, b) => a.d - b.d).slice(0, 5);
+    h += `<section class="card"><h2 class="sec-h">Как закрыть разрыв</h2><div class="ddsl">
+      <div><h3>Перенести выплаты на после ${fdate(g.rec || X.end - 1)}</h3><ul>${outs.map(li).join("") || "<li><span>Нет плановых выплат</span></li>"}</ul></div>
+      <div><h3>Ускорить поступления до ${fdate(g.s)}</h3><ul>${ins.map(li).join("") || "<li><span>Поступлений не ожидается</span></li>"}</ul></div></div>
+      <p class="note">Или заранее договоритесь с банком об овердрафте на ${rub(-g.min)}.</p></section>`;
+  }
+  // 3. График: один столбец на период — самый низкий остаток
+  h += `<section class="card"><h2 class="sec-h">Сколько денег на счёте — самая низкая точка за ${unit}</h2><div class="chartbox"><canvas id="chDds" aria-label="Самый низкий остаток денег по периодам"></canvas></div>
+    <div class="ddsleg"><span><i style="background:var(--cGreen)"></i>хватает</span>${X.reserve ? `<span><i style="background:#F2B705"></i>ниже порога ${money(X.reserve)} ₽</span>` : ""}<span><i style="background:var(--cRed)"></i>разрыв — денег нет</span><span><i class="pl"></i>факт · план</span></div></section>`;
+  // 4. Таблица: 5 итоговых строк, расшифровка — по кнопке
+  const det = ui.f.ddsdet === "1";
+  const cls = v => v < 0 ? "gap" : v < X.reserve ? "low" : "";
   const tip = it => it.slice(0, 12).map(e => { const p = S.payments[e.i]; return `${fdate(e.d)} · ${p.contr || ""} · ${p.what || ""} · ${rub(e.amt)}${e.plan ? " (план)" : ""}`; }).join("\n") + (it.length > 12 ? `\n… ещё ${it.length - 12}` : "");
-  const td = (v, cls = "", t = "") => `<td class="n ${cls}"${t ? ` title="${esc(t)}"` : ""}>${money(v)}</td>`;
-  const line = (cls, lab, cells) => `<tr class="${cls}"><td class="stk lbl">${lab}</td>${cells}</tr>`;
-  let t = `<section><h2 class="sec-h">Движение денежных средств${pr ? ` <span class="rt">${esc(prName)}</span>` : ""}</h2><div class="tw"><table class="t dds" style="width:max(100%,${230 + P.length * 98}px)"><colgroup><col style="width:230px">${P.map(() => '<col style="width:98px">').join("")}</colgroup>
-    <thead><tr><th class="stk">Статья</th>${P.map(p => `<th class="${p.kind === "now" ? "now" : ""}">${p.l}<small>${p.kind === "fact" ? "факт" : p.kind === "now" ? "сейчас" : "план"}</small></th>`).join("")}</tr></thead><tbody>`;
-  const net = p => p.inc - p.out;
-  t += line("bal", "Остаток на начало", P.map(p => td(p.open, balCls(p.open))).join(""));
-  t += line("sum", "Поступления", P.map(p => td(p.inc, "pos")).join(""));
-  t += line("sum", "Выплаты", P.map(p => td(p.out, "neg")).join(""));
-  t += line("sum", "Чистый поток", P.map(p => td(net(p), net(p) < 0 ? "neg" : "pos")).join(""));
-  t += line("bal", "Остаток на конец", P.map(p => td(p.close, balCls(p.close))).join(""));
-  t += line("bal last", "Минимум внутри периода", P.map(p => td(p.min, balCls(p.min), `Минимум ${fdate(p.minD)}`)).join(""));
-  t += line("hd", "Поступления по " + (o.group === "contr" ? "контрагентам" : "объектам"), P.map(() => "<td></td>").join(""));
-  X.inc.forEach(r => t += line("ch", esc(r.name), r.v.map((v, k) => td(v, "", tip(r.it[k]))).join("")));
-  t += line("hd", "Выплаты по " + (o.group === "contr" ? "контрагентам" : o.group === "proj" ? "объектам" : "статьям"), P.map(() => "<td></td>").join(""));
-  X.out.forEach(r => t += line("ch", esc(r.name), r.v.map((v, k) => td(v, "", tip(r.it[k]))).join("")));
-  t += `</tbody></table></div><p class="note">Факт — оплаченные платежи по фактической дате, план — по плановой. Неоплаченные платежи с прошедшим сроком стоят на отчётную дату. Красным — минус на счёте${X.reserve ? `, жёлтым — ниже неснижаемого остатка ${rub(X.reserve)}` : ""}. Наведите на сумму — увидите платежи. Данные берутся из листа <a href="#payments">«Платежи»</a>.</p></section>`;
+  const td = (v, c = "", t = "") => `<td class="n ${c}"${t ? ` title="${esc(t)}"` : ""}>${money(v)}</td>`;
+  const line = (c, lab, cells) => `<tr class="${c}"><td class="stk lbl">${lab}</td>${cells}</tr>`;
+  let t = `<section><h2 class="sec-h">Движение денег <span class="rt"><button type="button" class="btn sm" data-ddsdet="1">${det ? "Скрыть расшифровку" : "Показать по статьям и объектам"}</button></span></h2><div class="tw"><table class="t dds" style="width:max(100%,${200 + P.length * 96}px)"><colgroup><col style="width:200px">${P.map(() => '<col style="width:96px">').join("")}</colgroup>
+    <thead><tr><th class="stk">${o.step === "m" ? "Месяц" : "Неделя"}</th>${P.map(p => `<th class="${p.min < 0 && p.kind !== "fact" ? "gapc" : p.kind === "now" ? "now" : ""}">${p.l}<small>${p.min < 0 && p.kind !== "fact" ? "разрыв" : p.kind === "fact" ? "факт" : p.kind === "now" ? "сейчас" : "план"}</small></th>`).join("")}</tr></thead><tbody>`;
+  t += line("", "Было на начало", P.map(p => td(p.open, cls(p.open))).join(""));
+  t += line("", "+ Поступления", P.map(p => td(p.inc, "pos")).join(""));
+  t += line("", "− Выплаты", P.map(p => td(p.out, "neg")).join(""));
+  t += line("bal", "Стало на конец", P.map(p => td(p.close, cls(p.close))).join(""));
+  t += line("bal last", "Самая низкая точка", P.map(p => td(p.min, cls(p.min), `${fdate(p.minD)}`)).join(""));
+  if(det){
+    t += line("hd", "Поступления по объектам", P.map(() => "<td></td>").join(""));
+    X.inc.forEach(r => t += line("ch", esc(r.name), r.v.map((v, k) => td(v, "", tip(r.it[k]))).join("")));
+    t += line("hd", "Выплаты по статьям", P.map(() => "<td></td>").join(""));
+    X.out.forEach(r => t += line("ch", esc(r.name), r.v.map((v, k) => td(v, "", tip(r.it[k]))).join("")));
+  }
+  t += `</tbody></table></div><p class="note">«Самая низкая точка» — минимум остатка по дням внутри ${o.step === "m" ? "месяца" : "недели"}: разрыв бывает и тогда, когда к концу периода деньги уже пришли. Данные — из листа <a href="#payments">«Платежи»</a>; неоплаченные платежи с прошедшим сроком стоят на отчётную дату.</p></section>`;
   return h + t;
 };
 function drawDds(grid){
   const X = DDSX, el = document.getElementById("chDds"); if(!X || !el) return;
   const tickM = v => Math.abs(v) >= 1e6 ? String(+(v / 1e6).toFixed(1)).replace(".", ",") + " млн" : nf0.format(v);
-  const bad = css("--cRed"), acc = css("--accent");
-  const ds2 = [
-    {type:"bar", label:"Поступления", data:X.P.map(p => p.inc), backgroundColor:css("--cGreen"), borderRadius:3, order:3},
-    {type:"bar", label:"Выплаты", data:X.P.map(p => -p.out), backgroundColor:css("--cOrange"), borderRadius:3, order:3},
-    {type:"line", label:"Остаток на конец", data:X.P.map(p => p.close), borderColor:acc, backgroundColor:acc, borderWidth:2.5, pointRadius:X.P.map(p => p.close < 0 ? 5 : 3), pointBackgroundColor:X.P.map(p => p.close < 0 ? bad : acc), pointBorderColor:X.P.map(p => p.close < 0 ? bad : acc), order:1},
-    {type:"line", label:"Минимум в периоде", data:X.P.map(p => p.min), borderColor:bad, backgroundColor:bad, borderDash:[5, 4], borderWidth:1.5, pointRadius:X.P.map(p => p.min < 0 ? 4 : 0), order:2},
-  ];
-  if(X.reserve > 0) ds2.push({type:"line", label:"Неснижаемый остаток", data:X.P.map(() => X.reserve), borderColor:"#F2B705", backgroundColor:"#F2B705", borderWidth:1.5, pointRadius:0, order:2});
-  charts.push(new Chart(el, {data:{labels:X.P.map(p => p.l), datasets:ds2},
-    options:{maintainAspectRatio:false, plugins:{legend:{position:"bottom", labels:{boxWidth:12}}, tooltip:{callbacks:{label:c => `${c.dataset.label}: ${rub(c.dataset.type === "bar" ? Math.abs(c.raw) : c.raw)}`}}},
-      scales:{x:{grid:{display:false}}, y:{grid:{color:c => c.tick.value === 0 ? css("--muted") : grid}, ticks:{callback:tickM}}}}}));
+  const col = v => v < 0 ? css("--cRed") : v < X.reserve ? "#F2B705" : css("--cGreen");
+  const P = X.P;
+  charts.push(new Chart(el, {type:"bar", data:{labels:P.map(p => p.l), datasets:[{label:"Самый низкий остаток", data:P.map(p => p.min),
+      backgroundColor:P.map(p => p.kind === "fact" ? col(p.min) + "80" : col(p.min)), borderRadius:3}]},
+    options:{maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{
+      title:c => P[c[0].dataIndex].l, label:c => { const p = P[c.dataIndex]; return [`Самая низкая точка: ${rub(p.min)} (${fdate(p.minD)})`, `Поступления: ${rub(p.inc)}`, `Выплаты: ${rub(p.out)}`, `На конец: ${rub(p.close)}`]; }}}},
+      scales:{x:{grid:{display:false}, ticks:{maxRotation:0, autoSkip:true}}, y:{grid:{color:c => c.tick.value === 0 ? css("--muted") : grid}, ticks:{callback:tickM}}}}}));
 }
 let charts = [];
 function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
@@ -1621,6 +1632,7 @@ document.addEventListener("keydown", e => {
   focusRow((to || now).dataset.rid, k);
 });
 document.addEventListener("click", e => {
+  if(e.target.closest("[data-ddsdet]")){ ui.f.ddsdet = ui.f.ddsdet === "1" ? "" : "1"; render(true); return; }
   const go = e.target.closest("[data-go]");
   if(go){ const [s, f] = go.dataset.go.split(":"); if(f && s==="payments"){ ui.f.paymentsctrl = f; } location.hash = s; return; }
   const srt = e.target.closest("th[data-sort]");
