@@ -77,7 +77,7 @@ a{color:var(--accent)}
 
 .app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100%}
 /* ---------- панель листов */
-.side{align-self:start;background:var(--navy);color:var(--navyInk);position:sticky;top:env(safe-area-inset-top,0px);height:calc(100vh - env(safe-area-inset-top,0px));overflow:auto;display:flex;flex-direction:column;padding:18px 12px 16px max(12px,env(safe-area-inset-left,0px))}
+.side{align-self:start;background:var(--navy);color:var(--navyInk);position:sticky;top:env(safe-area-inset-top,0px);height:calc(100vh / var(--z,1) - env(safe-area-inset-top,0px));overflow:auto;display:flex;flex-direction:column;padding:18px 12px 16px max(12px,env(safe-area-inset-left,0px))}
 .logo{font-family:var(--f-disp);font-weight:700;font-size:15px;letter-spacing:.3px;line-height:1.15;padding:0 8px;color:#fff}
 .logo span{color:#6FA8FF}
 .company{font-size:var(--fs-xs);color:var(--navyMuted);padding:4px 8px 14px}
@@ -109,6 +109,10 @@ a{color:var(--accent)}
 .repdate{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:7px;padding:3px 4px 3px 9px}
 .repdate input{border:0;background:transparent;font-weight:700;color:var(--badInk);font-size:13px;padding:2px}
 .repdate.auto input{color:var(--ink)}
+.scale{display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:11px;color:var(--navyMuted);margin:12px 8px 4px}
+.scale button{border:1px solid rgba(255,255,255,.16);background:transparent;color:var(--navyInk);border-radius:5px;font:inherit;font-size:11px;padding:2px 7px;cursor:pointer}
+.scale button.on{background:var(--navy2);border-color:var(--navyMuted);font-weight:700}
+@media (max-width:900px){.scale{display:none}}
 .rtoday{border:1px solid var(--line);background:var(--surface);color:var(--accent);border-radius:5px;font:inherit;font-size:11.5px;font-weight:600;padding:2px 8px;cursor:pointer;white-space:nowrap}
 .rtoday:hover{border-color:var(--accent)}
 .repdate.auto .rtoday{background:var(--accentSoft);border-color:var(--accent)}
@@ -156,7 +160,7 @@ button.tile:hover{border-color:var(--tc);box-shadow:var(--shadow)}
 .tools .legend{margin-left:auto;font-size:11.5px;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .legend i{display:inline-block;width:12px;height:12px;border:1px solid var(--inputLine);border-radius:2px;vertical-align:-2px;margin-right:4px}
 .legend i.c{background:var(--calc);border-color:var(--line)}
-.tw{overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface);max-height:72vh}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface);max-height:calc(72vh / var(--z,1))}
 table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-layout:fixed}
 .t th{position:sticky;top:0;z-index:2;overflow-wrap:anywhere;background:var(--navy);color:#fff;font-weight:600;font-size:11px;line-height:1.2;padding:7px 6px;text-align:center;vertical-align:middle;border-right:1px solid rgba(255,255,255,.08);white-space:normal}
 .t th.c{background:#3D6A99}
@@ -343,7 +347,7 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .rowcard .f .o .mbar{justify-content:flex-start}
 .rowcard footer{display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
 .rowcard footer .sp{flex:1}
-@media (min-width:720px){.cardbg{align-items:center}.rowcard{border-radius:14px;max-height:86vh}}
+@media (min-width:720px){.cardbg{align-items:center}.rowcard{border-radius:14px;max-height:calc(86vh / var(--z,1))}}
 /* итог расчёта КП — всегда под рукой */
 .kpbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:none;align-items:center;gap:12px;padding:9px max(16px,env(safe-area-inset-right,0px)) calc(9px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));font-size:12.5px;line-height:1.25;text-decoration:none;box-shadow:0 -6px 20px rgba(0,0,0,.18)}
 .kpbar b{font-size:14px}
@@ -786,7 +790,9 @@ const TABLES = {};            // последние описания табли�
 const LIMIT = 150;            // строк за раз — чтобы большие таблицы не тормозили
 const MOBLIST = false;   // на телефоне — полные таблицы, как на компьютере (список с карточкой отключён)
 const isMob = () => innerWidth < 720;
-const cellVal = (o, c, i) => c.calc ? c.calc(i) : o.rows[i][c.k];
+const isAuto = (c, i) => !!(c.auto && c.auto(i));
+const cellVal = (o, c, i) => c.calc ? c.calc(i) : isAuto(c, i) ? c.av(i) : o.rows[i][c.k];
+const fmtA = (c, v) => fmtCell(c.at ? Object.assign({}, c, {t:c.at}) : c, v);
 function fmtRaw(c, v){
   if(v===null||v===undefined||v==="") return "";
   switch(c.t){ case "money": return money(v); case "date": return fdate(v); case "pct": return pct(v, 0); case "num": return esc(String(v).replace(".",",")); default: return esc(c.o==="vat" ? vatL(v) : v); }
@@ -882,7 +888,7 @@ function table(o){
     if(del) h += `<td class="stk ctr"><button class="del" data-del="${o.arr}" data-i="${i}" title="Удалить строку" aria-label="Удалить строку">×</button></td>`;
     cols.forEach((c,j) => {
       const stk = j===0 && !del ? " stk" : "";
-      if(c.calc){ const al = num(c) ? " n" : ["status","date","vat"].includes(c.t)||c.ctr ? " ctr" : ""; h += `<td class="c${al}${stk}">${fmtCell(c, c.calc(i))}</td>`; }
+      if(c.calc || isAuto(c, i)){ const al = num(c) ? " n" : ["status","date","vat"].includes(c.t)||c.ctr ? " ctr" : ""; h += `<td class="c${al}${stk}"${c.calc ? "" : ' title="Считается из Графика работ"'}>${fmtA(c, cellVal(o, c, i))}</td>`; }
       else h += `<td class="e${stk}">${cellIn(o.arr, i, c, row[c.k])}</td>`;
     });
     h += "</tr>";
@@ -903,7 +909,7 @@ function renderCard(){
   const row = o.rows[i], pos = o._vis.indexOf(i), prev = o._vis[pos-1], next = o._vis[pos+1];
   const title = [row.proj || row.code, row.name || row.what || row.pos || row.stage || row.alt || row.role].filter(Boolean).join(" · ") || "Новая строка";
   let h = `<div class="cardbg" data-cardclose="1"><div class="rowcard" role="dialog" aria-modal="true" aria-label="Строка: ${esc(title)}"><header><b><small>${esc((SH[cur]||{}).t||"")}${pos>=0 ? ` · ${pos+1} из ${o._vis.length}` : ""}</small>${esc(title)}</b><button class="btn sm ghost" data-cardclose="1" type="button" aria-label="Закрыть">✕</button></header><div class="body">`;
-  o.cols.forEach(col => { h += `<div class="f"><label>${esc(col.h)}</label>${col.calc ? `<div class="o">${fmtCell(col, col.calc(i)) || "—"}</div>` : cellIn(o.arr, i, col, row[col.k])}</div>`; });
+  o.cols.forEach(col => { h += `<div class="f"><label>${esc(col.h)}</label>${col.calc || isAuto(col, i) ? `<div class="o">${fmtA(col, cellVal(o, col, i)) || "—"}</div>` : cellIn(o.arr, i, col, row[col.k])}</div>`; });
   h += `</div><footer>${o.del ? `<button class="btn lg danger" data-del="${o.arr}" data-i="${i}" type="button">Удалить</button>` : ""}<span class="sp"></span>
     <button class="btn lg" data-cardgo="${prev ?? ""}" type="button"${prev===undefined?" disabled":""} aria-label="Предыдущая строка">←</button><button class="btn lg" data-cardgo="${next ?? ""}" type="button"${next===undefined?" disabled":""} aria-label="Следующая строка">→</button>
     <button class="btn lg pri" data-cardclose="1" type="button">Готово</button></footer></div></div>`;
@@ -1107,9 +1113,8 @@ V.ppr = () => {
   const cols = [
     {h:"ID этапа",k:"id",w:70}, {h:"Проект",k:"proj",t:"sel",o:"proj",w:80}, {h:"Объект",k:"obj",calc:i=>R.stage[i].obj,w:150}, {h:"Этап",k:"stage",w:190},
     {h:"План старт",k:"ps",t:"date",w:122}, {h:"План финиш",k:"pf",t:"date",w:122},
-    {h:"Факт старт (вручную)",k:"fs",t:"date",w:122,dis:man}, {h:"Факт финиш (вручную)",k:"ff",t:"date",w:122,dis:man}, {h:"Готовность (вручную), %",k:"prog",t:"pct",w:85,dis:man},
-    {h:"Работ в графике",k:"nw",calc:i=>R.stage[i].nw,t:"int",w:70}, {h:"Факт старт",k:"cfs",calc:i=>R.stage[i].fs,t:"date",w:90}, {h:"Факт финиш",k:"cff",calc:i=>R.stage[i].ff,t:"date",w:90},
-    {h:"Готовность",k:"cprog",calc:i=>R.stage[i].prog,t:"bar",w:100}, {h:"План на дату",k:"plan",calc:i=>R.stage[i].plan,t:"pct",w:70},
+    {h:"Факт старт",k:"fs",t:"date",w:122,auto:man,av:i=>R.stage[i].fs}, {h:"Факт финиш",k:"ff",t:"date",w:122,auto:man,av:i=>R.stage[i].ff},
+    {h:"Готовность, %",k:"prog",t:"pct",at:"bar",w:100,auto:man,av:i=>R.stage[i].prog}, {h:"Работ в графике",k:"nw",calc:i=>R.stage[i].nw,t:"int",w:70}, {h:"План на дату",k:"plan",calc:i=>R.stage[i].plan,t:"pct",w:70},
     {h:"Сдвиг старта, дн",k:"shift",calc:i=>R.stage[i].shift,t:"int",hot:1,w:75}, {h:"Прогноз финиша",k:"fc",calc:i=>R.stage[i].fc,t:"date",w:95},
     {h:"Причина отклонения",k:"reason",t:"sel",o:"delay",w:170}, {h:"Статус",k:"st",calc:i=>R.stage[i].st,t:"status",w:130},
   ];
@@ -1120,8 +1125,8 @@ V.ppr = () => {
     <p class="note" style="margin:0 0 10px;max-width:70ch">Заказчик откроет ссылку и увидит этапы своего объекта: сроки, готовность, статус и диаграмму Ганта. Без денег, без других объектов и без входа в кабинет. Данные по ссылке всегда актуальные.</p>
     ${RO ? "" : (sp ? `<button class="btn pri" data-share="${esc(sp)}" type="button">Создать ссылку по объекту ${esc(sp)}</button>` : `<p class="note" style="margin:0">Чтобы создать ссылку, выберите объект в фильтре над таблицей.</p>`)}
     <div id="shareList" data-keep="1"></div></section>` : "";
-  return projFilter("ppr") + table({id:"ppr", mob:["stage","cprog","st"], mobSub:"proj", arr:"stages", rows:S.stages, cols, filter:f, add:1, del:1}) +
-    `<p class="note">Серые поля «вручную» отключены, если к этапу привязаны работы в Графике — тогда всё считается из них.</p><section style="margin-top:16px"><h2 class="sec-h">Диаграмма Ганта — этапы</h2>${gantt(g)}</section>${share}`;
+  return projFilter("ppr") + table({id:"ppr", mob:["stage","prog","st"], mobSub:"proj", arr:"stages", rows:S.stages, cols, filter:f, add:1, del:1}) +
+    `<p class="note">Факт старт, факт финиш и готовность вводятся вручную, если к этапу не привязаны работы. Если работы есть («Работ в графике» больше нуля) — эти поля считаются из Графика работ и выделены серым.</p><section style="margin-top:16px"><h2 class="sec-h">Диаграмма Ганта — этапы</h2>${gantt(g)}</section>${share}`;
 };
 V.schedule = () => {
   const cols = [
@@ -1442,7 +1447,7 @@ function drawCharts(){
   charts.forEach(c=>c.destroy()); charts = [];
   if(!R || (cur!=="dash" && cur!=="dds") || typeof Chart==="undefined") return;
   const ink = css("--muted"), grid = css("--line2");
-  Chart.defaults.font.family = css("--f-ui"); Chart.defaults.color = ink;
+  chartZoomFix(); Chart.defaults.font.family = css("--f-ui"); Chart.defaults.color = ink;
   if(cur==="dds"){ drawDds(grid); return; }
   const M = R.dash.months, lab = M.map(m => { const d = new Date(m.a*86400000); return MON[d.getUTCMonth()]+" "+String(d.getUTCFullYear()).slice(2); });
   const tickM = v => Math.abs(v)>=1e6 ? (v/1e6).toFixed(0)+" млн" : nf0.format(v);
@@ -1474,6 +1479,7 @@ function nav(){
     h += `</nav><div class="sidecta"><div class="box"><b>${!ME.active ? "Доступ закончился" : "Доступ до " + until}</b><p>${esc(ME.name)} · ${(ROLE[ME.role]||"").toLowerCase()}</p><a class="btn pri wide" href="#team">${!ME.active && ME.role==="owner" ? "Продлить" : "Команда и доступ"}</a></div></div>`;
   } else if(LOGIN_URL) h += `</nav><div class="sidecta"><div class="box"><b>Свой онлайн-кабинет</b><p>Ваши объекты в этом же интерфейсе: данные на сервере, сотрудники, вход с телефона.</p><a class="btn pri wide" href="/login.html#buy">Купить доступ</a><a href="/pricing.html" style="display:block;text-align:center;margin-top:8px;font-size:12px;color:var(--navyMuted)">Тарифы и условия</a></div></div>`;
   else h += `</nav><div class="sidecta"><div class="box"><b>Excel-версия</b><p>Этот же инструмент в одном файле: демо, чистая версия и инструкция.</p><a class="btn pri wide" href="#buy">Подробнее</a></div></div>`;
+  const zc = zoomGet(); h += `<div class="scale" role="group" aria-label="Масштаб">Масштаб ${[["auto","Авто"],["0.8","80%"],["0.9","90%"],["1","100%"]].map(([k,t]) => `<button type="button" data-zoom="${k}" class="${zc===k?"on":""}" aria-pressed="${zc===k}"${k==="auto"?` title="Сейчас ${Math.round(zoomVal("auto")*100)}%: на широком мониторе всё мельче, чтобы таблицы влезали в экран"`:""}>${t}</button>`).join("")}</div>`;
   document.getElementById("side").innerHTML = h;
   document.getElementById("mnav").innerHTML = SHEETS.map(s=>`<a href="#${s.id}" class="${cur===s.id?"on":""}">${s.t}</a>`).join("") + (CAB ? "" : LOGIN_URL ? `<a href="/login.html#buy">Купить</a>` : `<a href="#buy" class="${cur==="buy"?"on":""}">Excel-версия</a>`);
 }
@@ -1624,6 +1630,8 @@ document.addEventListener("keydown", e => {
 document.addEventListener("click", e => {
   if(e.target.closest("[data-ddsdet]")){ ui.f.ddsdet = ui.f.ddsdet === "1" ? "" : "1"; render(true); return; }
   if(e.target.closest("#repToday")){ e.preventDefault(); if(RO || blank(S.settings.repDate)) return; S.settings.repDate = ""; send([{t:"obj",o:"settings",k:"repDate",v:""}]); return afterEdit("Дата отчёта — всегда сегодняшняя"); }
+  const zb = e.target.closest("[data-zoom]");
+  if(zb){ try{ localStorage.setItem(ZK, zb.dataset.zoom); }catch(err){} applyZoom(); render(true); return; }
   const go = e.target.closest("[data-go]");
   if(go){ const [s, f] = go.dataset.go.split(":"); if(f && s==="payments"){ ui.f.paymentsctrl = f; } location.hash = s; return; }
   const srt = e.target.closest("th[data-sort]");
@@ -1704,6 +1712,18 @@ window.addEventListener("hashchange", route);
 if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", ()=>drawCharts());
 new MutationObserver(()=>drawCharts()).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
 document.documentElement.lang = "ru";
+const ZK = "pcp-zoom";
+function zoomGet(){ try{ return localStorage.getItem(ZK) || "auto"; }catch(e){ return "auto"; } }
+function zoomVal(z){ if(innerWidth <= 900) return 1; if(z === "auto") return innerWidth >= 1700 ? 0.8 : innerWidth >= 1300 ? 0.9 : 1; return +z || 1; }
+function applyZoom(){ const z = zoomVal(zoomGet()), r = document.documentElement; r.style.zoom = z === 1 ? "" : z; r.style.setProperty("--z", z); }
+applyZoom();
+// Chart.js при CSS-zoom берёт координаты мыши без учёта масштаба — пересчитываем их сами
+function chartZoomFix(){ if(typeof Chart === "undefined" || Chart.registry.plugins.get("zoomFix")) return;
+  Chart.register({id:"zoomFix", beforeEvent(chart, args){ const e = args.event, n = e.native; if(!n || n.clientX === undefined) return;
+    const r = chart.canvas.getBoundingClientRect(); if(!r.width) return;
+    e.x = (n.clientX - r.left) * chart.width / r.width; e.y = (n.clientY - r.top) * chart.height / r.height;
+    const a = chart.chartArea; args.inChartArea = !!a && e.x >= a.left && e.x <= a.right && e.y >= a.top && e.y <= a.bottom; }}); }
+let zT; addEventListener("resize", () => { clearTimeout(zT); zT = setTimeout(() => { const before = document.documentElement.style.zoom; applyZoom(); if(S && document.documentElement.style.zoom !== before) render(true); }, 150); });
 async function boot(){
   if(!CAB){
     ensureIds();
