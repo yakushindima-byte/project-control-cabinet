@@ -282,6 +282,12 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .gs .gs-top{display:flex;gap:18px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted);margin-bottom:10px}
 .gs .gs-top b{color:var(--ink)}
 .gs .gs-top select{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:5px 8px;font-size:13px}
+.gs .gs-info{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:0 0 10px}.gs .gs-info b{color:var(--ink)}
+.gs .gs-form{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin:0 0 10px;font-size:12px;color:var(--muted)}
+.gs .gs-form label{display:flex;flex-direction:column;gap:3px}
+.gs .gs-form input,.gs .gs-form select{border:1px solid var(--inputLine);background:var(--inputBg);border-radius:5px;padding:5px 7px;font-size:13px;min-width:200px}
+.gs .gs-form input.n{text-align:right;min-width:140px}.gs .gs-form input[disabled]{background:var(--neutral);color:var(--ink)}
+.gs .gs-paid{font-size:13px;padding-bottom:6px}.gs .gs-paid b{color:var(--ink)}
 .gs-t{border-collapse:collapse;width:100%;max-width:900px;font-size:13px}
 .gs-t th{text-align:left;font-size:11px;color:var(--muted);font-weight:700;padding:4px 6px;border-bottom:1px solid var(--line)}
 .gs-t td{padding:3px 4px;border-bottom:1px solid var(--line2)}
@@ -1671,63 +1677,109 @@ function exportXlsx(){
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   toast("Excel-файл скачан");
 }
-/* ---------- График оплат по договору → плановые поступления в «Платежах» */
-const GS = {proj:"", rows:[]};
-function gsDefault(p){
-  const s = dn(p.s), e = dn(p.e), amt = num(p.amt), mid = s !== null && e !== null ? Math.round((s + e) / 2) : null;
-  const r = (n, pc, d) => ({n, p:pc, a:Math.round(amt * pc), d:d === null ? "" : ds(d)});
-  return [r("Аванс", 0.3, s), r("Оплата после поставки оборудования", 0.4, mid), r("Окончательный расчёт после сдачи", 0.3, e === null ? null : e + 15)];
+/* ---------- График оплат по договорам → плановые платежи в «Платежах»
+   Договор с заказчиком → поступления (gen = "dog"); расходные договоры → выплаты (gen = "out:<контрагент>") */
+const GS = {proj:"", key:"", rows:[], contr:"", total:"", art:""};
+const gsKind = () => GS.key === "dog" ? "in" : "out";
+function gsTpl(p, kind, total){
+  const s = dn(p.s), e = dn(p.e), mid = s !== null && e !== null ? Math.round((s + e) / 2) : null, amt = num(total);
+  const r = (n, pc, d) => ({n, p:pc, a:amt ? Math.round(amt * pc) : "", d:d === null ? "" : ds(d)});
+  return kind === "in" ? [r("Аванс", 0.3, s), r("Оплата после поставки оборудования", 0.4, mid), r("Окончательный расчёт после сдачи", 0.3, e === null ? null : e + 15)]
+    : [r("Аванс подрядчику", 0.3, s), r("Оплата выполненных работ", 0.5, mid), r("Окончательный расчёт", 0.2, e === null ? null : e + 30)];
+}
+function gsOuts(code){     // расходные договоры объекта, созданные графиком
+  const m = new Map();
+  S.payments.forEach(x => { if(x.proj === code && typeof x.gen === "string" && x.gen.startsWith("out:")){ const k = x.gen; if(!m.has(k)) m.set(k, {key:k, contr:x.contr || k.slice(4), art:x.art || "", sum:0, n:0}); const o = m.get(k); o.sum += num(x.amt); o.n++; } });
+  return [...m.values()];
+}
+function gsLoad(p){        // заполнить форму по выбранному договору
+  const kind = gsKind();
+  if(kind === "in"){ GS.contr = p.cust || ""; GS.total = num(p.amt); GS.art = ""; }
+  const ex = S.payments.filter(x => x.proj === p.code && x.gen === GS.key && x.status === "План").sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  if(kind === "out" && GS.key !== "out:"){ const o = gsOuts(p.code).find(x => x.key === GS.key); if(o){ GS.contr = o.contr; GS.art = o.art; GS.total = o.sum; } }
+  const tot = num(GS.total);
+  GS.rows = ex.length ? ex.map(x => ({n:x.what || "", a:num(x.amt), p:tot ? num(x.amt) / tot : "", d:x.date || ""})) : gsTpl(p, kind, GS.total);
 }
 function gsBlock(){
   const P = S.projects.filter(p => p.code);
   if(!P.length) return "";
-  if(!GS.proj || !P.some(p => p.code === GS.proj)){ GS.proj = ui.proj.projects || P[0].code; GS.rows = []; }
-  const p = P.find(x => x.code === GS.proj) || P[0], amt = num(p.amt);
-  if(!GS.rows.length) GS.rows = gsDefault(p);
-  const recv = S.payments.reduce((a, x) => a + (x.proj === p.code && x.type === "Поступление" && x.status === "Оплачено" ? num(x.amt) : 0), 0);
-  const gen = S.payments.filter(x => x.proj === p.code && x.type === "Поступление" && x.status === "План" && x.gen === "dog");
-  const own = S.payments.filter(x => x.proj === p.code && x.type === "Поступление" && x.status === "План" && x.gen !== "dog");
-  const tot = GS.rows.reduce((a, r) => a + num(r.a), 0), diff = amt - tot;
+  if(!GS.proj || !P.some(p => p.code === GS.proj)){ GS.proj = ui.proj.projects || P[0].code; GS.key = ""; }
+  const p = P.find(x => x.code === GS.proj) || P[0], outs = gsOuts(p.code);
+  if(!GS.key){ GS.key = "dog"; gsLoad(p); }
+  const kind = gsKind(), tot = num(GS.total), isNew = GS.key === "out:";
   const dis = RO ? " disabled" : "";
-  let h = `<section class="card gs"><h2 class="sec-h">График оплат по договору <span class="rt">поступления от заказчика сами попадут в «Платежи» и ДДС</span></h2>
+  const type = kind === "in" ? "Поступление" : "Расход";
+  const sameKey = x => x.proj === p.code && x.type === type && x.status === "План" && (kind === "in" ? x.gen === "dog" : x.gen === "out:" + GS.contr);
+  const gen = S.payments.filter(sameKey);
+  const own = S.payments.filter(x => x.proj === p.code && x.type === type && x.status === "План" && !x.gen && (kind === "in" || (GS.contr && x.contr === GS.contr)));
+  const paid = S.payments.reduce((a, x) => a + (x.proj === p.code && x.type === type && x.status === "Оплачено" && (kind === "in" || (GS.contr && x.contr === GS.contr)) ? num(x.amt) : 0), 0);
+  const sum = GS.rows.reduce((a, r) => a + num(r.a), 0), diff = tot - sum;
+  const opt = (v, t) => `<option value="${esc(v)}"${GS.key === v ? " selected" : ""}>${esc(t)}</option>`;
+  let h = `<section class="card gs"><h2 class="sec-h">График оплат по договорам <span class="rt">плановые платежи сами попадут в «Платежи», ДДС и Бюджет</span></h2>
   <div class="gs-top"><select data-gs="proj" aria-label="Объект">${P.map(x => `<option value="${esc(x.code)}"${x.code === p.code ? " selected" : ""}>${esc(x.code)} · ${esc(x.name || "")}</option>`).join("")}</select>
-    <span>Договор: <b>${rub(amt)}</b></span><span>Заказчик: <b>${esc(p.cust || "—")}</b></span><span>Срок: <b>${fdate(p.s) || "—"} – ${fdate(p.e) || "—"}</b></span><span>Уже получено: <b>${rub(recv)}</b></span></div>
-  <table class="gs-t"><thead><tr><th>Назначение платежа</th><th>% договора</th><th>Сумма, ₽</th><th>Плановая дата</th><th></th></tr></thead><tbody>`;
+    <select data-gs="key" aria-label="Договор">${opt("dog", `Договор с заказчиком${p.cust ? " — " + p.cust : ""} (поступления)`)}${outs.map(o => opt(o.key, `Расходный — ${o.contr} (выплаты)`)).join("")}${opt("out:", "+ Новый расходный договор (подрядчик, поставщик)")}</select></div>`;
+  if(kind === "in") h += `<div class="gs-info"><span>Сумма договора: <b>${rub(tot)}</b></span><span>Заказчик: <b>${esc(p.cust || "—")}</b></span><span>Срок: <b>${fdate(p.s) || "—"} – ${fdate(p.e) || "—"}</b></span><span>Уже получено: <b>${rub(paid)}</b></span></div>`;
+  else h += `<div class="gs-form"><label>Подрядчик / поставщик<input list="dl-contr" data-gs="contr" value="${esc(GS.contr)}" placeholder="выберите или введите"${dis || (isNew ? "" : " disabled")}></label>
+    <label>Сумма договора, ₽<input class="n" inputmode="decimal" data-gs="total" value="${GS.total === "" ? "" : nf0.format(num(GS.total))}"${dis}></label>
+    <label>Статья затрат<select data-gs="art"${dis}><option value=""></option>${S.lists.cost.map(c => `<option${c === GS.art ? " selected" : ""}>${esc(c)}</option>`).join("")}</select></label>
+    <span class="gs-paid">Уже оплачено: <b>${rub(paid)}</b></span></div>`;
+  h += `<table class="gs-t"><thead><tr><th>Назначение платежа</th><th>% договора</th><th>Сумма, ₽</th><th>Плановая дата</th><th></th></tr></thead><tbody>`;
   GS.rows.forEach((r, i) => h += `<tr><td><input data-gs="n" data-gi="${i}" value="${esc(r.n)}"${dis} aria-label="Назначение"></td>
     <td><input class="n" data-gs="p" data-gi="${i}" inputmode="decimal" value="${r.p === "" || r.p === null ? "" : String(+(num(r.p) * 100).toFixed(2)).replace(".", ",")}"${dis} aria-label="Процент договора"></td>
     <td><input class="n" data-gs="a" data-gi="${i}" inputmode="decimal" value="${r.a === "" ? "" : nf0.format(num(r.a))}"${dis} aria-label="Сумма"></td>
     <td><input type="date" data-gs="d" data-gi="${i}" value="${esc(r.d || "")}"${dis} aria-label="Плановая дата"></td>
     <td>${RO ? "" : `<button type="button" class="gs-x" data-gsdel="${i}" title="Убрать строку" aria-label="Убрать строку">×</button>`}</td></tr>`);
-  h += `</tbody><tfoot><tr><td>${RO ? "" : `<button type="button" class="btn sm" data-gsadd="1">+ Строка</button> <button type="button" class="btn sm ghost" data-gsreset="1">Типовой: 30 / 40 / 30</button>`}</td><td class="n">${String(+(amt ? tot / amt * 100 : 0).toFixed(1)).replace(".", ",")}%</td><td class="n"><b>${money(tot)}</b></td><td colspan="2">${Math.round(diff) === 0 ? `<span class="pos">распределено полностью</span>` : `<span class="neg">${diff > 0 ? "не распределено" : "больше договора на"} ${rub(Math.abs(diff))}</span>`}</td></tr></tfoot></table>`;
+  h += `</tbody><tfoot><tr><td>${RO ? "" : `<button type="button" class="btn sm" data-gsadd="1">+ Строка</button> <button type="button" class="btn sm ghost" data-gsreset="1">Типовой: ${kind === "in" ? "30 / 40 / 30" : "30 / 50 / 20"}</button>`}</td><td class="n">${String(+(tot ? sum / tot * 100 : 0).toFixed(1)).replace(".", ",")}%</td><td class="n"><b>${money(sum)}</b></td><td colspan="2">${!tot ? `<span class="neg">укажите сумму договора</span>` : Math.round(diff) === 0 ? `<span class="pos">распределено полностью</span>` : `<span class="neg">${diff > 0 ? "не распределено" : "больше договора на"} ${rub(Math.abs(diff))}</span>`}</td></tr></tfoot></table>`;
   const warn = [];
-  if(gen.length) warn.push(`По этому договору уже создано ${gen.length} ${gen.length === 1 ? "плановое поступление" : "плановых поступлений"} на ${rub(gen.reduce((a, x) => a + num(x.amt), 0))} — они будут заменены новыми. Оплаченные не трогаются.`);
-  if(own.length) warn.push(`В «Платежах» есть ещё ${own.length} плановых поступлений по объекту, внесённых вручную, на ${rub(own.reduce((a, x) => a + num(x.amt), 0))}. Они останутся — проверьте, чтобы не было дублей.`);
-  if(recv > 0) warn.push(`По объекту уже получено ${rub(recv)}. Если аванс уже пришёл, уберите его из графика.`);
+  if(gen.length) warn.push(`По этому договору уже создано ${gen.length} плановых ${kind === "in" ? "поступлений" : "выплат"} на ${rub(gen.reduce((a, x) => a + num(x.amt), 0))} — они будут заменены новыми. Оплаченные не трогаются.`);
+  if(own.length) warn.push(`В «Платежах» есть ещё ${own.length} плановых ${kind === "in" ? "поступлений по объекту" : "выплат этому контрагенту по объекту"}, внесённых вручную, на ${rub(own.reduce((a, x) => a + num(x.amt), 0))}. Они останутся — проверьте, чтобы не было дублей.`);
+  if(paid > 0) warn.push(`Уже ${kind === "in" ? "получено" : "оплачено"} ${rub(paid)}. Если аванс уже прошёл, уберите его из графика.`);
+  if(kind === "out" && !GS.art) warn.push("Укажите статью затрат — тогда оплаты попадут в факт Бюджета по объекту.");
   h += warn.length ? `<ul class="gs-w">${warn.map(w => `<li>${w}</li>`).join("")}</ul>` : "";
-  h += RO ? "" : `<div class="inl" style="margin-top:10px"><button type="button" class="btn pri" data-gsmake="1">${gen.length ? "Пересоздать плановые поступления" : "Создать плановые поступления"}</button><span class="note" style="margin:0">Строки без суммы или даты пропускаются.</span></div>`;
+  h += RO ? "" : `<div class="inl" style="margin-top:10px"><button type="button" class="btn pri" data-gsmake="1">${gen.length ? "Пересоздать" : "Создать"} плановые ${kind === "in" ? "поступления" : "выплаты"}</button>${!isNew && kind === "out" ? `<button type="button" class="btn danger" data-gsdrop="1">Удалить плановые выплаты по договору</button>` : ""}<span class="note" style="margin:0">Строки без суммы или даты пропускаются.</span></div>`;
   return h + `</section>`;
 }
 function gsMake(btn){
   const p = S.projects.find(x => x.code === GS.proj); if(!p) return;
+  const kind = gsKind(), contr = String(GS.contr || "").trim();
+  if(kind === "out" && !contr){ toast("Укажите подрядчика или поставщика"); return; }
+  const key = kind === "in" ? "dog" : "out:" + contr, type = kind === "in" ? "Поступление" : "Расход";
   const rows = GS.rows.filter(r => num(r.a) > 0 && r.d);
   if(!rows.length){ toast("Заполните сумму и дату хотя бы в одной строке"); return; }
-  const old = S.payments.filter(x => x.proj === p.code && x.type === "Поступление" && x.status === "План" && x.gen === "dog");
+  const old = S.payments.filter(x => x.proj === p.code && x.type === type && x.status === "План" && x.gen === key);
   if(old.length && !confirm2(btn, `Заменить ${old.length} созданных ранее? Нажмите ещё раз`)) return;
   const ops = [];
   old.forEach(x => { S.payments.splice(S.payments.indexOf(x), 1); ops.push({t:"del", a:"payments", id:x._id}); });
-  rows.slice().reverse().forEach(r => { const row = {_id:rid(), date:r.d, type:"Поступление", proj:p.code, contr:p.cust || "", what:r.n || "Оплата по договору", amt:Math.round(num(r.a)), status:"План", gen:"dog"};
+  rows.slice().reverse().forEach(r => { const row = {_id:rid(), date:r.d, type, proj:p.code, contr:kind === "in" ? (p.cust || "") : contr, what:r.n || (kind === "in" ? "Оплата по договору" : "Оплата по договору подряда"), amt:Math.round(num(r.a)), status:"План", gen:key};
+    if(kind === "out" && GS.art) row.art = GS.art;
     if(!row.contr) delete row.contr; S.payments.unshift(row); ops.push({t:"add", a:"payments", row, at:"start"}); });
-  send(ops); afterEdit(`В «Платежи» добавлено ${rows.length} плановых поступлений на ${rub(rows.reduce((a, r) => a + num(r.a), 0))}`);
+  if(kind === "out" && !S.lists.contr.includes(contr)){ S.lists.contr.push(contr); ops.push({t:"list", l:"contr", v:contr}); }
+  GS.key = key;
+  send(ops); afterEdit(`В «Платежи» добавлено ${rows.length} плановых ${kind === "in" ? "поступлений" : "выплат"} на ${rub(rows.reduce((a, r) => a + num(r.a), 0))}`);
+}
+function gsDrop(btn){
+  const p = S.projects.find(x => x.code === GS.proj); if(!p) return;
+  const old = S.payments.filter(x => x.proj === p.code && x.status === "План" && x.gen === GS.key);
+  if(!old.length){ toast("Плановых выплат по договору нет"); return; }
+  if(!confirm2(btn, `Удалить ${old.length} плановых выплат? Нажмите ещё раз`)) return;
+  const ops = old.map(x => { S.payments.splice(S.payments.indexOf(x), 1); return {t:"del", a:"payments", id:x._id}; });
+  if(!S.payments.some(x => x.gen === GS.key && x.proj === p.code)) GS.key = "";
+  send(ops); afterEdit(`Удалено ${ops.length} плановых выплат`);
 }
 document.addEventListener("change", e => {
   const el = e.target; if(!el.dataset || el.dataset.gs === undefined) return;
-  if(el.dataset.gs === "proj"){ GS.proj = el.value; GS.rows = []; render(true); return; }
+  const p = S.projects.find(x => x.code === GS.proj), k = el.dataset.gs;
+  if(k === "proj"){ GS.proj = el.value; GS.key = ""; render(true); return; }
+  if(k === "key"){ GS.key = el.value; if(GS.key === "out:"){ GS.contr = ""; GS.total = ""; GS.art = ""; GS.rows = p ? gsTpl(p, "out", "") : []; } else if(p) gsLoad(p); render(true); return; }
+  if(k === "contr"){ GS.contr = el.value.trim(); render(true); return; }
+  if(k === "art"){ GS.art = el.value; render(true); return; }
+  if(k === "total"){ GS.total = parseVal("money", el.value); const t = num(GS.total); GS.rows.forEach(r => { if(r.p !== "" && r.p !== null && t) r.a = Math.round(t * num(r.p)); }); render(true); return; }
   const r = GS.rows[+el.dataset.gi]; if(!r) return;
-  const p = S.projects.find(x => x.code === GS.proj), amt = p ? num(p.amt) : 0, k = el.dataset.gs;
+  const tot = num(GS.total);
   if(k === "n") r.n = el.value;
   if(k === "d") r.d = el.value;
-  if(k === "p"){ const v = parseVal("pct", el.value); r.p = v; if(v !== "" && amt) r.a = Math.round(amt * v); }
-  if(k === "a"){ const v = parseVal("money", el.value); r.a = v; r.p = v !== "" && amt ? v / amt : ""; }
+  if(k === "p"){ const v = parseVal("pct", el.value); r.p = v; if(v !== "" && tot) r.a = Math.round(tot * v); }
+  if(k === "a"){ const v = parseVal("money", el.value); r.a = v; r.p = v !== "" && tot ? v / tot : ""; }
   render(true);
 });
 let charts = [];
@@ -1924,11 +1976,12 @@ document.addEventListener("click", e => {
   if(zb){ try{ localStorage.setItem(ZK, zb.dataset.zoom); }catch(err){} applyZoom(); render(true); return; }
   if(e.target.closest("#repPrint")){ window.print(); return; }
   if(e.target.closest("[data-xlsx]")){ try{ exportXlsx(); }catch(err){ console.error(err); toast("Не получилось собрать файл"); } return; }
-  const gsb = e.target.closest("[data-gsadd],[data-gsdel],[data-gsreset],[data-gsmake]");
+  const gsb = e.target.closest("[data-gsadd],[data-gsdel],[data-gsreset],[data-gsmake],[data-gsdrop]");
   if(gsb){ if(RO) return; const d = gsb.dataset;
+    if(d.gsdrop){ gsDrop(gsb); return; }
     if(d.gsadd) GS.rows.push({n:"", p:"", a:"", d:""});
     else if(d.gsdel !== undefined) GS.rows.splice(+d.gsdel, 1);
-    else if(d.gsreset){ const p = S.projects.find(x => x.code === GS.proj); if(p) GS.rows = gsDefault(p); }
+    else if(d.gsreset){ const p = S.projects.find(x => x.code === GS.proj); if(p){ if(gsKind() === "in") GS.total = num(p.amt); GS.rows = gsTpl(p, gsKind(), GS.total); } }
     else if(d.gsmake){ gsMake(gsb); return; }
     render(true); return; }
   const go = e.target.closest("[data-go]");
