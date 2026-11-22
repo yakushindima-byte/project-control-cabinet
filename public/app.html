@@ -221,6 +221,58 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .t.dds td small.dd{display:block;font-size:10px;font-weight:500;line-height:1;margin-top:-3px}
 .t.dds td.gap:has(small.dd){line-height:1.15;padding-top:3px}
 .tiles.t4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.rtools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rep{background:#fff;color:#0F1B2D;border:1px solid var(--line);border-radius:10px;padding:28px 32px;max-width:1100px;width:100%;margin:0 auto;font-size:13px;line-height:1.45;box-shadow:var(--shadow)}
+.rep h1{font-family:var(--f-disp);font-size:20px;margin:0;color:#0B1F3A}
+.rep h2{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#1565C0;margin:0 0 8px}
+.rep section{margin-top:20px}
+.rh{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:3px solid #0B1F3A;padding-bottom:12px}
+.rh p{margin:4px 0 0;color:#5B6A80}
+.rd{text-align:right;font-weight:700;font-size:15px}.rd span{display:block;font-weight:400;font-size:11px;color:#5B6A80}
+.rpts{margin:0;padding:0;list-style:none}
+.rpts li{position:relative;padding:5px 0 5px 18px;border-bottom:1px solid #E9EDF3}
+.rpts li::before{content:"";position:absolute;left:2px;top:11px;width:8px;height:8px;border-radius:50%;background:#2E7D32}
+.rpts li.warn::before{background:#F2B705}.rpts li.bad::before{background:#C62828}
+.rkpi{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.rk{border:1px solid #DCE2EA;border-radius:6px;padding:8px 10px}
+.rk small{display:block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#5B6A80}
+.rk b{display:block;font-size:16px;margin-top:2px;white-space:nowrap}.rk span{font-size:11px;color:#5B6A80}
+.rt{width:100%;border-collapse:collapse;font-size:12px}
+.rt th{background:#0B1F3A;color:#fff;font-weight:600;font-size:10.5px;padding:5px 6px;text-align:right}
+.rt td{padding:4px 6px;border-bottom:1px solid #E9EDF3;text-align:right;white-space:nowrap}
+.rt .l{text-align:left;white-space:normal}
+.rt tr.tot td{font-weight:700;border-top:2px solid #0B1F3A}
+.rt td.neg{color:#A0101C;font-weight:700}.rt td.pos{color:#11652B}
+.rp{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:9px;background:#E7EAEE;color:#4B5563}
+.rp.g{background:#D7F2DD;color:#11652B}.rp.w{background:#FFF0C2;color:#8A5A00}.rp.b{background:#FBD3D6;color:#A0101C}.rp.i{background:#DCEAFB;color:#15457A}
+.rnote{font-size:11px;color:#5B6A80;margin:4px 0 0}
+.rf{margin-top:22px;padding-top:8px;border-top:1px solid #DCE2EA;font-size:10.5px;color:#5B6A80}
+@media (max-width:720px){.rep{padding:16px}.rkpi{grid-template-columns:1fr 1fr}.rt{font-size:11px}}
+@media print{
+  @page{size:A4;margin:10mm}
+  html{zoom:1!important}
+  body,html{background:#fff!important}
+  .side,.top,.toast,.kpbar,.mnav,#cardbox,.noprint,.banner{display:none!important}
+  .app{display:block!important}.main{display:block!important}
+  .content{padding:0!important;display:block!important}
+  .rep{border:0;box-shadow:none;padding:0;max-width:none;font-size:11px}
+  .rep section{break-inside:avoid-page}
+  .rt{font-size:10px}.rt tr{break-inside:avoid}
+  .rk b{font-size:14px}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+.gs .gs-top{display:flex;gap:18px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted);margin-bottom:10px}
+.gs .gs-top b{color:var(--ink)}
+.gs .gs-top select{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:5px 8px;font-size:13px}
+.gs-t{border-collapse:collapse;width:100%;max-width:900px;font-size:13px}
+.gs-t th{text-align:left;font-size:11px;color:var(--muted);font-weight:700;padding:4px 6px;border-bottom:1px solid var(--line)}
+.gs-t td{padding:3px 4px;border-bottom:1px solid var(--line2)}
+.gs-t td:nth-child(2),.gs-t td:nth-child(3){width:130px}.gs-t td:nth-child(4){width:150px}.gs-t td:last-child{width:30px}
+.gs-t input{width:100%;border:1px solid var(--inputLine);background:var(--inputBg);border-radius:5px;padding:5px 7px;font-size:13px;min-width:0}
+.gs-t input.n,.gs-t td.n{text-align:right}
+.gs-t tfoot td{border:0;padding-top:8px}
+.gs-x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:16px}.gs-x:hover{color:var(--cRed)}
+.gs-w{margin:10px 0 0;padding-left:18px;font-size:12.5px;color:var(--warnInk)}
 .tiles.t7{grid-template-columns:repeat(7,minmax(0,1fr))}
 .tile.sig{display:flex;flex-direction:column;padding:0;overflow:hidden}
 .tile.sig .sg-h{all:unset;box-sizing:border-box;display:block;padding:10px 12px 8px;cursor:pointer}
@@ -426,6 +478,7 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
         <label class="repdate" for="repdate">Дата отчёта <input type="date" id="repdate"><button type="button" id="repToday" class="rtoday" title="Всегда показывать отчёт на сегодняшнюю дату">Сегодня</button></label>
         <a class="btn sm acc" id="loginTop" href="/login.html" hidden><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Войти</a>
         <a class="btn sm pri" id="buyTop" href="#buy">Excel-версия</a>
+        <button class="btn sm" id="xlsTop" data-xlsx="1" type="button" title="Скачать все листы в Excel"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg>Excel</button>
         <button class="btn sm ghost" id="logout" type="button" hidden>Выйти</button>
       </div>
       <nav class="mnav" id="mnav"></nav>
@@ -760,6 +813,7 @@ function scls(s){ for(const k in ST) if(ST[k].includes(s)) return k; return "n";
 const SHEETS = [
   {id:"dash", t:"Сводка директора", g:"Обзор", c:"#0B1F3A", sub:"Деньги, прибыль и риски по всем объектам на одном экране. Нажмите на любой сигнал — откроется лист с причиной."},
   {id:"analysis", t:"Анализ проектов", g:"Обзор", c:"#1565C0", sub:"Прибыль, затраты, деньги и риски по каждому объекту. Лист считается полностью автоматически."},
+  {id:"report", t:"Отчёт руководителя", g:"Обзор", c:"#0B1F3A", sub:"Сводка на 1–2 страницы для собственника или заказчика: главное, объекты, деньги, просрочка и сроки. Печать или PDF — одной кнопкой."},
   {id:"projects", t:"Проекты", g:"Деньги", c:"#1565C0", sub:"Единый реестр объектов и договоров. Код проекта связывает все листы."},
   {id:"budget", t:"Бюджет", g:"Деньги", c:"#1565C0", sub:"План, факт и прогноз по статьям. Факт = оплаты из Платежей + корректировка, остаток считается сам."},
   {id:"payments", t:"Платежи", g:"Деньги", c:"#2E7D32", sub:"Платёжный календарь. Отметьте оплату — она сразу попадёт в факт Бюджета и в деньги на счёте."},
@@ -828,7 +882,7 @@ function fmtCell(c, v){
 function table(o){
   // o: {id, arr, rows (массив из S), cols, filter(i), sums:[ключи], add, del, mob:[ключи столбцов для телефона]}
   if(RO) o = Object.assign({}, o, {del:false, add:false});
-  TABLES[o.id] = o;
+  TABLES[o.id] = o; if(XCAP) XCAP.push(o);
   const all = o.rows.map((_,i)=>i).filter(i => !o.filter || o.filter(i));
   const srt = ui.sort[o.id], sc = srt && o.cols.find(c => c.k===srt.k);
   let idx = all;
@@ -1021,7 +1075,7 @@ V.projects = () => {
     {h:"Договор без НДС, ₽",k:"noVat",calc:i=>R.an[i].noVat,t:"money",w:115}, {h:"Дней до сдачи",k:"dl",calc:i=>R.an[i].daysLeft,t:"num",w:80},
     {h:"Статус проекта",k:"st",calc:i=>R.an[i].st,t:"status",w:100},
   ];
-  return projFilter("projects") + table({id:"projects", mob:["code","name","amt","st"], arr:"projects", rows:S.projects, cols, filter:i=>match("projects",S.projects[i]), sums:["amt","noVat"], add:1, del:1});
+  return projFilter("projects") + table({id:"projects", mob:["code","name","amt","st"], arr:"projects", rows:S.projects, cols, filter:i=>match("projects",S.projects[i]), sums:["amt","noVat"], add:1, del:1}) + gsBlock();
 };
 V.budget = () => {
   const cols = [
@@ -1449,6 +1503,201 @@ function drawDds(grid){
       title:c => P[c[0].dataIndex].l, label:c => { const p = P[c.dataIndex]; return [`Остаток на конец: ${rub(p.close)}`, `Поступления: ${rub(p.inc)}`, `Выплаты: ${rub(p.out)}`].concat(p.min < 0 ? [`Кассовый разрыв: ${rub(p.min)} (${fdate(p.minD)})`] : []); }}}},
       scales:{x:{grid:{display:false}, ticks:{maxRotation:0, autoSkip:true}}, y:{grid:{color:c => c.tick.value === 0 ? css("--muted") : grid}, ticks:{callback:tickM}}}}}));
 }
+/* ---------- Отчёт руководителя: 1–2 страницы для печати и PDF */
+V.report = () => {
+  const T = R.tot, D = R.dash, st = S.settings, rep = R.repN, A = R.an.filter(o => o.code);
+  const X = S.payments.length ? ddsBase() : null, g = X && X.gaps[0];
+  const SL = ["Старт сорван", "Просрочено", "Отставание"];
+  const overdue = S.payments.map((p, i) => ({p, i})).filter(x => R.pay[x.i].ctrl === "Просрочено").sort((a, b) => num(b.p.amt) - num(a.p.amt));
+  let oIn = 0, oOut = 0; overdue.forEach(x => { if(x.p.type === "Поступление") oIn += num(x.p.amt); else oOut += num(x.p.amt); });
+  const slips = S.works.map((w, i) => ({proj:w.proj, obj:R.work[i].obj, name:w.name, who:w.exec, pf:dn(w.pf), fc:R.work[i].fc, st:R.work[i].st}))
+    .concat(S.stages.map((s, i) => ({proj:s.proj, obj:R.stage[i].obj, name:s.stage, who:"этап ППР", pf:dn(s.pf), fc:R.stage[i].fc, st:R.stage[i].st, nw:R.stage[i].nw})).filter(x => x.nw === 0))
+    .filter(x => SL.includes(x.st)).sort((a, b) => SL.indexOf(a.st) - SL.indexOf(b.st) || num(a.pf) - num(b.pf));
+  const sup = S.purchases.map((b, i) => ({proj:b.proj, obj:R.buy[i].obj, pos:b.pos, who:b.sup, due:dn(b.due), st:R.buy[i].ctrl}))
+    .filter(x => ["Срыв монтажа", "Задержка", "Отказ в замене"].includes(x.st))
+    .concat(S.repl.map((z, i) => ({proj:z.proj, obj:R.rep[i].obj, pos:"Замена: " + (z.alt || z.orig || ""), who:"заказчик", due:dn(z.due), st:R.rep[i].ctrl})).filter(x => ["Ответ просрочен", "Риск для монтажа"].includes(x.st)));
+  const riskObj = A.filter(o => o.st === "Риск"), attnObj = A.filter(o => o.st === "Внимание");
+  const word = (n, a, b, c) => n % 10 === 1 && n % 100 !== 11 ? a : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? b : c;
+  const pt = (cls, html) => `<li class="${cls}">${html}</li>`;
+  const pts = [
+    pt(T.margin >= st.target ? "ok" : T.margin >= st.crit ? "warn" : "bad", `Прогноз прибыли по ${T.n} ${word(T.n, "объекту", "объектам", "объектам")} — <b>${rub(T.profit)}</b>, маржа <b>${pct(T.margin)}</b> при цели ${pct(st.target, 0)}.`),
+    X ? (g ? pt("bad", `<b>Кассовый разрыв ${fdate(g.s)}</b>: не хватит ${rub(-g.min)}${g.rec ? `, деньги придут ${fdate(g.rec)}` : ""}. Сейчас на счёте ${rub(D.cash)}.`)
+      : pt(X.low ? "warn" : "ok", `Кассового разрыва нет до ${fdate(X.end - 1)}. На счёте ${rub(D.cash)}${X.low ? `, ${fdate(X.low.d)} остаток опустится ниже порога ${rub(X.reserve)}` : ""}.`)) : "",
+    overdue.length ? pt("bad", `Просрочено ${overdue.length} ${word(overdue.length, "платёж", "платежа", "платежей")} на ${rub(D.overdueSum)}: нам не заплатили ${rub(oIn)}, мы не заплатили ${rub(oOut)}.`) : pt("ok", "Просроченных платежей нет."),
+    slips.length ? pt(D.slips ? "bad" : "warn", `Сроки: сорван старт — ${D.startFail}, просрочено — ${D.slips - D.startFail}, отставание от графика — ${D.lagging}.`) : pt("ok", "Работы идут по графику."),
+    sup.length ? pt("bad", `Снабжение: ${sup.length} ${word(sup.length, "позиция", "позиции", "позиций")} под риском (поставки и замены оборудования).`) : pt("ok", "Рисков по поставкам и заменам нет."),
+    riskObj.length ? pt("bad", `В зоне риска: ${riskObj.map(o => esc(o.name)).join(", ")}${attnObj.length ? `. Требуют внимания: ${attnObj.map(o => esc(o.name)).join(", ")}` : ""}.`)
+      : attnObj.length ? pt("warn", `Требуют внимания: ${attnObj.map(o => esc(o.name)).join(", ")}.`) : pt("ok", "Все объекты в норме."),
+  ].join("");
+  const kpi = (l, v, s) => `<div class="rk"><small>${l}</small><b>${v}</b>${s ? `<span>${s}</span>` : ""}</div>`;
+  const pill2 = s => `<span class="rp ${scls(s)}">${esc(s)}</span>`;
+  const more = (n, k) => n > k ? `<p class="rnote">…и ещё ${n - k}. Полный список — в кабинете.</p>` : "";
+  let h = `<div class="rtools noprint"><button type="button" class="btn pri" id="repPrint">Печать / сохранить в PDF</button><button type="button" class="btn" data-xlsx="1">Скачать Excel</button><span class="note" style="margin:0">В окне печати выберите «Сохранить как PDF», чтобы отправить отчёт.</span></div>
+  <article class="rep">
+  <header class="rh"><div><h1>Отчёт руководителя</h1><p>${esc(st.company || "")}</p></div><div class="rd">на ${fdate(rep)}<span>сформирован ${new Date().toLocaleDateString("ru-RU")}</span></div></header>
+  <section><h2>Главное</h2><ul class="rpts">${pts}</ul></section>
+  <section class="rkpi">${kpi("Договоры", rub(T.contract), `объектов: ${T.n}`)}${kpi("Прогноз расходов", rub(T.fc), `факт: ${rub(T.fact)}`)}${kpi("Прогноз прибыли", rub(T.profit), `маржа ${pct(T.margin)}`)}${kpi("На счёте", rub(D.cash), "")}${kpi("Долг заказчиков", rub(T.debt), "")}</section>
+  <section><h2>Объекты</h2><table class="rt"><thead><tr><th>Код</th><th class="l">Объект</th><th>Договор, ₽</th><th>Прибыль, ₽</th><th>Маржа</th><th>Долг заказчика, ₽</th><th>Готовность</th><th>Статус</th><th class="l">Что не так</th></tr></thead><tbody>`;
+  A.slice().sort((a, b) => ["Риск", "Внимание", "В норме"].indexOf(a.st) - ["Риск", "Внимание", "В норме"].indexOf(b.st)).forEach(o => {
+    const why = [o.profit < 0 ? "убыток" : o.margin < st.crit ? "маржа ниже критической" : o.margin < st.target ? "маржа ниже цели" : "", o.slip ? `сроки: ${o.slip}` : "", o.risk ? `поставки: ${o.risk}` : "", o.devB > 0 ? `перерасход ${money(o.devB)}` : ""].filter(Boolean).join(", ");
+    h += `<tr><td>${esc(o.code)}</td><td class="l">${esc(o.name)}</td><td>${money(o.contract)}</td><td class="${o.profit < 0 ? "neg" : ""}">${money(o.profit)}</td><td>${pct(o.margin)}</td><td>${money(o.debt)}</td><td>${o.ready === null ? "—" : pct(o.ready, 0)}</td><td>${pill2(o.st)}</td><td class="l">${why || "—"}</td></tr>`;
+  });
+  h += `<tr class="tot"><td></td><td class="l">Итого</td><td>${money(T.contract)}</td><td>${money(T.profit)}</td><td>${pct(T.margin)}</td><td>${money(T.debt)}</td><td></td><td></td><td></td></tr></tbody></table></section>`;
+  if(X){
+    const W = ddsCalc({step:"w", delay:0, noOver:false, proj:"", group:"art"}).P.filter(p => p.kind !== "fact").slice(0, 8);
+    h += `<section><h2>Деньги на 8 недель</h2><table class="rt"><thead><tr><th class="l">Неделя</th><th>На начало</th><th>Поступления</th><th>Выплаты</th><th>На конец</th><th>Кассовый разрыв</th></tr></thead><tbody>${W.map(p => `<tr><td class="l">${p.l}</td><td>${money(p.open)}</td><td class="pos">${money(p.inc)}</td><td>${money(p.out)}</td><td class="${p.close < 0 ? "neg" : ""}">${money(p.close)}</td><td class="${p.min < 0 ? "neg" : ""}">${p.min < 0 ? `${money(p.min)} · ${ddsD(p.minD)}` : "—"}</td></tr>`).join("")}</tbody></table></section>`;
+  }
+  if(overdue.length){
+    h += `<section><h2>Просроченные платежи</h2><table class="rt"><thead><tr><th>Срок</th><th class="l">Кто кому</th><th class="l">Контрагент</th><th class="l">Объект</th><th class="l">Назначение</th><th>Сумма, ₽</th></tr></thead><tbody>${overdue.slice(0, 10).map(x => `<tr><td>${fdate(x.p.date)}</td><td class="l">${x.p.type === "Поступление" ? "нам не заплатили" : "мы не заплатили"}</td><td class="l">${esc(x.p.contr || "")}</td><td class="l">${esc(R.pay[x.i].obj || "")}</td><td class="l">${esc(x.p.what || "")}</td><td>${money(x.p.amt)}</td></tr>`).join("")}</tbody></table>${more(overdue.length, 10)}</section>`;
+  }
+  if(slips.length){
+    h += `<section><h2>Сроки: что сорвано или отстаёт</h2><table class="rt"><thead><tr><th class="l">Объект</th><th class="l">Работа / этап</th><th class="l">Исполнитель</th><th>План окончания</th><th>Прогноз</th><th>Статус</th></tr></thead><tbody>${slips.slice(0, 10).map(x => `<tr><td class="l">${esc(x.obj || x.proj || "")}</td><td class="l">${esc(x.name || "")}</td><td class="l">${esc(x.who || "")}</td><td>${fdate(x.pf)}</td><td>${fdate(x.fc)}</td><td>${pill2(x.st)}</td></tr>`).join("")}</tbody></table>${more(slips.length, 10)}</section>`;
+  }
+  if(sup.length){
+    h += `<section><h2>Снабжение: поставки и замены под риском</h2><table class="rt"><thead><tr><th class="l">Объект</th><th class="l">Позиция</th><th class="l">Поставщик / от кого ждём</th><th>Срок</th><th>Статус</th></tr></thead><tbody>${sup.slice(0, 10).map(x => `<tr><td class="l">${esc(x.obj || x.proj || "")}</td><td class="l">${esc(x.pos || "")}</td><td class="l">${esc(x.who || "")}</td><td>${fdate(x.due)}</td><td>${pill2(x.st)}</td></tr>`).join("")}</tbody></table>${more(sup.length, 10)}</section>`;
+  }
+  return h + `<footer class="rf">PROJECT CONTROL PRO · ${esc(st.company || "")} · отчёт на ${fdate(rep)}</footer></article>`;
+};
+/* ---------- Выгрузка в Excel (.xlsx собирается в браузере, без библиотек) */
+let XCAP = null;
+const CRC = (() => { const t = new Uint32Array(256); for(let n = 0; n < 256; n++){ let c = n; for(let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b){ let c = 0xFFFFFFFF; for(let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files){            // files: [{name, data:Uint8Array}] → Blob (zip без сжатия)
+  const enc = new TextEncoder(), parts = [], cen = []; let off = 0;
+  const d = new Date(), dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF, dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+  files.forEach(f => {
+    const nm = enc.encode(f.name), crc = crc32(f.data), n = f.data.length;
+    const h = new DataView(new ArrayBuffer(30)); h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, dt, true); h.setUint16(12, dd, true); h.setUint32(14, crc, true); h.setUint32(18, n, true); h.setUint32(22, n, true); h.setUint16(26, nm.length, true); h.setUint16(28, 0, true);
+    parts.push(new Uint8Array(h.buffer), nm, f.data);
+    const c = new DataView(new ArrayBuffer(46)); c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, dt, true); c.setUint16(14, dd, true); c.setUint32(16, crc, true); c.setUint32(20, n, true); c.setUint32(24, n, true); c.setUint16(28, nm.length, true); c.setUint32(42, off, true);
+    cen.push(new Uint8Array(c.buffer), nm); off += 30 + nm.length + n;
+  });
+  const cl = cen.reduce((a, x) => a + x.length, 0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cl, true); e.setUint32(16, off, true);
+  return new Blob([...parts, ...cen, new Uint8Array(e.buffer)], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+const xesc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+const colL = n => { let s = ""; n++; while(n){ const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
+// cell: {v, s} — s: 0 текст, 2 дата (номер дня), 3 деньги, 4 проценты, 5 число
+function xSheet(head, rows, widths){
+  let x = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>`;
+  head.forEach((h, j) => x += `<col min="${j + 1}" max="${j + 1}" width="${widths[j] || 14}" customWidth="1"/>`);
+  x += `</cols><sheetData><row r="1" ht="30" customHeight="1">${head.map((h, j) => `<c r="${colL(j)}1" t="inlineStr" s="1"><is><t xml:space="preserve">${xesc(h)}</t></is></c>`).join("")}</row>`;
+  rows.forEach((r, i) => { x += `<row r="${i + 2}">` + r.map((c, j) => {
+    const ref = colL(j) + (i + 2);
+    if(c === null || c === undefined || c.v === null || c.v === undefined || c.v === "") return "";
+    if(c.s && typeof c.v === "number" && isFinite(c.v)) return `<c r="${ref}" s="${c.s}"><v>${c.v}</v></c>`;
+    return `<c r="${ref}" t="inlineStr"${c.b ? ' s="6"' : ""}><is><t xml:space="preserve">${xesc(c.v)}</t></is></c>`; }).join("") + `</row>`; });
+  return x + `</sheetData>${rows.length ? `<autoFilter ref="A1:${colL(head.length - 1)}${rows.length + 1}"/>` : ""}</worksheet>`;
+}
+function xlsxBlob(sheets){
+  const enc = new TextEncoder(), F = (name, s) => ({name, data:enc.encode(s)});
+  const W = "http://schemas.openxmlformats.org/spreadsheetml/2006/main", RL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+  const files = [
+    F("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`),
+    F("_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${RL}/officeDocument" Target="xl/workbook.xml"/></Relationships>`),
+    F("xl/workbook.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="${W}" xmlns:r="${RL}"><sheets>${sheets.map((s, i) => `<sheet name="${xesc(s.name.replace(/[\[\]:*?\/\\]/g, " ").slice(0, 31))}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("")}</sheets><definedNames>${sheets.map((s, i) => s.rows.length ? `<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${xesc(s.name.slice(0, 31))}'!$A$1:$${colL(s.head.length - 1)}$${s.rows.length + 1}</definedName>` : "").join("")}</definedNames></workbook>`),
+    F("xl/_rels/workbook.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="${RL}/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("")}<Relationship Id="rId${sheets.length + 1}" Type="${RL}/styles" Target="styles.xml"/></Relationships>`),
+    F("xl/styles.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="${W}"><numFmts count="2"><numFmt numFmtId="164" formatCode="DD.MM.YYYY"/><numFmt numFmtId="165" formatCode="#,##0"/></numFmts><fonts count="3"><font><sz val="10"/><name val="Arial"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Arial"/></font><font><b/><sz val="10"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B1F3A"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="7"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment wrapText="1" vertical="center" horizontal="center"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="10" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`),
+  ];
+  sheets.forEach((s, i) => files.push(F(`xl/worksheets/sheet${i + 1}.xml`, xSheet(s.head, s.rows, s.widths))));
+  return zipStore(files);
+}
+function xCell(c, v){
+  if(v === null || v === undefined || v === "") return null;
+  if(c.t === "date"){ const d = typeof v === "number" ? v : dn(v); return d === null ? null : {v:d + 25569, s:2}; }
+  if(c.t === "money") return {v:+v, s:3};
+  if(c.t === "pct" || c.t === "bar") return {v:+v, s:4};
+  if(c.t === "int" || c.t === "num") return {v:+v, s:5};
+  if(c.t === "vat" || c.k === "vat") return {v:vatL(v)};
+  return {v:String(v)};
+}
+function exportXlsx(){
+  const keep = {proj:ui.proj, q:ui.q, f:ui.f}; ui.proj = {}; ui.q = {}; ui.f = {};
+  const sheets = [];
+  try{
+    [["analysis","Анализ проектов"],["projects","Проекты"],["budget","Бюджет"],["payments","Платежи"],["purchases","Закупки"],["replacements","Замены"],["ppr","ППР"],["schedule","График работ"]].forEach(([id, name]) => {
+      XCAP = []; V[id](); const o = XCAP.find(t => t.id === id) || XCAP[0]; XCAP = null; if(!o) return;
+      const idx = o.rows.map((_, i) => i).filter(i => !o.filter || o.filter(i));
+      sheets.push({name, head:o.cols.map(c => c.h), widths:o.cols.map(c => Math.max(8, Math.min(45, Math.round((c.w || 80) / 7)))),
+        rows:idx.map(i => o.cols.map(c => xCell(c, cellVal(o, c, i))))});
+    });
+    if(S.payments.length){
+      const X = ddsCalc({step:"w", delay:0, noOver:false, proj:"", group:"art"}), P = X.P, m = v => ({v, s:3});
+      const rows = [[{v:"Остаток на начало", b:1}, ...P.map(p => m(p.open))], [{v:"Поступления", b:1}, ...P.map(p => m(p.inc))]];
+      X.inc.forEach(r => rows.push([{v:"   " + r.name}, ...r.v.map(m)]));
+      rows.push([{v:"Выплаты", b:1}, ...P.map(p => m(p.out))]);
+      X.out.forEach(r => rows.push([{v:"   " + r.name}, ...r.v.map(m)]));
+      rows.push([{v:"Чистый поток", b:1}, ...P.map(p => m(p.inc - p.out))], [{v:"Остаток на конец", b:1}, ...P.map(p => m(p.close))], [{v:"Кассовый разрыв (минимум за неделю)", b:1}, ...P.map(p => p.min < 0 ? m(p.min) : null)]);
+      sheets.push({name:"ДДС по неделям", head:["Статья", ...P.map(p => `${p.l} (${p.kind === "fact" ? "факт" : p.kind === "now" ? "сейчас" : "план"})`)], widths:[34, ...P.map(() => 14)], rows});
+    }
+  } finally { XCAP = null; Object.assign(ui, keep); }
+  const blob = xlsxBlob(sheets), a = document.createElement("a"), nm = (S.settings.company || "PROJECT CONTROL PRO").replace(/[\\\/:*?"<>|«»]/g, "").trim().slice(0, 60) || "PROJECT CONTROL PRO";
+  a.href = URL.createObjectURL(blob); a.download = `${nm} — ${fdate(R.repN)}.xlsx`; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  toast("Excel-файл скачан");
+}
+/* ---------- График оплат по договору → плановые поступления в «Платежах» */
+const GS = {proj:"", rows:[]};
+function gsDefault(p){
+  const s = dn(p.s), e = dn(p.e), amt = num(p.amt), mid = s !== null && e !== null ? Math.round((s + e) / 2) : null;
+  const r = (n, pc, d) => ({n, p:pc, a:Math.round(amt * pc), d:d === null ? "" : ds(d)});
+  return [r("Аванс", 0.3, s), r("Оплата после поставки оборудования", 0.4, mid), r("Окончательный расчёт после сдачи", 0.3, e === null ? null : e + 15)];
+}
+function gsBlock(){
+  const P = S.projects.filter(p => p.code);
+  if(!P.length) return "";
+  if(!GS.proj || !P.some(p => p.code === GS.proj)){ GS.proj = ui.proj.projects || P[0].code; GS.rows = []; }
+  const p = P.find(x => x.code === GS.proj) || P[0], amt = num(p.amt);
+  if(!GS.rows.length) GS.rows = gsDefault(p);
+  const recv = S.payments.reduce((a, x) => a + (x.proj === p.code && x.type === "Поступление" && x.status === "Оплачено" ? num(x.amt) : 0), 0);
+  const gen = S.payments.filter(x => x.proj === p.code && x.type === "Поступление" && x.status === "План" && x.gen === "dog");
+  const own = S.payments.filter(x => x.proj === p.code && x.type === "Поступление" && x.status === "План" && x.gen !== "dog");
+  const tot = GS.rows.reduce((a, r) => a + num(r.a), 0), diff = amt - tot;
+  const dis = RO ? " disabled" : "";
+  let h = `<section class="card gs"><h2 class="sec-h">График оплат по договору <span class="rt">поступления от заказчика сами попадут в «Платежи» и ДДС</span></h2>
+  <div class="gs-top"><select data-gs="proj" aria-label="Объект">${P.map(x => `<option value="${esc(x.code)}"${x.code === p.code ? " selected" : ""}>${esc(x.code)} · ${esc(x.name || "")}</option>`).join("")}</select>
+    <span>Договор: <b>${rub(amt)}</b></span><span>Заказчик: <b>${esc(p.cust || "—")}</b></span><span>Срок: <b>${fdate(p.s) || "—"} – ${fdate(p.e) || "—"}</b></span><span>Уже получено: <b>${rub(recv)}</b></span></div>
+  <table class="gs-t"><thead><tr><th>Назначение платежа</th><th>% договора</th><th>Сумма, ₽</th><th>Плановая дата</th><th></th></tr></thead><tbody>`;
+  GS.rows.forEach((r, i) => h += `<tr><td><input data-gs="n" data-gi="${i}" value="${esc(r.n)}"${dis} aria-label="Назначение"></td>
+    <td><input class="n" data-gs="p" data-gi="${i}" inputmode="decimal" value="${r.p === "" || r.p === null ? "" : String(+(num(r.p) * 100).toFixed(2)).replace(".", ",")}"${dis} aria-label="Процент договора"></td>
+    <td><input class="n" data-gs="a" data-gi="${i}" inputmode="decimal" value="${r.a === "" ? "" : nf0.format(num(r.a))}"${dis} aria-label="Сумма"></td>
+    <td><input type="date" data-gs="d" data-gi="${i}" value="${esc(r.d || "")}"${dis} aria-label="Плановая дата"></td>
+    <td>${RO ? "" : `<button type="button" class="gs-x" data-gsdel="${i}" title="Убрать строку" aria-label="Убрать строку">×</button>`}</td></tr>`);
+  h += `</tbody><tfoot><tr><td>${RO ? "" : `<button type="button" class="btn sm" data-gsadd="1">+ Строка</button> <button type="button" class="btn sm ghost" data-gsreset="1">Типовой: 30 / 40 / 30</button>`}</td><td class="n">${String(+(amt ? tot / amt * 100 : 0).toFixed(1)).replace(".", ",")}%</td><td class="n"><b>${money(tot)}</b></td><td colspan="2">${Math.round(diff) === 0 ? `<span class="pos">распределено полностью</span>` : `<span class="neg">${diff > 0 ? "не распределено" : "больше договора на"} ${rub(Math.abs(diff))}</span>`}</td></tr></tfoot></table>`;
+  const warn = [];
+  if(gen.length) warn.push(`По этому договору уже создано ${gen.length} ${gen.length === 1 ? "плановое поступление" : "плановых поступлений"} на ${rub(gen.reduce((a, x) => a + num(x.amt), 0))} — они будут заменены новыми. Оплаченные не трогаются.`);
+  if(own.length) warn.push(`В «Платежах» есть ещё ${own.length} плановых поступлений по объекту, внесённых вручную, на ${rub(own.reduce((a, x) => a + num(x.amt), 0))}. Они останутся — проверьте, чтобы не было дублей.`);
+  if(recv > 0) warn.push(`По объекту уже получено ${rub(recv)}. Если аванс уже пришёл, уберите его из графика.`);
+  h += warn.length ? `<ul class="gs-w">${warn.map(w => `<li>${w}</li>`).join("")}</ul>` : "";
+  h += RO ? "" : `<div class="inl" style="margin-top:10px"><button type="button" class="btn pri" data-gsmake="1">${gen.length ? "Пересоздать плановые поступления" : "Создать плановые поступления"}</button><span class="note" style="margin:0">Строки без суммы или даты пропускаются.</span></div>`;
+  return h + `</section>`;
+}
+function gsMake(btn){
+  const p = S.projects.find(x => x.code === GS.proj); if(!p) return;
+  const rows = GS.rows.filter(r => num(r.a) > 0 && r.d);
+  if(!rows.length){ toast("Заполните сумму и дату хотя бы в одной строке"); return; }
+  const old = S.payments.filter(x => x.proj === p.code && x.type === "Поступление" && x.status === "План" && x.gen === "dog");
+  if(old.length && !confirm2(btn, `Заменить ${old.length} созданных ранее? Нажмите ещё раз`)) return;
+  const ops = [];
+  old.forEach(x => { S.payments.splice(S.payments.indexOf(x), 1); ops.push({t:"del", a:"payments", id:x._id}); });
+  rows.slice().reverse().forEach(r => { const row = {_id:rid(), date:r.d, type:"Поступление", proj:p.code, contr:p.cust || "", what:r.n || "Оплата по договору", amt:Math.round(num(r.a)), status:"План", gen:"dog"};
+    if(!row.contr) delete row.contr; S.payments.unshift(row); ops.push({t:"add", a:"payments", row, at:"start"}); });
+  send(ops); afterEdit(`В «Платежи» добавлено ${rows.length} плановых поступлений на ${rub(rows.reduce((a, r) => a + num(r.a), 0))}`);
+}
+document.addEventListener("change", e => {
+  const el = e.target; if(!el.dataset || el.dataset.gs === undefined) return;
+  if(el.dataset.gs === "proj"){ GS.proj = el.value; GS.rows = []; render(true); return; }
+  const r = GS.rows[+el.dataset.gi]; if(!r) return;
+  const p = S.projects.find(x => x.code === GS.proj), amt = p ? num(p.amt) : 0, k = el.dataset.gs;
+  if(k === "n") r.n = el.value;
+  if(k === "d") r.d = el.value;
+  if(k === "p"){ const v = parseVal("pct", el.value); r.p = v; if(v !== "" && amt) r.a = Math.round(amt * v); }
+  if(k === "a"){ const v = parseVal("money", el.value); r.a = v; r.p = v !== "" && amt ? v / amt : ""; }
+  render(true);
+});
 let charts = [];
 function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 function drawCharts(){
@@ -1641,6 +1890,15 @@ document.addEventListener("click", e => {
   if(e.target.closest("#repToday")){ e.preventDefault(); if(RO || blank(S.settings.repDate)) return; S.settings.repDate = ""; send([{t:"obj",o:"settings",k:"repDate",v:""}]); return afterEdit("Дата отчёта — всегда сегодняшняя"); }
   const zb = e.target.closest("[data-zoom]");
   if(zb){ try{ localStorage.setItem(ZK, zb.dataset.zoom); }catch(err){} applyZoom(); render(true); return; }
+  if(e.target.closest("#repPrint")){ window.print(); return; }
+  if(e.target.closest("[data-xlsx]")){ try{ exportXlsx(); }catch(err){ console.error(err); toast("Не получилось собрать файл"); } return; }
+  const gsb = e.target.closest("[data-gsadd],[data-gsdel],[data-gsreset],[data-gsmake]");
+  if(gsb){ if(RO) return; const d = gsb.dataset;
+    if(d.gsadd) GS.rows.push({n:"", p:"", a:"", d:""});
+    else if(d.gsdel !== undefined) GS.rows.splice(+d.gsdel, 1);
+    else if(d.gsreset){ const p = S.projects.find(x => x.code === GS.proj); if(p) GS.rows = gsDefault(p); }
+    else if(d.gsmake){ gsMake(gsb); return; }
+    render(true); return; }
   const go = e.target.closest("[data-go]");
   if(go){ const [s, f] = go.dataset.go.split(":"); if(f && s==="payments"){ ui.f.paymentsctrl = f; } else if(f && f[0]==="@"){ ui.proj[s] = f.slice(1); ui.q[s] = ""; } location.hash = s; return; }
   const srt = e.target.closest("th[data-sort]");

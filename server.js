@@ -10,6 +10,7 @@ const http = require("http");
 const https = require("https");
 const tls = require("tls");
 const TEMPLATE = require("./template.json");
+const MAIL = require("./mail");
 const DEMO = require("./demo.json");
 
 const PORT = +process.env.PORT || 8080;
@@ -63,7 +64,11 @@ async function migrate() {
     proj text not null, created_by int, created_at timestamptz not null default now());
   create index if not exists shares_company on shares(company_id);
   create index if not exists users_company on users(company_id);
-  create index if not exists sessions_user on sessions(user_id);`);
+  create index if not exists sessions_user on sessions(user_id);
+  create table if not exists resets (
+    token_hash text primary key, user_id int not null references users(id) on delete cascade, expires timestamptz not null);
+  alter table companies add column if not exists remind_for timestamptz;
+  alter table companies add column if not exists expired_for timestamptz;`);
 }
 
 /* ---------- утилиты */
@@ -666,6 +671,68 @@ app.post("/api/admin/users/:id/reset", admin, wrap(async (req, res) => {
   res.json({ email: r.rows[0].email, password: p });
 }));
 
+/* ---------- восстановление пароля по почте */
+app.get("/api/mail-on", (req, res) => res.json({ on: MAIL.mailOn() }));
+app.post("/api/forgot", wrap(async (req, res) => {
+  if (!MAIL.mailOn()) fail(400, "Восстановление по почте пока не настроено. Напишите нам на Boosty — пришлём временный пароль");
+  const email = normEmail(req.body.email);
+  if (!okEmail(email)) fail(400, "Проверьте адрес почты");
+  limit("forgot:" + req.ip, 10); limit("forgot:" + email, 3, 60 * 60 * 1000);
+  const r = await q("select id, name from users where email=$1", [email]);
+  if (r.rowCount) {
+    const t = token();
+    await q("delete from resets where user_id=$1", [r.rows[0].id]);
+    await q("insert into resets(token_hash,user_id,expires) values($1,$2,now()+interval '1 hour')", [sha(t), r.rows[0].id]);
+    const url = `${siteOf(req)}/login.html?reset=${encodeURIComponent(t)}`;
+    try {
+      await MAIL.sendMail({ to: email, subject: "Восстановление пароля — PROJECT CONTROL PRO",
+        text: `Здравствуйте${r.rows[0].name ? ", " + r.rows[0].name : ""}!\n\nЧтобы задать новый пароль, откройте ссылку (действует 1 час):\n${url}\n\nЕсли вы не запрашивали восстановление, просто удалите это письмо.`,
+        html: MAIL.layout("Восстановление пароля", `<p>Здравствуйте${r.rows[0].name ? ", " + String(r.rows[0].name).replace(/[<>&"]/g, "") : ""}!</p><p>Чтобы задать новый пароль для входа в кабинет, нажмите кнопку. Ссылка действует 1 час.</p><p style="color:#5B6A80;font-size:13px">Если вы не запрашивали восстановление, просто удалите это письмо — пароль останется прежним.</p>`, { url, text: "Задать новый пароль" }) });
+    } catch (e) { console.error(new Date().toISOString(), "mail forgot:", e.message); fail(500, "Не удалось отправить письмо. Попробуйте через несколько минут"); }
+  }
+  res.json({ ok: true });
+}));
+app.post("/api/reset", wrap(async (req, res) => {
+  limit("reset:" + req.ip, 20);
+  const p = String(req.body.password || "");
+  if (p.length < 8 || p.length > 200) fail(400, "Пароль — не короче 8 символов");
+  const r = await q("select user_id from resets where token_hash=$1 and expires>now()", [sha(String(req.body.token || ""))]);
+  if (!r.rowCount) fail(400, "Ссылка устарела или уже использована. Запросите восстановление ещё раз");
+  const uid = r.rows[0].user_id;
+  await q("update users set pass=$1, last_login=now() where id=$2", [hashPass(p), uid]);
+  await q("delete from resets where user_id=$1", [uid]);
+  await q("delete from sessions where user_id=$1", [uid]);
+  await newSession(req, res, uid, false);
+  res.json({ ok: true });
+}));
+
+/* ---------- напоминания о сроке доступа: за 3 дня и в день окончания */
+async function remindAccess() {
+  if (!MAIL.mailOn()) return;
+  const site = SITE || "https://projectcontrol.pro";
+  const rows = await q(`select c.id, c.name, c.access_until, u.email, u.name uname,
+      (c.access_until <= now()) expired
+    from companies c join lateral (select email, name from users where company_id=c.id and role='owner' order by id limit 1) u on true
+    where not c.blocked and (
+      (c.access_until > now() and c.access_until < now() + interval '3 days' and c.remind_for is distinct from c.access_until)
+      or (c.access_until <= now() and c.access_until > now() - interval '2 days' and c.expired_for is distinct from c.access_until))`);
+  for (const c of rows.rows) {
+    const until = new Date(c.access_until).toLocaleDateString("ru-RU", { timeZone: "Europe/Moscow" });
+    const hi = c.uname ? ", " + String(c.uname).replace(/[<>&"]/g, "") : "";
+    const subj = c.expired ? "Доступ к кабинету закончился — PROJECT CONTROL PRO" : `Доступ к кабинету заканчивается ${until} — PROJECT CONTROL PRO`;
+    const body = c.expired
+      ? `<p>Здравствуйте${hi}!</p><p>Срок доступа к кабинету компании «${String(c.name).replace(/[<>&"]/g, "")}» закончился ${until}. Данные сохранены: их можно смотреть, но вносить изменения нельзя.</p><p>Продлите доступ — и сотрудники сразу продолжат работу.</p>`
+      : `<p>Здравствуйте${hi}!</p><p>Доступ к кабинету компании «${String(c.name).replace(/[<>&"]/g, "")}» действует до <b>${until}</b>.</p><p>Чтобы работа не остановилась, продлите доступ заранее: «Команда и доступ» → выберите тариф.</p>`;
+    try {
+      await MAIL.sendMail({ to: c.email, subject: subj, html: MAIL.layout(c.expired ? "Доступ закончился" : "Доступ скоро закончится", body, { url: site + "/app.html#team", text: "Продлить доступ" }),
+        text: `${c.expired ? "Срок доступа закончился" : "Доступ действует до " + until}. Продлить: ${site}/app.html#team` });
+      await q(`update companies set ${c.expired ? "expired_for" : "remind_for"}=access_until where id=$1`, [c.id]);
+    } catch (e) { console.error(new Date().toISOString(), "mail remind:", c.id, e.message); }
+  }
+}
+setTimeout(() => remindAccess().catch(e => console.error("remind:", e.message)), 60e3).unref();
+setInterval(() => remindAccess().catch(e => console.error("remind:", e.message)), 3600e3).unref();
+
 /* ---------- страницы */
 app.get("/health", wrap(async (req, res) => { await q("select 1"); res.type("text").send("ok"); }));
 const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
@@ -683,7 +750,7 @@ app.use((err, req, res, next) => {
 });
 
 /* чистка устаревших сессий и приглашений */
-setInterval(() => { q("delete from sessions where expires<now()").catch(() => {}); q("delete from invites where expires<now()-interval '30 days'").catch(() => {}); }, 3600e3).unref();
+setInterval(() => { q("delete from sessions where expires<now()").catch(() => {}); q("delete from invites where expires<now()-interval '30 days'").catch(() => {}); q("delete from resets where expires<now()").catch(() => {}); }, 3600e3).unref();
 
 migrate().then(() => {
   app.listen(PORT, "0.0.0.0", () => console.log(`PROJECT CONTROL PRO: порт ${PORT}`));

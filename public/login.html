@@ -63,7 +63,23 @@ a{color:var(--accent)}
       <label>Почта<input type="email" id="l-email" autocomplete="email" required></label>
       <label>Пароль<input type="password" id="l-pass" autocomplete="current-password" required></label>
       <button class="btn" type="submit">Войти</button>
-      <p class="sub" style="margin:0">Забыли пароль? Напишите нам на <a href="https://boosty.to/project_control_lab" target="_blank" rel="noopener">Boosty</a> — пришлём временный пароль.</p>
+      <p class="sub" style="margin:0" id="forgotNote">Забыли пароль? Напишите нам на <a href="https://boosty.to/project_control_lab" target="_blank" rel="noopener">Boosty</a> — пришлём временный пароль.</p>
+      <p class="sub" style="margin:0" id="forgotLink" hidden><a href="#forgot" id="toForgot">Забыли пароль?</a></p>
+    </form>
+
+    <form id="forgot" hidden>
+      <h1>Восстановление пароля</h1>
+      <p class="sub">Укажите почту, с которой входите в кабинет. Пришлём ссылку, по которой можно задать новый пароль.</p>
+      <label>Почта<input type="email" id="f-email" autocomplete="email" required></label>
+      <button class="btn" type="submit">Прислать ссылку</button>
+      <p class="sub" style="margin:0"><a href="#" id="backLogin">Вернуться ко входу</a></p>
+    </form>
+
+    <form id="reset" hidden>
+      <h1>Новый пароль</h1>
+      <label>Новый пароль, не короче 8 символов<input type="password" id="n-pass" autocomplete="new-password" minlength="8" required></label>
+      <label>Повторите пароль<input type="password" id="n-pass2" autocomplete="new-password" minlength="8" required></label>
+      <button class="btn" type="submit">Сохранить и войти</button>
     </form>
 
     <form id="register" hidden>
@@ -106,9 +122,10 @@ a{color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const invite = new URLSearchParams(location.search).get("invite");
+const resetT = new URLSearchParams(location.search).get("reset");
 function msg(text, ok){ const m = $("msg"); m.hidden = !text; m.textContent = text || ""; m.className = "msg " + (ok ? "ok" : "err"); }
 function show(tab){
-  ["login","register","join","buy"].forEach(t => $(t).hidden = t !== tab);
+  ["login","register","join","buy","forgot","reset"].forEach(t => $(t).hidden = t !== tab);
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
   msg("");
 }
@@ -141,7 +158,23 @@ $("buy").addEventListener("submit", async e => {
   try{ const r = await post("/api/pay/checkout-new", {plan: document.querySelector('#plans input:checked').value, company:$("b-company").value, name:$("b-name").value, email:$("b-email").value, password:$("b-pass").value, offer:$("b-offer").checked, consent:$("b-consent").checked}); location.href = r.url; }
   catch(err){ msg(err.message); b.disabled = false; }
 });
-if(invite){
+fetch("/api/mail-on").then(r => r.json()).then(j => { if(j.on){ $("forgotNote").hidden = true; $("forgotLink").hidden = false; } }).catch(() => {});
+$("toForgot").addEventListener("click", e => { e.preventDefault(); show("forgot"); $("f-email").value = $("l-email").value; $("f-email").focus(); });
+$("backLogin").addEventListener("click", e => { e.preventDefault(); show("login"); });
+$("forgot").addEventListener("submit", async e => {
+  e.preventDefault(); const b = e.target.querySelector("button[type=submit]"); b.disabled = true; msg("");
+  try{ await post("/api/forgot", {email:$("f-email").value}); msg("Если такая почта зарегистрирована, мы отправили на неё ссылку. Проверьте входящие и папку «Спам». Ссылка действует 1 час.", true); }
+  catch(err){ msg(err.message); }
+  b.disabled = false;
+});
+$("reset").addEventListener("submit", e => {
+  e.preventDefault();
+  if($("n-pass").value !== $("n-pass2").value){ msg("Пароли не совпадают"); return; }
+  submit(e.target, "/api/reset", {token:resetT, password:$("n-pass").value});
+});
+if(resetT){
+  $("tabs").hidden = true; show("reset");
+} else if(invite){
   $("tabs").hidden = true; show("join");
   fetch("/api/invite-info?t=" + encodeURIComponent(invite)).then(r => r.json().then(j => ({ok:r.ok, j}))).then(({ok, j}) => {
     if(ok) $("j-sub").textContent = "Вас пригласили в кабинет компании «" + j.company + "»" + (j.role === "viewer" ? " как наблюдателя: вы сможете смотреть все данные, но не менять их." : ".");
