@@ -218,6 +218,12 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .t.dds td small.dd{display:block;font-size:10px;font-weight:500;line-height:1;margin-top:-3px}
 .t.dds td.gap:has(small.dd){line-height:1.15;padding-top:3px}
 .tiles.t4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.tiles.t7{grid-template-columns:repeat(7,minmax(0,1fr))}
+@media (max-width:1250px){.tiles.t7{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:520px){.tiles.t7{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.t tr.go{cursor:pointer}
+.t tr.go:hover td,.t tr.go:focus-visible td{background:var(--accentSoft)}
+.t tr.go:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 .tw.ddsw{max-height:none}
 @media (max-width:720px){.tiles.t4{grid-template-columns:1fr 1fr}}
 @media (max-width:720px){.ddsl{grid-template-columns:1fr}.ddsv{flex-direction:column}.ddsv-n{text-align:left;padding:10px 0 0;border-left:0;border-top:1px solid rgba(0,0,0,.08)}.ddsv-n small{justify-content:flex-start}}
@@ -853,7 +859,7 @@ function table(o){
       h += `<tr data-card="${o.id}" data-i="${i}" ${rid} tabindex="0">` + cols.map(c => `<td class="${c.calc?"c":""}${num(c)?" n":c.t==="date"?" dt":c.t==="status"?" ctr":""}">${c.t==="date" ? sdate(c.calc ? c.calc(i) : row[c.k]) : c.calc ? fmtCell(c, c.calc(i)) : fmtRaw(c, row[c.k])}${c===main && sub ? `<small>${esc(sub)}</small>` : ""}</td>`).join("") + "</tr>";
       return;
     }
-    h += `<tr ${rid}>`;
+    h += o.go ? `<tr ${rid} class="go" data-go="${esc(o.go(i))}" tabindex="0" title="Открыть анализ объекта">` : `<tr ${rid}>`;
     if(del) h += `<td class="stk ctr"><button class="del" data-del="${o.arr}" data-i="${i}" title="Удалить строку" aria-label="Удалить строку">×</button></td>`;
     cols.forEach((c,j) => {
       const stk = j===0 && !del ? " stk" : "";
@@ -948,8 +954,8 @@ V.dash = () => {
     ${tile("Прогноз маржи", pct(T.margin), `цель: ${Math.round(st.target*100)}%, критично: ${Math.round(st.crit*100)}%`, "var(--cGreen)", "analysis")}
     ${tile("На расчётном счёте", rub(D.cash), `долг заказчиков: ${money(T.debt)}`, "var(--cPurple)", "payments")}
   </div></section>
-  ${ddsStrip()}
-  <section><h2 class="sec-h red">Сигналы и риски</h2><div class="tiles">
+  <section><h2 class="sec-h red">Сигналы и риски</h2><div class="tiles t7">
+    ${ddsTile(tile)}
     ${tile("Просроченные платежи", D.overdueN, `на сумму ${rub(D.overdueSum)}`, "var(--cRed)", "payments:Просрочено", D.overdueN>0)}
     ${tile("К оплате поставщикам", rub(D.toPay), `в ближайшие ${st.horizon} дн.`, "var(--cOrange)", "payments:Скоро срок")}
     ${tile("Ожидаем поступлений", rub(D.toGet), `в ближайшие ${st.horizon} дн.`, "var(--cGreen)", "payments:Скоро срок")}
@@ -967,7 +973,7 @@ V.dash = () => {
     <a href="#schedule"><em>ГРАФИК РАБОТ</em>Сотрите «Факт начало» у работы — увидите «Старт сорван» и новый прогноз окончания этапа в ППР.</a>
     <a href="#kp"><em>РАСЧЁТ КП</em>Снизьте цену заявки — сразу видно рентабельность и ответ: брать тендер или нет.</a>
   </section>`}
-  <section><h2 class="sec-h">Объекты: финансы и статус</h2>`;
+  <section><h2 class="sec-h">Объекты: финансы и статус <span class="rt">Нажмите на объект — откроется его анализ</span></h2>`;
   const cols = [
     {h:"Код", k:"code", calc:i=>R.an[i].code, w:56, ctr:1},
     {h:"Объект", k:"name", calc:i=>R.an[i].name, w:180},
@@ -981,7 +987,7 @@ V.dash = () => {
     {h:"Готовность", k:"ready", calc:i=>R.an[i].ready, t:"bar", w:96},
     {h:"Статус", k:"st", calc:i=>R.an[i].st, t:"status", w:96},
   ];
-  h += table({id:"dash", mob:["code","name","margin","st"], arr:"projects", rows:S.projects, cols, filter:i=>!!S.projects[i].code}) + `</section>
+  h += table({id:"dash", mob:["code","name","margin","st"], arr:"projects", rows:S.projects, cols, filter:i=>!!S.projects[i].code, go:i=>"analysis:@"+S.projects[i].code}) + `</section>
   <section class="grid2">
     <div class="card"><h2 class="sec-h">Движение денег по месяцам</h2><div class="chartbox"><canvas id="ch1" aria-label="Поступления, платежи и остаток по месяцам"></canvas></div></div>
     <div class="card"><h2 class="sec-h">Статус проектов</h2><div class="chartbox"><canvas id="ch2" aria-label="Количество объектов по статусам"></canvas></div></div>
@@ -1357,12 +1363,12 @@ function ddsCalc(o){
   return X;
 }
 function ddsBase(){ return R._ddsb || (R._ddsb = ddsCalc({step:"w", delay:0, noOver:false, proj:"", group:"art"})); }
-function ddsStrip(){
-  if(!S.payments.length) return "";
+function ddsTile(tile){
+  if(!S.payments.length) return tile("Кассовый разрыв", "—", "нет платежей", "var(--line)", "dds", false);
   const X = ddsBase(), g = X.gaps[0];
-  if(g) return `<section><button type="button" class="ddsstrip bad" data-go="dds"><b>Кассовый разрыв: денег не хватит ${fdate(g.s)}</b><span>нужно найти ${rub(-g.min)}${g.rec ? ` · в плюс — ${fdate(g.rec)}` : ""}</span><em>ДДС →</em></button></section>`;
-  if(X.low) return `<section><button type="button" class="ddsstrip warn" data-go="dds"><b>Ниже неснижаемого остатка ${fdate(X.low.d)}</b><span>${rub(X.low.bal)} при пороге ${rub(X.reserve)}</span><em>ДДС →</em></button></section>`;
-  return `<section><button type="button" class="ddsstrip" data-go="dds"><b>Денег хватает до ${fdate(X.end - 1)}</b><span>меньше всего денег будет ${fdate(X.minAll.d)}: ${rub(X.minAll.bal)}${X.margin ? ` · разрыв, если заказчики заплатят на ${X.margin} дн. позже` : ""}</span><em>ДДС →</em></button></section>`;
+  if(g) return tile("Кассовый разрыв", fdate(g.s), `не хватит ${rub(-g.min)}`, "var(--cRed)", "dds", true);
+  if(X.low) return tile("Кассовый разрыв", "Нет", `но ${fdate(X.low.d)} ниже порога`, "#F2B705", "dds", false);
+  return tile("Кассовый разрыв", "Нет", `до ${fdate(X.end - 1)}`, "var(--cGreen)", "dds", false);
 }
 V.dds = () => {
   const o = ddsOpts(), X = DDSX = ddsCalc(o), P = X.P, rep = R.repN, unit = o.step === "m" ? "месяц" : "неделю";
@@ -1583,6 +1589,7 @@ let qT; document.addEventListener("input", e => { const el = e.target; if(el.dat
 /* Enter — на строку ниже в том же столбце, Shift+Enter — выше; Esc закрывает карточку */
 document.addEventListener("keydown", e => {
   const el = e.target;
+  if(e.key==="Enter" && el.matches && el.matches("tr.go[data-go]")){ el.click(); return; }
   if(e.key==="Escape" && ui.card){ closeCard(); return; }
   if(e.key!=="Enter" || e.isComposing || !el.matches) return;
   if(el.matches("tr[data-card]")){ e.preventDefault(); openCard(el.dataset.card, +el.dataset.i); return; }
@@ -1602,7 +1609,7 @@ document.addEventListener("click", e => {
   const zb = e.target.closest("[data-zoom]");
   if(zb){ try{ localStorage.setItem(ZK, zb.dataset.zoom); }catch(err){} applyZoom(); render(true); return; }
   const go = e.target.closest("[data-go]");
-  if(go){ const [s, f] = go.dataset.go.split(":"); if(f && s==="payments"){ ui.f.paymentsctrl = f; } location.hash = s; return; }
+  if(go){ const [s, f] = go.dataset.go.split(":"); if(f && s==="payments"){ ui.f.paymentsctrl = f; } else if(f && f[0]==="@"){ ui.proj[s] = f.slice(1); ui.q[s] = ""; } location.hash = s; return; }
   const srt = e.target.closest("th[data-sort]");
   if(srt){ const [id, k] = srt.dataset.sort.split(":"), c = ui.sort[id];
     if(!c || c.k!==k) ui.sort[id] = {k, dir:1}; else if(c.dir===1) c.dir = -1; else delete ui.sort[id];
