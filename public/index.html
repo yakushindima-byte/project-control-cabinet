@@ -239,6 +239,16 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .t.dds td.gap:has(small.dd){line-height:1.15;padding-top:3px}
 .tiles.t4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .tiles.t7{grid-template-columns:repeat(7,minmax(0,1fr))}
+.tile.sig{display:flex;flex-direction:column;padding:0;overflow:hidden}
+.tile.sig .sg-h{all:unset;box-sizing:border-box;display:block;padding:10px 12px 8px;cursor:pointer}
+.tile.sig .sg-r{border-top:1px solid var(--line2);padding:4px 0 6px;margin-top:auto}
+.tile.sig .sg-l{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;gap:10px;padding:3px 12px;cursor:pointer}
+.tile.sig .sg-l span{display:inline;font-size:12px;color:var(--muted)}
+.tile.sig .sg-l em{font-style:normal;font-weight:700;font-size:12.5px;color:var(--ink);white-space:nowrap}
+.tile.sig .sg-l em.neg{color:var(--badInk)} .tile.sig .sg-l em.pos{color:var(--goodInk)}
+.tile.sig .sg-h:hover,.tile.sig .sg-l:hover{background:var(--accentSoft)}
+.tile.sig .sg-h:focus-visible,.tile.sig .sg-l:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+@media (max-width:1250px){.tiles.t4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:1250px){.tiles.t7{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:520px){.tiles.t7{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .t tr.go{cursor:pointer}
@@ -989,15 +999,7 @@ V.dash = () => {
     ${tile("Прогноз маржи", pct(T.margin), `цель: ${Math.round(st.target*100)}%, критично: ${Math.round(st.crit*100)}%`, "var(--cGreen)", "analysis")}
     ${tile("На расчётном счёте", rub(D.cash), `долг заказчиков: ${money(T.debt)}`, "var(--cPurple)", "payments")}
   </div></section>
-  <section><h2 class="sec-h red">Сигналы и риски</h2><div class="tiles t7">
-    ${ddsTile(tile)}
-    ${tile("Просроченные платежи", D.overdueN, `на сумму ${rub(D.overdueSum)}`, "var(--cRed)", "payments:Просрочено", D.overdueN>0)}
-    ${tile("К оплате поставщикам", rub(D.toPay), `в ближайшие ${st.horizon} дн.`, "var(--cOrange)", "payments:Скоро срок")}
-    ${tile("Ожидаем поступлений", rub(D.toGet), `в ближайшие ${st.horizon} дн.`, "var(--cGreen)", "payments:Скоро срок")}
-    ${tile("Риск поставок и замен", D.supply, `на согласовании: ${D.onApproval}, впритык: ${D.tight}`, "var(--cRed)", "purchases", D.supply>0)}
-    ${tile("Срывы сроков работ", D.slips, `сорван старт: ${D.startFail}, отставание: ${D.lagging}`, "var(--cRed)", "schedule", D.slips>0)}
-    ${tile("Объекты в зоне риска", D.risk, `требуют внимания: ${D.attn}`, "var(--cRed)", "analysis", D.risk>0)}
-  </div></section>
+  <section><h2 class="sec-h red">Сигналы и риски</h2><div class="tiles t4">${sigTiles()}</div></section>
   ${CAB ? (S.projects.length ? "" : `<section aria-label="С чего начать"><h2 class="sec-h">С чего начать</h2><div class="start">
     <a href="#setup"><em>1. НАСТРОЙКИ</em>Остаток денег на счёте и дата начала учёта, пороги маржи.</a>
     <a href="#projects"><em>2. ПРОЕКТЫ</em>Объекты и договоры. Код проекта связывает все листы.</a>
@@ -1398,6 +1400,33 @@ function ddsCalc(o){
   return X;
 }
 function ddsBase(){ return R._ddsb || (R._ddsb = ddsCalc({step:"w", delay:0, noOver:false, proj:"", group:"art"})); }
+function sigTiles(){
+  const D = R.dash, hz = S.settings.horizon, RED = "var(--cRed)", YEL = "#F2B705", GRN = "var(--cGreen)";
+  const sig = (lab, val, color, alarm, go, rows) => `<div class="tile sig" style="--tc:${color}"><button type="button" class="sg-h" data-go="${go}"><small>${lab}</small><b class="${alarm ? "alarm" : ""}">${val}</b></button><div class="sg-r">${rows.map(r => `<button type="button" class="sg-l" data-go="${r.go || go}"><span>${r.l}</span><em class="${r.bad ? "neg" : r.good ? "pos" : ""}">${r.v}</em></button>`).join("")}</div></div>`;
+  // 1. Деньги: кассовый разрыв + что придёт и уйдёт в горизонте
+  const X = S.payments.length ? ddsBase() : null, g = X && X.gaps[0];
+  const money1 = sig(`Деньги на ${hz} дн.`, g ? `Разрыв ${fdate(g.s)}` : X && X.low ? `Ниже порога ${fdate(X.low.d)}` : "Разрыва нет", g ? RED : X && X.low ? YEL : GRN, !!g, "dds", [
+    ...(g ? [{l:"Не хватит денег", v:rub(-g.min), bad:1}] : []),
+    {l:"Придёт от заказчиков", v:"+" + rub(D.toGet), go:"payments:Скоро срок", good:D.toGet > 0},
+    {l:"Заплатить поставщикам", v:"−" + rub(D.toPay), go:"payments:Скоро срок"}]);
+  // 2. Просрочка: кто кому должен
+  let oIn = 0, oOut = 0; S.payments.forEach((p, i) => { if(R.pay[i].ctrl === "Просрочено"){ if(p.type === "Поступление") oIn += num(p.amt); else oOut += num(p.amt); } });
+  const over = sig("Просроченные платежи", D.overdueN ? `${D.overdueN} на ${rub(D.overdueSum)}` : "Нет", D.overdueN ? RED : GRN, D.overdueN > 0, "payments:Просрочено", [
+    {l:"Нам не заплатили", v:rub(oIn), bad:oIn > 0},
+    {l:"Мы не заплатили", v:rub(oOut), bad:oOut > 0}]);
+  // 3. Сроки и снабжение
+  const prob = D.slips + D.supply;
+  const work = sig("Сроки и поставки", prob ? `${prob} ${prob % 10 === 1 && prob % 100 !== 11 ? "проблема" : [2,3,4].includes(prob % 10) && ![12,13,14].includes(prob % 100) ? "проблемы" : "проблем"}` : D.lagging ? "Есть отставание" : "Всё в срок", prob ? RED : D.lagging ? YEL : GRN, prob > 0, D.slips || !D.supply ? "schedule" : "purchases", [
+    {l:"Сорван старт / просрочено", v:`${D.startFail} / ${D.slips - D.startFail}`, go:"schedule", bad:D.slips > 0},
+    {l:"Отставание от графика", v:D.lagging, go:"schedule", bad:D.lagging > 0},
+    {l:"Риск поставок и замен", v:D.supply, go:"purchases", bad:D.supply > 0}]);
+  // 4. Объекты
+  const objs = sig("Объекты", D.risk ? `${D.risk} в зоне риска` : D.attn ? `${D.attn} требуют внимания` : "Все в норме", D.risk ? RED : D.attn ? YEL : GRN, D.risk > 0, "analysis", [
+    {l:"Риск", v:D.risk, bad:D.risk > 0},
+    {l:"Внимание", v:D.attn},
+    {l:"В норме", v:D.ok, good:D.ok > 0}]);
+  return money1 + over + work + objs;
+}
 function ddsTile(tile){
   if(!S.payments.length) return tile("Кассовый разрыв", "—", "нет платежей", "var(--line)", "dds", false);
   const X = ddsBase(), g = X.gaps[0];
