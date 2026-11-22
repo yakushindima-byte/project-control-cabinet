@@ -1355,34 +1355,6 @@ V.dds = () => {
     + sel("ddsstep", "Шаг", [["w", "По неделям"], ["m", "По месяцам"]])
     + sel("ddsdelay", "Проверка", [["0", "Заказчики платят в срок"], ["7", "Что если заказчики заплатят на 7 дн. позже"], ["14", "Что если на 14 дн. позже"], ["30", "Что если на 30 дн. позже"]]) + `</div>`;
   if(!X.ev.length) return h + `<section class="card"><p class="note" style="margin:0">Пока нет платежей${pr ? " по этому выбору" : ""}. Внесите поступления и расходы на листе <a href="#payments">«Платежи»</a> — ДДС посчитается сам.</p></section>`;
-  const g = X.gaps[0], who = pr ? `<span class="rt">${esc(prName)}</span>` : "";
-  // 1. Главный ответ: хватит денег или нет
-  if(g){
-    h += `<section class="ddsv bad"><div class="ddsv-m"><small>Кассовый разрыв ${who}</small><b>Денег не хватит ${fdate(g.s)}</b>
-      <span>Остаток уйдёт в минус до <strong>${rub(g.min)}</strong>${g.rec ? ` и вернётся в плюс ${fdate(g.rec)} — через ${g.rec - g.s} дн.` : `, до ${fdate(X.end - 1)} в плюс не вернётся.`}${X.gaps.length > 1 ? ` Это первый из ${X.gaps.length} разрывов.` : ""}</span></div>
-      <div class="ddsv-n"><small>Нужно найти</small><b>${rub(-g.min)}</b><span>до ${fdate(g.s)}</span></div></section>`;
-  } else if(X.low){
-    h += `<section class="ddsv warn"><div class="ddsv-m"><small>Разрыва нет, но денег мало ${who}</small><b>${fdate(X.low.d)} остаток упадёт ниже порога</b>
-      <span>Останется ${rub(X.low.bal)} при неснижаемом остатке ${rub(X.reserve)}. Самая низкая точка — ${rub(X.minAll.bal)}, ${fdate(X.minAll.d)}.</span></div>
-      <div class="ddsv-n"><small>Самый низкий остаток</small><b>${rub(X.minAll.bal)}</b><span>${fdate(X.minAll.d)}</span></div></section>`;
-  } else {
-    h += `<section class="ddsv ok"><div class="ddsv-m"><small>Кассовых разрывов нет ${who}</small><b>Денег хватает до ${fdate(X.end - 1)}</b>
-      <span>${X.margin === null ? "Даже если заказчики заплатят на 90 дней позже, денег хватит." : `Разрыв появится, если заказчики заплатят на <strong>${X.margin} дн.</strong> позже срока.`}</span></div>
-      <div class="ddsv-n"><small>Самый низкий остаток</small><b>${rub(X.minAll.bal)}</b><span>${fdate(X.minAll.d)}</span></div></section>`;
-  }
-  // 2. Что делать — только если есть разрыв
-  if(g){
-    const li = e => { const p = S.payments[e.i]; return `<li><span>${fdate(e.d)} · ${esc(p.contr || p.what || "")}${p.proj ? ` · ${esc(p.proj)}` : ""}${e.over ? ` · <b class="neg">просрочено</b>` : ""}</span><b>${money(e.amt)}</b></li>`; };
-    const outs = X.ev.filter(e => !e.inc && e.plan && e.d >= rep && e.d <= g.minD).sort((a, b) => b.amt - a.amt).slice(0, 5);
-    const ins = X.ev.filter(e => e.inc && e.plan && e.d > g.s && e.d < X.end).sort((a, b) => a.d - b.d).slice(0, 5);
-    h += `<section class="card"><h2 class="sec-h">Как закрыть разрыв</h2><div class="ddsl">
-      <div><h3>Перенести выплаты на после ${fdate(g.rec || X.end - 1)}</h3><ul>${outs.map(li).join("") || "<li><span>Нет плановых выплат</span></li>"}</ul></div>
-      <div><h3>Ускорить поступления до ${fdate(g.s)}</h3><ul>${ins.map(li).join("") || "<li><span>Поступлений не ожидается</span></li>"}</ul></div></div>
-      <p class="note">Или заранее договоритесь с банком об овердрафте на ${rub(-g.min)}.</p></section>`;
-  }
-  // 3. График: один столбец на период — самый низкий остаток
-  h += `<section class="card"><h2 class="sec-h">Сколько денег на счёте — самая низкая точка за ${unit}</h2><div class="chartbox"><canvas id="chDds" aria-label="Самый низкий остаток денег по периодам"></canvas></div>
-    <div class="ddsleg"><span><i style="background:var(--cGreen)"></i>хватает</span>${X.reserve ? `<span><i style="background:#F2B705"></i>ниже порога ${money(X.reserve)} ₽</span>` : ""}<span><i style="background:var(--cRed)"></i>разрыв — денег нет</span><span><i class="pl"></i>факт · план</span></div></section>`;
   // 4. Таблица: 5 итоговых строк, расшифровка — по кнопке
   const det = ui.f.ddsdet === "1";
   const cls = v => v < 0 ? "gap" : v < X.reserve ? "low" : "";
@@ -1403,7 +1375,10 @@ V.dds = () => {
     X.out.forEach(r => t += line("ch", esc(r.name), r.v.map((v, k) => td(v, "", tip(r.it[k]))).join("")));
   }
   t += `</tbody></table></div><p class="note">«Самая низкая точка» — минимум остатка по дням внутри ${o.step === "m" ? "месяца" : "недели"}: разрыв бывает и тогда, когда к концу периода деньги уже пришли. Данные — из листа <a href="#payments">«Платежи»</a>; неоплаченные платежи с прошедшим сроком стоят на отчётную дату.</p></section>`;
-  return h + t;
+  // 3. График: один столбец на период — самый низкий остаток
+  const chart = `<section class="card"><h2 class="sec-h">Сколько денег на счёте — самая низкая точка за ${unit}</h2><div class="chartbox"><canvas id="chDds" aria-label="Самый низкий остаток денег по периодам"></canvas></div>
+    <div class="ddsleg"><span><i style="background:var(--cGreen)"></i>хватает</span>${X.reserve ? `<span><i style="background:#F2B705"></i>ниже порога ${money(X.reserve)} ₽</span>` : ""}<span><i style="background:var(--cRed)"></i>разрыв — денег нет</span><span><i class="pl"></i>факт · план</span></div></section>`;
+  return h + t + chart;
 };
 function drawDds(grid){
   const X = DDSX, el = document.getElementById("chDds"); if(!X || !el) return;
