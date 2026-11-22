@@ -238,19 +238,22 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .rk{border:1px solid #DCE2EA;border-radius:6px;padding:8px 10px}
 .rk small{display:block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#5B6A80}
 .rk b{display:block;font-size:16px;margin-top:2px;white-space:nowrap}.rk span{font-size:11px;color:#5B6A80}
-.rt{width:100%;border-collapse:collapse;font-size:12px}
-.rt th{background:#0B1F3A;color:#fff;font-weight:600;font-size:10.5px;padding:5px 6px;text-align:right}
-.rt td{padding:4px 6px;border-bottom:1px solid #E9EDF3;text-align:right;white-space:nowrap}
-.rt .l{text-align:left;white-space:normal}
-.rt tr.tot td{font-weight:700;border-top:2px solid #0B1F3A}
-.rt td.neg{color:#A0101C;font-weight:700}.rt td.pos{color:#11652B}
+.rtab{width:100%;border-collapse:collapse;font-size:12px}
+.rtab th{background:#0B1F3A;color:#fff;font-weight:600;font-size:10.5px;padding:5px 6px;text-align:right}
+.rtab td{padding:4px 6px;border-bottom:1px solid #E9EDF3;text-align:right;white-space:nowrap}
+.rtab .l{text-align:left;white-space:normal}
+.rtab tr.tot td{font-weight:700;border-top:2px solid #0B1F3A}
+.rtab td.neg{color:#A0101C;font-weight:700}.rtab td.pos{color:#11652B}
 .rp{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:9px;background:#E7EAEE;color:#4B5563}
 .rp.g{background:#D7F2DD;color:#11652B}.rp.w{background:#FFF0C2;color:#8A5A00}.rp.b{background:#FBD3D6;color:#A0101C}.rp.i{background:#DCEAFB;color:#15457A}
 .rnote{font-size:11px;color:#5B6A80;margin:4px 0 0}
 .rf{margin-top:22px;padding-top:8px;border-top:1px solid #DCE2EA;font-size:10.5px;color:#5B6A80}
-@media (max-width:720px){.rep{padding:16px}.rkpi{grid-template-columns:1fr 1fr}.rt{font-size:11px}}
+@media (max-width:720px){.rep{padding:16px}.rkpi{grid-template-columns:1fr 1fr}.rtab{font-size:11px}}
+#printRep{display:none}
+.sec-h .rt .btn{margin-left:12px;text-transform:none;letter-spacing:0}
 @media print{
   @page{size:A4;margin:10mm}
+  body.prep .app{display:none!important} body.prep #printRep{display:block!important}
   html{zoom:1!important}
   body,html{background:#fff!important}
   .side,.top,.toast,.kpbar,.mnav,#cardbox,.noprint,.banner{display:none!important}
@@ -258,7 +261,7 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
   .content{padding:0!important;display:block!important}
   .rep{border:0;box-shadow:none;padding:0;max-width:none;font-size:11px}
   .rep section{break-inside:avoid-page}
-  .rt{font-size:10px}.rt tr{break-inside:avoid}
+  .rtab{font-size:10px}.rtab tr{break-inside:avoid}
   .rk b{font-size:14px}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
@@ -825,7 +828,6 @@ function scls(s){ for(const k in ST) if(ST[k].includes(s)) return k; return "n";
 const SHEETS = [
   {id:"dash", t:"Сводка директора", g:"Обзор", c:"#0B1F3A", sub:"Деньги, прибыль и риски по всем объектам на одном экране. Нажмите на любой сигнал — откроется лист с причиной."},
   {id:"analysis", t:"Анализ проектов", g:"Обзор", c:"#1565C0", sub:"Прибыль, затраты, деньги и риски по каждому объекту. Лист считается полностью автоматически."},
-  {id:"report", t:"Отчёт руководителя", g:"Обзор", c:"#0B1F3A", sub:"Сводка на 1–2 страницы для собственника или заказчика: главное, объекты, деньги, просрочка и сроки. Печать или PDF — одной кнопкой."},
   {id:"projects", t:"Проекты", g:"Деньги", c:"#1565C0", sub:"Единый реестр объектов и договоров. Код проекта связывает все листы."},
   {id:"contracts", t:"Договоры", g:"Деньги", c:"#1565C0", sub:"Договоры с заказчиками и расходные договоры с подрядчиками и поставщиками: сумма, оплачено, в плане и графики оплат."},
   {id:"budget", t:"Бюджет", g:"Деньги", c:"#1565C0", sub:"План, факт и прогноз по статьям. Факт = оплаты из Платежей + корректировка, остаток считается сам."},
@@ -1027,7 +1029,7 @@ const V = {};
 V.dash = () => {
   const T = R.tot, D = R.dash, st = S.settings;
   const tile = (lab, val, sub, color, go, alarm) => `<${go?`button type="button" data-go="${go}"`:"div"} class="tile" style="--tc:${color}"><small>${lab}</small><b class="${alarm?"alarm":""}">${val}</b><span>${sub}</span></${go?"button":"div"}>`;
-  let h = `<section><h2 class="sec-h">Финансы портфеля <span class="rt">${esc(st.company)}</span></h2><div class="tiles">
+  let h = `<section><h2 class="sec-h">Финансы портфеля <span class="rt">${esc(st.company)}<button type="button" class="btn sm pri" data-reppdf="1" title="Отчёт на 1–2 страницы: печать или сохранение в PDF">Отчёт руководителя · PDF</button></span></h2><div class="tiles">
     ${tile("Стоимость договоров", rub(T.contract), `объектов в работе: ${T.n}`, "var(--accent)", "projects")}
     ${tile("Фактические расходы", rub(T.fact), `освоено бюджета: ${Math.round(T.plan?T.fact/T.plan*100:0)}%`, "var(--accent)", "budget")}
     ${tile("Прогноз расходов", rub(T.fc), `отклонение от бюджета: ${money(T.devB)}`, "var(--cOrange)", "budget")}
@@ -1550,7 +1552,7 @@ V.report = () => {
   <header class="rh"><div><h1>Отчёт руководителя</h1><p>${esc(st.company || "")}</p></div><div class="rd">на ${fdate(rep)}<span>сформирован ${new Date().toLocaleDateString("ru-RU")}</span></div></header>
   <section><h2>Главное</h2><ul class="rpts">${pts}</ul></section>
   <section class="rkpi">${kpi("Договоры", rub(T.contract), `объектов: ${T.n}`)}${kpi("Прогноз расходов", rub(T.fc), `факт: ${rub(T.fact)}`)}${kpi("Прогноз прибыли", rub(T.profit), `маржа ${pct(T.margin)}`)}${kpi("На счёте", rub(D.cash), "")}${kpi("Долг заказчиков", rub(T.debt), "")}</section>
-  <section><h2>Объекты</h2><table class="rt"><thead><tr><th>Код</th><th class="l">Объект</th><th>Договор, ₽</th><th>Прибыль, ₽</th><th>Маржа</th><th>Долг заказчика, ₽</th><th>Готовность</th><th>Статус</th><th class="l">Что не так</th></tr></thead><tbody>`;
+  <section><h2>Объекты</h2><table class="rtab"><thead><tr><th>Код</th><th class="l">Объект</th><th>Договор, ₽</th><th>Прибыль, ₽</th><th>Маржа</th><th>Долг заказчика, ₽</th><th>Готовность</th><th>Статус</th><th class="l">Что не так</th></tr></thead><tbody>`;
   A.slice().sort((a, b) => ["Риск", "Внимание", "В норме"].indexOf(a.st) - ["Риск", "Внимание", "В норме"].indexOf(b.st)).forEach(o => {
     const why = [o.profit < 0 ? "убыток" : o.margin < st.crit ? "маржа ниже критической" : o.margin < st.target ? "маржа ниже цели" : "", o.slip ? `сроки: ${o.slip}` : "", o.risk ? `поставки: ${o.risk}` : "", o.devB > 0 ? `перерасход ${money(o.devB)}` : ""].filter(Boolean).join(", ");
     h += `<tr><td>${esc(o.code)}</td><td class="l">${esc(o.name)}</td><td>${money(o.contract)}</td><td class="${o.profit < 0 ? "neg" : ""}">${money(o.profit)}</td><td>${pct(o.margin)}</td><td>${money(o.debt)}</td><td>${o.ready === null ? "—" : pct(o.ready, 0)}</td><td>${pill2(o.st)}</td><td class="l">${why || "—"}</td></tr>`;
@@ -1558,16 +1560,16 @@ V.report = () => {
   h += `<tr class="tot"><td></td><td class="l">Итого</td><td>${money(T.contract)}</td><td>${money(T.profit)}</td><td>${pct(T.margin)}</td><td>${money(T.debt)}</td><td></td><td></td><td></td></tr></tbody></table></section>`;
   if(X){
     const W = ddsCalc({step:"w", delay:0, noOver:false, proj:"", group:"art"}).P.filter(p => p.kind !== "fact").slice(0, 8);
-    h += `<section><h2>Деньги на 8 недель</h2><table class="rt"><thead><tr><th class="l">Неделя</th><th>На начало</th><th>Поступления</th><th>Выплаты</th><th>На конец</th><th>Кассовый разрыв</th></tr></thead><tbody>${W.map(p => `<tr><td class="l">${p.l}</td><td>${money(p.open)}</td><td class="pos">${money(p.inc)}</td><td>${money(p.out)}</td><td class="${p.close < 0 ? "neg" : ""}">${money(p.close)}</td><td class="${p.min < 0 ? "neg" : ""}">${p.min < 0 ? `${money(p.min)} · ${ddsD(p.minD)}` : "—"}</td></tr>`).join("")}</tbody></table></section>`;
+    h += `<section><h2>Деньги на 8 недель</h2><table class="rtab"><thead><tr><th class="l">Неделя</th><th>На начало</th><th>Поступления</th><th>Выплаты</th><th>На конец</th><th>Кассовый разрыв</th></tr></thead><tbody>${W.map(p => `<tr><td class="l">${p.l}</td><td>${money(p.open)}</td><td class="pos">${money(p.inc)}</td><td>${money(p.out)}</td><td class="${p.close < 0 ? "neg" : ""}">${money(p.close)}</td><td class="${p.min < 0 ? "neg" : ""}">${p.min < 0 ? `${money(p.min)} · ${ddsD(p.minD)}` : "—"}</td></tr>`).join("")}</tbody></table></section>`;
   }
   if(overdue.length){
-    h += `<section><h2>Просроченные платежи</h2><table class="rt"><thead><tr><th>Срок</th><th class="l">Кто кому</th><th class="l">Контрагент</th><th class="l">Объект</th><th class="l">Назначение</th><th>Сумма, ₽</th></tr></thead><tbody>${overdue.slice(0, 10).map(x => `<tr><td>${fdate(x.p.date)}</td><td class="l">${x.p.type === "Поступление" ? "нам не заплатили" : "мы не заплатили"}</td><td class="l">${esc(x.p.contr || "")}</td><td class="l">${esc(R.pay[x.i].obj || "")}</td><td class="l">${esc(x.p.what || "")}</td><td>${money(x.p.amt)}</td></tr>`).join("")}</tbody></table>${more(overdue.length, 10)}</section>`;
+    h += `<section><h2>Просроченные платежи</h2><table class="rtab"><thead><tr><th>Срок</th><th class="l">Кто кому</th><th class="l">Контрагент</th><th class="l">Объект</th><th class="l">Назначение</th><th>Сумма, ₽</th></tr></thead><tbody>${overdue.slice(0, 10).map(x => `<tr><td>${fdate(x.p.date)}</td><td class="l">${x.p.type === "Поступление" ? "нам не заплатили" : "мы не заплатили"}</td><td class="l">${esc(x.p.contr || "")}</td><td class="l">${esc(R.pay[x.i].obj || "")}</td><td class="l">${esc(x.p.what || "")}</td><td>${money(x.p.amt)}</td></tr>`).join("")}</tbody></table>${more(overdue.length, 10)}</section>`;
   }
   if(slips.length){
-    h += `<section><h2>Сроки: что сорвано или отстаёт</h2><table class="rt"><thead><tr><th class="l">Объект</th><th class="l">Работа / этап</th><th class="l">Исполнитель</th><th>План окончания</th><th>Прогноз</th><th>Статус</th></tr></thead><tbody>${slips.slice(0, 10).map(x => `<tr><td class="l">${esc(x.obj || x.proj || "")}</td><td class="l">${esc(x.name || "")}</td><td class="l">${esc(x.who || "")}</td><td>${fdate(x.pf)}</td><td>${fdate(x.fc)}</td><td>${pill2(x.st)}</td></tr>`).join("")}</tbody></table>${more(slips.length, 10)}</section>`;
+    h += `<section><h2>Сроки: что сорвано или отстаёт</h2><table class="rtab"><thead><tr><th class="l">Объект</th><th class="l">Работа / этап</th><th class="l">Исполнитель</th><th>План окончания</th><th>Прогноз</th><th>Статус</th></tr></thead><tbody>${slips.slice(0, 10).map(x => `<tr><td class="l">${esc(x.obj || x.proj || "")}</td><td class="l">${esc(x.name || "")}</td><td class="l">${esc(x.who || "")}</td><td>${fdate(x.pf)}</td><td>${fdate(x.fc)}</td><td>${pill2(x.st)}</td></tr>`).join("")}</tbody></table>${more(slips.length, 10)}</section>`;
   }
   if(sup.length){
-    h += `<section><h2>Снабжение: поставки и замены под риском</h2><table class="rt"><thead><tr><th class="l">Объект</th><th class="l">Позиция</th><th class="l">Поставщик / от кого ждём</th><th>Срок</th><th>Статус</th></tr></thead><tbody>${sup.slice(0, 10).map(x => `<tr><td class="l">${esc(x.obj || x.proj || "")}</td><td class="l">${esc(x.pos || "")}</td><td class="l">${esc(x.who || "")}</td><td>${fdate(x.due)}</td><td>${pill2(x.st)}</td></tr>`).join("")}</tbody></table>${more(sup.length, 10)}</section>`;
+    h += `<section><h2>Снабжение: поставки и замены под риском</h2><table class="rtab"><thead><tr><th class="l">Объект</th><th class="l">Позиция</th><th class="l">Поставщик / от кого ждём</th><th>Срок</th><th>Статус</th></tr></thead><tbody>${sup.slice(0, 10).map(x => `<tr><td class="l">${esc(x.obj || x.proj || "")}</td><td class="l">${esc(x.pos || "")}</td><td class="l">${esc(x.who || "")}</td><td>${fdate(x.due)}</td><td>${pill2(x.st)}</td></tr>`).join("")}</tbody></table>${more(sup.length, 10)}</section>`;
   }
   return h + `<footer class="rf">PROJECT CONTROL PRO · ${esc(st.company || "")} · отчёт на ${fdate(rep)}</footer></article>`;
 };
@@ -1980,6 +1982,10 @@ document.addEventListener("click", e => {
   const zb = e.target.closest("[data-zoom]");
   if(zb){ try{ localStorage.setItem(ZK, zb.dataset.zoom); }catch(err){} applyZoom(); render(true); return; }
   if(e.target.closest("#repPrint")){ window.print(); return; }
+  if(e.target.closest("[data-reppdf]")){ let box = document.getElementById("printRep"); if(!box){ box = document.createElement("div"); box.id = "printRep"; document.body.appendChild(box); }
+    box.innerHTML = V.report(); const t = box.querySelector(".rtools"); if(t) t.remove();
+    document.body.classList.add("prep"); const done = () => { document.body.classList.remove("prep"); box.innerHTML = ""; removeEventListener("afterprint", done); };
+    addEventListener("afterprint", done); setTimeout(() => window.print(), 50); return; }
   if(e.target.closest("[data-xlsx]")){ try{ exportXlsx(); }catch(err){ console.error(err); toast("Не получилось собрать файл"); } return; }
   const copen = e.target.closest("[data-copen]");
   if(copen){ const [pj, key] = copen.dataset.copen.split("|"); gsOpen(pj, key); render(true); const b = document.getElementById("gsbox"); if(b) b.scrollIntoView({behavior:"smooth", block:"start"}); return; }
@@ -2088,7 +2094,7 @@ let wasMob = isMob();
 window.addEventListener("resize", () => { if(!S) return; if(isMob() !== wasMob){ wasMob = isMob(); render(true); } else { mobHeader(); kpVis(); } });
 window.addEventListener("scroll", kpVis, {passive:true});
 function route(){ if(!S) return; const h = location.hash.slice(1);
-  if(LOGIN_URL && h==="buy"){ location.replace("/pricing.html"); return; } cur = (V[h] && !(CAB && h==="buy") && !(!CAB && (h==="team" || h==="history"))) ? h : "dash"; ui.card = null; ui.pin = {}; render(); }
+  if(LOGIN_URL && h==="buy"){ location.replace("/pricing.html"); return; } cur = (V[h] && h!=="report" && !(CAB && h==="buy") && !(!CAB && (h==="team" || h==="history"))) ? h : "dash"; ui.card = null; ui.pin = {}; render(); }
 window.addEventListener("hashchange", route);
 if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", ()=>drawCharts());
 new MutationObserver(()=>drawCharts()).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
