@@ -288,6 +288,11 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .gs .gs-form input,.gs .gs-form select{border:1px solid var(--inputLine);background:var(--inputBg);border-radius:5px;padding:5px 7px;font-size:13px;min-width:200px}
 .gs .gs-form input.n{text-align:right;min-width:140px}.gs .gs-form input[disabled]{background:var(--neutral);color:var(--ink)}
 .gs .gs-paid{font-size:13px;padding-bottom:6px}.gs .gs-paid b{color:var(--ink)}
+.t.creg td{cursor:pointer}.t.creg tr.sel td{background:var(--accentSoft)!important;font-weight:600}
+.t.creg td.wrn{color:var(--warnInk);font-weight:600}
+.ck{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:9px}.ck.in{background:var(--good);color:var(--goodInk)}.ck.out{background:var(--warn);color:var(--warnInk)}
+.gs-h{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 6px}
+.gs-rest{text-transform:none;letter-spacing:0;font-weight:500;margin-left:8px;color:var(--ink)}
 .gs-t{border-collapse:collapse;width:100%;max-width:900px;font-size:13px}
 .gs-t th{text-align:left;font-size:11px;color:var(--muted);font-weight:700;padding:4px 6px;border-bottom:1px solid var(--line)}
 .gs-t td{padding:3px 4px;border-bottom:1px solid var(--line2)}
@@ -799,7 +804,7 @@ function clone(x){ return JSON.parse(JSON.stringify(x)); }
 function load(){ try{ const v = localStorage.getItem(STORE); if(v) return JSON.parse(v); }catch(e){} return clone(DATA); }
 function save(){ if(CAB) return; try{ localStorage.setItem(STORE, JSON.stringify(S)); }catch(e){} }
 const rid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
-const ARRS = ["projects","budget","payments","purchases","repl","stages","works","kp.fot","kp.blocks.0.rows","kp.blocks.1.rows","kp.blocks.2.rows","kp.blocks.3.rows"];
+const ARRS = ["contracts","projects","budget","payments","purchases","repl","stages","works","kp.fot","kp.blocks.0.rows","kp.blocks.1.rows","kp.blocks.2.rows","kp.blocks.3.rows"];
 function ensureIds(){ ARRS.forEach(p => { const a = arrOf(p); if(a) a.forEach(r => { if(!r._id) r._id = rid(); }); }); }
 
 /* ---------- сервер (кабинет) */
@@ -853,6 +858,7 @@ const SHEETS = [
   {id:"analysis", t:"Анализ проектов", g:"Обзор", c:"#1565C0", sub:"Прибыль, затраты, деньги и риски по каждому объекту. Лист считается полностью автоматически."},
   {id:"report", t:"Отчёт руководителя", g:"Обзор", c:"#0B1F3A", sub:"Сводка на 1–2 страницы для собственника или заказчика: главное, объекты, деньги, просрочка и сроки. Печать или PDF — одной кнопкой."},
   {id:"projects", t:"Проекты", g:"Деньги", c:"#1565C0", sub:"Единый реестр объектов и договоров. Код проекта связывает все листы."},
+  {id:"contracts", t:"Договоры", g:"Деньги", c:"#1565C0", sub:"Договоры с заказчиками и расходные договоры с подрядчиками и поставщиками: сумма, оплачено, в плане и графики оплат."},
   {id:"budget", t:"Бюджет", g:"Деньги", c:"#1565C0", sub:"План, факт и прогноз по статьям. Факт = оплаты из Платежей + корректировка, остаток считается сам."},
   {id:"payments", t:"Платежи", g:"Деньги", c:"#2E7D32", sub:"Платёжный календарь. Отметьте оплату — она сразу попадёт в факт Бюджета и в деньги на счёте."},
   {id:"dds", t:"ДДС", g:"Деньги", c:"#2E7D32", sub:"Движение денег по неделям и месяцам и кассовые разрывы — когда денег на счёте не хватит на выплаты. Считается из Платежей."},
@@ -1113,7 +1119,7 @@ V.projects = () => {
     {h:"Договор без НДС, ₽",k:"noVat",calc:i=>R.an[i].noVat,t:"money",w:115}, {h:"Дней до сдачи",k:"dl",calc:i=>R.an[i].daysLeft,t:"num",w:80},
     {h:"Статус проекта",k:"st",calc:i=>R.an[i].st,t:"status",w:100},
   ];
-  return projFilter("projects") + table({id:"projects", mob:["code","name","amt","st"], arr:"projects", rows:S.projects, cols, filter:i=>match("projects",S.projects[i]), sums:["amt","noVat"], add:1, del:1}) + gsBlock();
+  return projFilter("projects") + table({id:"projects", mob:["code","name","amt","st"], arr:"projects", rows:S.projects, cols, filter:i=>match("projects",S.projects[i]), sums:["amt","noVat"], add:1, del:1});
 };
 V.budget = () => {
   const cols = [
@@ -1319,7 +1325,7 @@ async function loadShares(){
   }catch(e){ box.textContent = e.message; }
 }
 /* ---------- история изменений */
-const ARRL = {projects:"Проекты", budget:"Бюджет", payments:"Платежи", purchases:"Закупки", repl:"Замены", stages:"ППР", works:"График работ"};
+const ARRL = {contracts:"Договоры", projects:"Проекты", budget:"Бюджет", payments:"Платежи", purchases:"Закупки", repl:"Замены", stages:"ППР", works:"График работ"};
 const SETL = {company:["Название компании"], repDate:["Отчётная дата","date"], startCash:["Остаток денег на начало учёта","money"], minCash:["Неснижаемый остаток","money"], startDate:["Дата начала учёта","date"], target:["Целевая маржа","pct"], crit:["Критическая маржа","pct"], tax:["Налог на прибыль","pct"], horizon:["Горизонт контроля платежей","num"], lagTol:["Допустимое отставание","pct"], ganttStart:["Начало шкалы Ганта","date"]};
 const KPL = {obj:["Объект"], cust:["Заказчик"], link:["Ссылка на закупку"], s:["Дата начала работ","date"], e:["Дата окончания работ","date"], nmck:["НМЦК","money"], vat:["Ставка НДС","pct"], price:["Наша цена","money"], ins:["Страховые взносы","pct"], reserve:["Резерв","pct"]};
 const LISTL = {systems:"Системы", cost:"Статьи затрат", stages:"Этапы проекта", exec:"Исполнители", contr:"Контрагенты", units:"Ед. изм.", pms:"Руководители", reasons:"Причины замены", delays:"Причины срыва сроков"};
@@ -1677,105 +1683,134 @@ function exportXlsx(){
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   toast("Excel-файл скачан");
 }
-/* ---------- График оплат по договорам → плановые платежи в «Платежах»
-   Договор с заказчиком → поступления (gen = "dog"); расходные договоры → выплаты (gen = "out:<контрагент>") */
-const GS = {proj:"", key:"", rows:[], contr:"", total:"", art:""};
-const gsKind = () => GS.key === "dog" ? "in" : "out";
+/* ---------- Договоры: реестр и графики оплат
+   С заказчиком — из карточки проекта, платежи gen = "dog". Расходные — S.contracts, платежи gen = "c:<_id>". */
+const GS = {proj:"", key:"", rows:[]};
+const cById = id => (S.contracts || []).find(c => c._id === id);
+const cKey = c => "c:" + c._id;
+function gsMigrate(){        // графики, созданные до раздела «Договоры» (gen = "out:<контрагент>") → в реестр
+  if(RO) return;
+  const g = new Map();
+  S.payments.forEach(x => { if(typeof x.gen === "string" && x.gen.startsWith("out:") && x.proj){ const k = x.proj + "|" + x.gen; if(!g.has(k)) g.set(k, {proj:x.proj, contr:x.contr || x.gen.slice(4), art:x.art || "", amt:0, pays:[]}); const o = g.get(k); o.amt += num(x.amt); o.pays.push(x); } });
+  if(!g.size) return;
+  const ops = [];
+  g.forEach(o => { const c = {_id:rid(), proj:o.proj, contr:o.contr, amt:Math.round(o.amt)}; if(o.art) c.art = o.art; S.contracts.push(c); ops.push({t:"add", a:"contracts", row:c, at:"end"});
+    o.pays.forEach(x => { x.gen = cKey(c); ops.push({t:"set", a:"payments", id:x._id, k:"gen", v:x.gen}); }); });
+  send(ops);
+}
+function cStat(proj, key){   // по договору: оплачено, запланировано
+  const inCust = key === "dog";
+  let paid = 0, plan = 0;
+  S.payments.forEach(x => { if(x.proj !== proj || x.status === "Отменено") return;
+    const hit = inCust ? x.type === "Поступление" : x.gen === key; if(!hit) return;
+    if(x.status === "Оплачено") paid += num(x.amt); else plan += num(x.amt); });
+  return {paid, plan};
+}
 function gsTpl(p, kind, total){
   const s = dn(p.s), e = dn(p.e), mid = s !== null && e !== null ? Math.round((s + e) / 2) : null, amt = num(total);
   const r = (n, pc, d) => ({n, p:pc, a:amt ? Math.round(amt * pc) : "", d:d === null ? "" : ds(d)});
   return kind === "in" ? [r("Аванс", 0.3, s), r("Оплата после поставки оборудования", 0.4, mid), r("Окончательный расчёт после сдачи", 0.3, e === null ? null : e + 15)]
     : [r("Аванс подрядчику", 0.3, s), r("Оплата выполненных работ", 0.5, mid), r("Окончательный расчёт", 0.2, e === null ? null : e + 30)];
 }
-function gsOuts(code){     // расходные договоры объекта, созданные графиком
-  const m = new Map();
-  S.payments.forEach(x => { if(x.proj === code && typeof x.gen === "string" && x.gen.startsWith("out:")){ const k = x.gen; if(!m.has(k)) m.set(k, {key:k, contr:x.contr || k.slice(4), art:x.art || "", sum:0, n:0}); const o = m.get(k); o.sum += num(x.amt); o.n++; } });
-  return [...m.values()];
+function gsRest(){         // сколько ещё распределить графиком: договор − оплачено − ручные плановые
+  const inC = GS.key === "dog", c = inC ? null : cById(GS.key), gen = inC ? "dog" : c ? cKey(c) : "", tot = gsTotal();
+  let used = 0;
+  S.payments.forEach(x => { if(x.proj !== GS.proj || x.status === "Отменено") return;
+    if(inC ? x.type === "Поступление" && (x.status === "Оплачено" || x.gen !== "dog") : x.gen === gen && x.status === "Оплачено") used += num(x.amt); });
+  return {tot, used, rest:Math.max(0, tot - used)};
 }
-function gsLoad(p){        // заполнить форму по выбранному договору
-  const kind = gsKind();
-  if(kind === "in"){ GS.contr = p.cust || ""; GS.total = num(p.amt); GS.art = ""; }
-  const ex = S.payments.filter(x => x.proj === p.code && x.gen === GS.key && x.status === "План").sort((a, b) => String(a.date).localeCompare(String(b.date)));
-  if(kind === "out" && GS.key !== "out:"){ const o = gsOuts(p.code).find(x => x.key === GS.key); if(o){ GS.contr = o.contr; GS.art = o.art; GS.total = o.sum; } }
-  const tot = num(GS.total);
-  GS.rows = ex.length ? ex.map(x => ({n:x.what || "", a:num(x.amt), p:tot ? num(x.amt) / tot : "", d:x.date || ""})) : gsTpl(p, kind, GS.total);
+function gsTotal(){ if(GS.key === "dog"){ const p = S.projects.find(x => x.code === GS.proj); return p ? num(p.amt) : 0; } const c = cById(GS.key); return c ? num(c.amt) : 0; }
+function gsOpen(proj, key){
+  GS.proj = proj; GS.key = key;
+  const p = S.projects.find(x => x.code === proj); if(!p){ GS.rows = []; return; }
+  const gen = key === "dog" ? "dog" : "c:" + key, tot = gsTotal();
+  const ex = S.payments.filter(x => x.proj === proj && x.gen === gen && x.status === "План").sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  if(ex.length){ GS.rows = ex.map(x => ({n:x.what || "", a:num(x.amt), p:tot ? num(x.amt) / tot : "", d:x.date || ""})); return; }
+  const R0 = gsRest(); GS.rows = gsTpl(p, key === "dog" ? "in" : "out", tot);
+  if(R0.used > 0 && tot){ const k = R0.rest / tot; GS.rows.forEach(r => { r.a = Math.round(num(r.a) * k); r.p = tot ? r.a / tot : ""; }); GS.rows = GS.rows.filter(r => r.a > 0); if(!GS.rows.length) GS.rows = [{n:"", p:"", a:"", d:""}]; }
 }
+V.contracts = () => {
+  if(!S.contracts) S.contracts = [];
+  gsMigrate();
+  const fp = ui.proj.contracts || "", P = S.projects.filter(p => p.code && (!fp || p.code === fp));
+  let h = `<div class="tools"><select data-ui="proj" data-id="contracts" aria-label="Фильтр по объекту"><option value="">Все объекты</option>${S.projects.filter(p => p.code).map(p => `<option value="${esc(p.code)}"${p.code === fp ? " selected" : ""}>${esc(p.code)} · ${esc(p.name)}</option>`).join("")}</select>${RO ? "" : `<button type="button" class="btn sm pri" data-cnew="1">+ Расходный договор</button>`}<span class="legend">Нажмите на договор — ниже откроется его график оплат</span></div>`;
+  if(!P.length) return h + `<section class="card"><p class="note" style="margin:0">Сначала добавьте объекты на листе <a href="#projects">«Проекты»</a> — договор с заказчиком берётся оттуда.</p></section>`;
+  const st = (amt, s) => { const rest = amt - s.paid - s.plan; return !amt ? "Укажите сумму" : (s.paid + s.plan) === 0 ? "Нет графика" : Math.round(rest) === 0 ? "Распределён" : rest > 0 ? "Распределён частично" : "Больше договора"; };
+  const pillC = s => `<span class="pill p-${s === "Распределён" ? "g" : s === "Больше договора" || s === "Укажите сумму" ? "b" : s === "Нет графика" ? "n" : "w"}">${s}</span>`;
+  let rows = "", T = {amtIn:0, amtOut:0, paidIn:0, paidOut:0, planIn:0, planOut:0};
+  const row = (p, key, kind, contr, what, art, amt, s, sel) => { const rest = amt - s.paid - s.plan;
+    return `<tr class="go${sel ? " sel" : ""}" data-copen="${esc(p.code)}|${esc(key)}" tabindex="0"><td class="ctr">${esc(p.code)}</td><td>${esc(p.name || "")}</td><td><span class="ck ${kind}">${kind === "in" ? "С заказчиком" : "Расходный"}</span></td><td>${esc(contr || "—")}</td><td>${esc(what || "")}</td><td>${esc(art || "")}</td>
+      <td class="n">${money(amt)}</td><td class="n">${money(s.paid)}</td><td class="n">${money(s.plan)}</td><td class="n${Math.round(rest) ? " " + (rest > 0 ? "wrn" : "neg") : ""}">${money(rest)}</td><td class="ctr">${pillC(st(amt, s))}</td></tr>`; };
+  P.forEach(p => {
+    const s = cStat(p.code, "dog"), amt = num(p.amt); T.amtIn += amt; T.paidIn += s.paid; T.planIn += s.plan;
+    rows += row(p, "dog", "in", p.cust, "Договор подряда с заказчиком", "", amt, s, GS.proj === p.code && GS.key === "dog");
+    S.contracts.filter(c => c.proj === p.code).forEach(c => { const s2 = cStat(p.code, cKey(c)), a2 = num(c.amt); T.amtOut += a2; T.paidOut += s2.paid; T.planOut += s2.plan;
+      rows += row(p, c._id, "out", c.contr, [c.num ? "№ " + c.num : "", c.date ? "от " + fdate(c.date) : "", c.what || ""].filter(Boolean).join(" "), c.art, a2, s2, GS.proj === p.code && GS.key === c._id); });
+  });
+  h += `<section><div class="tw ddsw"><table class="t creg" style="width:max(100%,1250px)"><colgroup><col style="width:60px"><col style="width:180px"><col style="width:115px"><col style="width:190px"><col><col style="width:110px"><col style="width:115px"><col style="width:115px"><col style="width:115px"><col style="width:115px"><col style="width:150px"></colgroup>
+    <thead><tr><th>Код</th><th>Объект</th><th>Тип</th><th>Контрагент</th><th>Договор</th><th>Статья</th><th>Сумма договора, ₽</th><th>Оплачено, ₽</th><th>Запланировано, ₽</th><th>Не распределено, ₽</th><th>График</th></tr></thead><tbody>
+    <tr class="sub"><td></td><td>С заказчиками</td><td></td><td></td><td></td><td></td><td class="n">${money(T.amtIn)}</td><td class="n">${money(T.paidIn)}</td><td class="n">${money(T.planIn)}</td><td class="n">${money(T.amtIn - T.paidIn - T.planIn)}</td><td></td></tr>
+    <tr class="sub"><td></td><td>Расходные</td><td></td><td></td><td></td><td></td><td class="n">${money(T.amtOut)}</td><td class="n">${money(T.paidOut)}</td><td class="n">${money(T.planOut)}</td><td class="n">${money(T.amtOut - T.paidOut - T.planOut)}</td><td></td></tr>
+    ${rows}</tbody></table></div><p class="note">«Оплачено» и «Запланировано» берутся из «Платежей». По договору с заказчиком учитываются все поступления по объекту, по расходному — платежи, созданные его графиком. «Не распределено» — часть суммы договора, которой пока нет ни в оплатах, ни в плане.</p></section>`;
+  if(GS.proj && GS.key && S.projects.some(p => p.code === GS.proj) && (GS.key === "dog" || cById(GS.key))) h += gsBlock();
+  return h;
+};
 function gsBlock(){
-  const P = S.projects.filter(p => p.code);
-  if(!P.length) return "";
-  if(!GS.proj || !P.some(p => p.code === GS.proj)){ GS.proj = ui.proj.projects || P[0].code; GS.key = ""; }
-  const p = P.find(x => x.code === GS.proj) || P[0], outs = gsOuts(p.code);
-  if(!GS.key){ GS.key = "dog"; gsLoad(p); }
-  const kind = gsKind(), tot = num(GS.total), isNew = GS.key === "out:";
+  const p = S.projects.find(x => x.code === GS.proj), inC = GS.key === "dog", c = inC ? null : cById(GS.key);
+  const gen = inC ? "dog" : cKey(c), type = inC ? "Поступление" : "Расход", tot = gsTotal(), s = cStat(p.code, gen);
   const dis = RO ? " disabled" : "";
-  const type = kind === "in" ? "Поступление" : "Расход";
-  const sameKey = x => x.proj === p.code && x.type === type && x.status === "План" && (kind === "in" ? x.gen === "dog" : x.gen === "out:" + GS.contr);
-  const gen = S.payments.filter(sameKey);
-  const own = S.payments.filter(x => x.proj === p.code && x.type === type && x.status === "План" && !x.gen && (kind === "in" || (GS.contr && x.contr === GS.contr)));
-  const paid = S.payments.reduce((a, x) => a + (x.proj === p.code && x.type === type && x.status === "Оплачено" && (kind === "in" || (GS.contr && x.contr === GS.contr)) ? num(x.amt) : 0), 0);
-  const sum = GS.rows.reduce((a, r) => a + num(r.a), 0), diff = tot - sum;
-  const opt = (v, t) => `<option value="${esc(v)}"${GS.key === v ? " selected" : ""}>${esc(t)}</option>`;
-  let h = `<section class="card gs"><h2 class="sec-h">График оплат по договорам <span class="rt">плановые платежи сами попадут в «Платежи», ДДС и Бюджет</span></h2>
-  <div class="gs-top"><select data-gs="proj" aria-label="Объект">${P.map(x => `<option value="${esc(x.code)}"${x.code === p.code ? " selected" : ""}>${esc(x.code)} · ${esc(x.name || "")}</option>`).join("")}</select>
-    <select data-gs="key" aria-label="Договор">${opt("dog", `Договор с заказчиком${p.cust ? " — " + p.cust : ""} (поступления)`)}${outs.map(o => opt(o.key, `Расходный — ${o.contr} (выплаты)`)).join("")}${opt("out:", "+ Новый расходный договор (подрядчик, поставщик)")}</select></div>`;
-  if(kind === "in") h += `<div class="gs-info"><span>Сумма договора: <b>${rub(tot)}</b></span><span>Заказчик: <b>${esc(p.cust || "—")}</b></span><span>Срок: <b>${fdate(p.s) || "—"} – ${fdate(p.e) || "—"}</b></span><span>Уже получено: <b>${rub(paid)}</b></span></div>`;
-  else h += `<div class="gs-form"><label>Подрядчик / поставщик<input list="dl-contr" data-gs="contr" value="${esc(GS.contr)}" placeholder="выберите или введите"${dis || (isNew ? "" : " disabled")}></label>
-    <label>Сумма договора, ₽<input class="n" inputmode="decimal" data-gs="total" value="${GS.total === "" ? "" : nf0.format(num(GS.total))}"${dis}></label>
-    <label>Статья затрат<select data-gs="art"${dis}><option value=""></option>${S.lists.cost.map(c => `<option${c === GS.art ? " selected" : ""}>${esc(c)}</option>`).join("")}</select></label>
-    <span class="gs-paid">Уже оплачено: <b>${rub(paid)}</b></span></div>`;
-  h += `<table class="gs-t"><thead><tr><th>Назначение платежа</th><th>% договора</th><th>Сумма, ₽</th><th>Плановая дата</th><th></th></tr></thead><tbody>`;
+  const mine = S.payments.filter(x => x.proj === p.code && x.gen === gen && x.status === "План");
+  const manual = S.payments.filter(x => x.proj === p.code && x.type === type && x.status === "План" && !x.gen && (inC || (c.contr && x.contr === c.contr)));
+  const sum = GS.rows.reduce((a, r) => a + num(r.a), 0), R0 = gsRest(), diff = R0.rest - sum;
+  const cf = (lab, k, t, extra = "") => `<label>${lab}${t === "sel" ? `<select data-cf="${k}"${dis}><option value=""></option>${S.lists.cost.map(x => `<option${x === c[k] ? " selected" : ""}>${esc(x)}</option>`).join("")}</select>`
+    : `<input data-cf="${k}" data-t="${t}"${t === "date" ? ' type="date"' : t === "money" ? ' class="n" inputmode="decimal"' : ""}${k === "contr" ? ' list="dl-contr" placeholder="выберите или введите"' : ""} value="${esc(t === "money" ? (c[k] === undefined || c[k] === "" ? "" : nf0.format(num(c[k]))) : c[k] || "")}"${dis}${extra}>`}</label>`;
+  let h = `<section class="card gs" id="gsbox"><h2 class="sec-h">${inC ? "Договор с заказчиком" : "Расходный договор"} · ${esc(p.code)} ${esc(p.name || "")}${RO || inC ? "" : `<span class="rt"><button type="button" class="btn sm danger" data-cdel="1">Удалить договор</button></span>`}</h2>`;
+  h += inC ? `<div class="gs-info"><span>Заказчик: <b>${esc(p.cust || "—")}</b></span><span>Сумма договора: <b>${rub(tot)}</b></span><span>Срок: <b>${fdate(p.s) || "—"} – ${fdate(p.e) || "—"}</b></span><span>Уже получено: <b>${rub(s.paid)}</b></span><span class="note" style="margin:0">Сумму, заказчика и сроки меняйте на листе «Проекты».</span></div>`
+    : `<div class="gs-form">${cf("Подрядчик / поставщик", "contr", "text")}${cf("№ договора", "num", "text", ' style="min-width:110px"')}${cf("Дата", "date", "date", ' style="min-width:140px"')}${cf("Предмет договора", "what", "text", ' style="min-width:260px"')}${cf("Сумма договора, ₽", "amt", "money")}${cf("Статья затрат", "art", "sel")}<span class="gs-paid">Уже оплачено: <b>${rub(s.paid)}</b></span></div>`;
+  const R1 = gsRest();
+  h += `<h3 class="gs-h">График ${inC ? "поступлений" : "выплат"}${R1.used ? ` <span class="gs-rest">уже внесено ${rub(R1.used)} (${inC ? "получено и запланировано вручную" : "оплачено"}), распределить осталось ${rub(R1.rest)}</span>` : ""}</h3><table class="gs-t"><thead><tr><th>Назначение платежа</th><th>% договора</th><th>Сумма, ₽</th><th>Плановая дата</th><th></th></tr></thead><tbody>`;
   GS.rows.forEach((r, i) => h += `<tr><td><input data-gs="n" data-gi="${i}" value="${esc(r.n)}"${dis} aria-label="Назначение"></td>
     <td><input class="n" data-gs="p" data-gi="${i}" inputmode="decimal" value="${r.p === "" || r.p === null ? "" : String(+(num(r.p) * 100).toFixed(2)).replace(".", ",")}"${dis} aria-label="Процент договора"></td>
     <td><input class="n" data-gs="a" data-gi="${i}" inputmode="decimal" value="${r.a === "" ? "" : nf0.format(num(r.a))}"${dis} aria-label="Сумма"></td>
     <td><input type="date" data-gs="d" data-gi="${i}" value="${esc(r.d || "")}"${dis} aria-label="Плановая дата"></td>
     <td>${RO ? "" : `<button type="button" class="gs-x" data-gsdel="${i}" title="Убрать строку" aria-label="Убрать строку">×</button>`}</td></tr>`);
-  h += `</tbody><tfoot><tr><td>${RO ? "" : `<button type="button" class="btn sm" data-gsadd="1">+ Строка</button> <button type="button" class="btn sm ghost" data-gsreset="1">Типовой: ${kind === "in" ? "30 / 40 / 30" : "30 / 50 / 20"}</button>`}</td><td class="n">${String(+(tot ? sum / tot * 100 : 0).toFixed(1)).replace(".", ",")}%</td><td class="n"><b>${money(sum)}</b></td><td colspan="2">${!tot ? `<span class="neg">укажите сумму договора</span>` : Math.round(diff) === 0 ? `<span class="pos">распределено полностью</span>` : `<span class="neg">${diff > 0 ? "не распределено" : "больше договора на"} ${rub(Math.abs(diff))}</span>`}</td></tr></tfoot></table>`;
+  h += `</tbody><tfoot><tr><td>${RO ? "" : `<button type="button" class="btn sm" data-gsadd="1">+ Строка</button> <button type="button" class="btn sm ghost" data-gsreset="1">Типовой: ${inC ? "30 / 40 / 30" : "30 / 50 / 20"}</button>`}</td><td class="n">${String(+(tot ? sum / tot * 100 : 0).toFixed(1)).replace(".", ",")}%</td><td class="n"><b>${money(sum)}</b></td><td colspan="2">${!tot ? `<span class="neg">укажите сумму договора</span>` : Math.round(diff) === 0 ? `<span class="pos">распределено полностью${R0.used ? " с учётом уже внесённых платежей" : ""}</span>` : `<span class="neg">${diff > 0 ? "не распределено" : "больше договора на"} ${rub(Math.abs(diff))}${R0.used ? " с учётом уже внесённых платежей" : ""}</span>`}</td></tr></tfoot></table>`;
   const warn = [];
-  if(gen.length) warn.push(`По этому договору уже создано ${gen.length} плановых ${kind === "in" ? "поступлений" : "выплат"} на ${rub(gen.reduce((a, x) => a + num(x.amt), 0))} — они будут заменены новыми. Оплаченные не трогаются.`);
-  if(own.length) warn.push(`В «Платежах» есть ещё ${own.length} плановых ${kind === "in" ? "поступлений по объекту" : "выплат этому контрагенту по объекту"}, внесённых вручную, на ${rub(own.reduce((a, x) => a + num(x.amt), 0))}. Они останутся — проверьте, чтобы не было дублей.`);
-  if(paid > 0) warn.push(`Уже ${kind === "in" ? "получено" : "оплачено"} ${rub(paid)}. Если аванс уже прошёл, уберите его из графика.`);
-  if(kind === "out" && !GS.art) warn.push("Укажите статью затрат — тогда оплаты попадут в факт Бюджета по объекту.");
+  if(mine.length) warn.push(`По договору уже создано ${mine.length} плановых ${inC ? "поступлений" : "выплат"} на ${rub(mine.reduce((a, x) => a + num(x.amt), 0))} — при сохранении они заменятся новыми. Оплаченные не трогаются.`);
+  if(manual.length) warn.push(`В «Платежах» есть ещё ${manual.length} плановых ${inC ? "поступлений по объекту" : "выплат этому контрагенту по объекту"}, внесённых вручную, на ${rub(manual.reduce((a, x) => a + num(x.amt), 0))}. Они останутся — проверьте, чтобы не было дублей.`);
+  if(!inC && !c.art) warn.push("Укажите статью затрат — тогда оплаты попадут в факт Бюджета по объекту.");
   h += warn.length ? `<ul class="gs-w">${warn.map(w => `<li>${w}</li>`).join("")}</ul>` : "";
-  h += RO ? "" : `<div class="inl" style="margin-top:10px"><button type="button" class="btn pri" data-gsmake="1">${gen.length ? "Пересоздать" : "Создать"} плановые ${kind === "in" ? "поступления" : "выплаты"}</button>${!isNew && kind === "out" ? `<button type="button" class="btn danger" data-gsdrop="1">Удалить плановые выплаты по договору</button>` : ""}<span class="note" style="margin:0">Строки без суммы или даты пропускаются.</span></div>`;
+  h += RO ? "" : `<div class="inl" style="margin-top:10px"><button type="button" class="btn pri" data-gsmake="1">${mine.length ? "Пересоздать" : "Создать"} плановые ${inC ? "поступления" : "выплаты"}</button><span class="note" style="margin:0">Платежи появятся в «Платежах», ДДС${inC ? "" : " и Бюджете"}. Строки без суммы или даты пропускаются.</span></div>`;
   return h + `</section>`;
 }
 function gsMake(btn){
   const p = S.projects.find(x => x.code === GS.proj); if(!p) return;
-  const kind = gsKind(), contr = String(GS.contr || "").trim();
-  if(kind === "out" && !contr){ toast("Укажите подрядчика или поставщика"); return; }
-  const key = kind === "in" ? "dog" : "out:" + contr, type = kind === "in" ? "Поступление" : "Расход";
+  const inC = GS.key === "dog", c = inC ? null : cById(GS.key); if(!inC && !c) return;
+  if(!inC && !String(c.contr || "").trim()){ toast("Укажите подрядчика или поставщика"); return; }
+  const gen = inC ? "dog" : cKey(c), type = inC ? "Поступление" : "Расход";
   const rows = GS.rows.filter(r => num(r.a) > 0 && r.d);
   if(!rows.length){ toast("Заполните сумму и дату хотя бы в одной строке"); return; }
-  const old = S.payments.filter(x => x.proj === p.code && x.type === type && x.status === "План" && x.gen === key);
+  const old = S.payments.filter(x => x.proj === p.code && x.status === "План" && x.gen === gen);
   if(old.length && !confirm2(btn, `Заменить ${old.length} созданных ранее? Нажмите ещё раз`)) return;
   const ops = [];
   old.forEach(x => { S.payments.splice(S.payments.indexOf(x), 1); ops.push({t:"del", a:"payments", id:x._id}); });
-  rows.slice().reverse().forEach(r => { const row = {_id:rid(), date:r.d, type, proj:p.code, contr:kind === "in" ? (p.cust || "") : contr, what:r.n || (kind === "in" ? "Оплата по договору" : "Оплата по договору подряда"), amt:Math.round(num(r.a)), status:"План", gen:key};
-    if(kind === "out" && GS.art) row.art = GS.art;
+  rows.slice().reverse().forEach(r => { const row = {_id:rid(), date:r.d, type, proj:p.code, contr:inC ? (p.cust || "") : c.contr, what:r.n || (inC ? "Оплата по договору" : "Оплата по договору подряда"), amt:Math.round(num(r.a)), status:"План", gen};
+    if(!inC && c.art) row.art = c.art;
     if(!row.contr) delete row.contr; S.payments.unshift(row); ops.push({t:"add", a:"payments", row, at:"start"}); });
-  if(kind === "out" && !S.lists.contr.includes(contr)){ S.lists.contr.push(contr); ops.push({t:"list", l:"contr", v:contr}); }
-  GS.key = key;
-  send(ops); afterEdit(`В «Платежи» добавлено ${rows.length} плановых ${kind === "in" ? "поступлений" : "выплат"} на ${rub(rows.reduce((a, r) => a + num(r.a), 0))}`);
-}
-function gsDrop(btn){
-  const p = S.projects.find(x => x.code === GS.proj); if(!p) return;
-  const old = S.payments.filter(x => x.proj === p.code && x.status === "План" && x.gen === GS.key);
-  if(!old.length){ toast("Плановых выплат по договору нет"); return; }
-  if(!confirm2(btn, `Удалить ${old.length} плановых выплат? Нажмите ещё раз`)) return;
-  const ops = old.map(x => { S.payments.splice(S.payments.indexOf(x), 1); return {t:"del", a:"payments", id:x._id}; });
-  if(!S.payments.some(x => x.gen === GS.key && x.proj === p.code)) GS.key = "";
-  send(ops); afterEdit(`Удалено ${ops.length} плановых выплат`);
+  send(ops); afterEdit(`В «Платежи» добавлено ${rows.length} плановых ${inC ? "поступлений" : "выплат"} на ${rub(rows.reduce((a, r) => a + num(r.a), 0))}`);
 }
 document.addEventListener("change", e => {
-  const el = e.target; if(!el.dataset || el.dataset.gs === undefined) return;
-  const p = S.projects.find(x => x.code === GS.proj), k = el.dataset.gs;
-  if(k === "proj"){ GS.proj = el.value; GS.key = ""; render(true); return; }
-  if(k === "key"){ GS.key = el.value; if(GS.key === "out:"){ GS.contr = ""; GS.total = ""; GS.art = ""; GS.rows = p ? gsTpl(p, "out", "") : []; } else if(p) gsLoad(p); render(true); return; }
-  if(k === "contr"){ GS.contr = el.value.trim(); render(true); return; }
-  if(k === "art"){ GS.art = el.value; render(true); return; }
-  if(k === "total"){ GS.total = parseVal("money", el.value); const t = num(GS.total); GS.rows.forEach(r => { if(r.p !== "" && r.p !== null && t) r.a = Math.round(t * num(r.p)); }); render(true); return; }
+  const el = e.target; if(!el.dataset) return;
+  if(el.dataset.cf !== undefined){ if(RO) return; const c = cById(GS.key); if(!c) return; const k = el.dataset.cf, v = k === "amt" ? parseVal("money", el.value) : String(el.value).trim();
+    if(v === "" || v === null) delete c[k]; else c[k] = v;
+    const ops = [{t:"set", a:"contracts", id:c._id, k, v:v === "" ? null : v}];
+    if(k === "amt"){ const t = num(v); GS.rows.forEach(r => { if(r.p !== "" && r.p !== null && t) r.a = Math.round(t * num(r.p)); }); }
+    if(k === "contr" && v && !S.lists.contr.includes(v)){ S.lists.contr.push(v); ops.push({t:"list", l:"contr", v}); }
+    if(k === "art"){ S.payments.forEach(x => { if(x.gen === cKey(c) && x.status === "План"){ if(v) x.art = v; else delete x.art; ops.push({t:"set", a:"payments", id:x._id, k:"art", v:v || null}); } }); }
+    send(ops); afterEdit(); return; }
+  if(el.dataset.gs === undefined) return;
   const r = GS.rows[+el.dataset.gi]; if(!r) return;
-  const tot = num(GS.total);
+  const tot = gsTotal(), k = el.dataset.gs;
   if(k === "n") r.n = el.value;
   if(k === "d") r.d = el.value;
   if(k === "p"){ const v = parseVal("pct", el.value); r.p = v; if(v !== "" && tot) r.a = Math.round(tot * v); }
@@ -1864,6 +1899,7 @@ function banners(){
   return h;
 }
 function render(keep){
+  if(!S.contracts) S.contracts = [];
   R = compute(S); KP = computeKP(S.kp, S);
   const sh = SH[cur] || {t:"Excel-версия", sub:"Что входит в комплект и как купить."};
   document.getElementById("h1").textContent = sh.t; document.getElementById("hsub").textContent = sh.sub;
@@ -1955,7 +1991,7 @@ let qT; document.addEventListener("input", e => { const el = e.target; if(el.dat
 /* Enter — на строку ниже в том же столбце, Shift+Enter — выше; Esc закрывает карточку */
 document.addEventListener("keydown", e => {
   const el = e.target;
-  if(e.key==="Enter" && el.matches && el.matches("tr.go[data-go]")){ el.click(); return; }
+  if(e.key==="Enter" && el.matches && el.matches("tr.go[data-go],tr.go[data-copen]")){ el.click(); return; }
   if(e.key==="Escape" && ui.card){ closeCard(); return; }
   if(e.key!=="Enter" || e.isComposing || !el.matches) return;
   if(el.matches("tr[data-card]")){ e.preventDefault(); openCard(el.dataset.card, +el.dataset.i); return; }
@@ -1976,12 +2012,21 @@ document.addEventListener("click", e => {
   if(zb){ try{ localStorage.setItem(ZK, zb.dataset.zoom); }catch(err){} applyZoom(); render(true); return; }
   if(e.target.closest("#repPrint")){ window.print(); return; }
   if(e.target.closest("[data-xlsx]")){ try{ exportXlsx(); }catch(err){ console.error(err); toast("Не получилось собрать файл"); } return; }
-  const gsb = e.target.closest("[data-gsadd],[data-gsdel],[data-gsreset],[data-gsmake],[data-gsdrop]");
+  const copen = e.target.closest("[data-copen]");
+  if(copen){ const [pj, key] = copen.dataset.copen.split("|"); gsOpen(pj, key); render(true); const b = document.getElementById("gsbox"); if(b) b.scrollIntoView({behavior:"smooth", block:"start"}); return; }
+  if(e.target.closest("[data-cnew]")){ if(RO) return; const P = S.projects.filter(p => p.code); if(!P.length){ toast("Сначала добавьте объект на листе «Проекты»"); return; }
+    const pj = ui.proj.contracts || P[0].code, c = {_id:rid(), proj:pj}; S.contracts.push(c); send([{t:"add", a:"contracts", row:c, at:"end"}]); gsOpen(pj, c._id); render(true); toast("Договор добавлен — заполните подрядчика и сумму");
+    const b = document.getElementById("gsbox"); if(b){ b.scrollIntoView({behavior:"smooth", block:"start"}); const i = b.querySelector('[data-cf="contr"]'); if(i) i.focus(); } return; }
+  const cdel = e.target.closest("[data-cdel]");
+  if(cdel){ if(RO) return; const c = cById(GS.key); if(!c) return; const pl = S.payments.filter(x => x.gen === cKey(c) && x.status === "План");
+    if(!confirm2(cdel, pl.length ? `Удалить договор и ${pl.length} плановых выплат?` : "Точно удалить договор?")) return;
+    const ops = pl.map(x => { S.payments.splice(S.payments.indexOf(x), 1); return {t:"del", a:"payments", id:x._id}; });
+    S.contracts.splice(S.contracts.indexOf(c), 1); ops.push({t:"del", a:"contracts", id:c._id}); GS.key = ""; send(ops); afterEdit("Договор удалён"); return; }
+  const gsb = e.target.closest("[data-gsadd],[data-gsdel],[data-gsreset],[data-gsmake]");
   if(gsb){ if(RO) return; const d = gsb.dataset;
-    if(d.gsdrop){ gsDrop(gsb); return; }
     if(d.gsadd) GS.rows.push({n:"", p:"", a:"", d:""});
     else if(d.gsdel !== undefined) GS.rows.splice(+d.gsdel, 1);
-    else if(d.gsreset){ const p = S.projects.find(x => x.code === GS.proj); if(p){ if(gsKind() === "in") GS.total = num(p.amt); GS.rows = gsTpl(p, gsKind(), GS.total); } }
+    else if(d.gsreset){ const k = GS.key, ex = S.payments.filter(x => x.proj === GS.proj && x.gen === (k === "dog" ? "dog" : "c:" + k) && x.status === "План"); ex.forEach(x => x._skip = 1); const keep = S.payments; S.payments = keep.filter(x => !x._skip); gsOpen(GS.proj, k); S.payments = keep; ex.forEach(x => delete x._skip); }
     else if(d.gsmake){ gsMake(gsb); return; }
     render(true); return; }
   const go = e.target.closest("[data-go]");

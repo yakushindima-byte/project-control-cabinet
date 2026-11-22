@@ -303,7 +303,7 @@ app.get("/api/version", auth, wrap(async (req, res) => {
   res.json({ version: r.rows[0].version, readonly: !req.user.canEdit });
 }));
 
-const ARR_RE = /^(projects|budget|payments|purchases|repl|stages|works|kp\.fot|kp\.blocks\.[0-3]\.rows)$/;
+const ARR_RE = /^(contracts|projects|budget|payments|purchases|repl|stages|works|kp\.fot|kp\.blocks\.[0-3]\.rows)$/;
 const KEY_RE = /^[A-Za-z][A-Za-z0-9_]{0,30}$/;
 const SETTINGS_KEYS = new Set(["company", "repDate", "startCash", "startDate", "target", "crit", "tax", "horizon", "lagTol", "ganttStart", "minCash"]);
 const KP_KEYS = new Set(["obj", "cust", "link", "s", "e", "nmck", "vat", "price", "ins", "reserve"]);
@@ -316,6 +316,7 @@ function val(v) {
 }
 function arrAt(doc, p) {
   if (!ARR_RE.test(p)) fail(400, "Неизвестная таблица");
+  if (p === "contracts" && !Array.isArray(doc.contracts)) doc.contracts = [];
   const a = p.split(".").reduce((o, k) => (o == null ? o : o[k]), doc);
   if (!Array.isArray(a)) fail(400, "Таблица не найдена");
   return a;
@@ -403,7 +404,7 @@ app.get("/api/history", auth, wrap(async (req, res) => {
 }));
 
 /* ---------- пример данных в пустом кабинете */
-const MAIN = ["projects", "budget", "payments", "purchases", "repl", "stages", "works"];
+const MAIN = ["projects", "budget", "payments", "purchases", "repl", "stages", "works", "contracts"];
 const newRowId = () => crypto.randomBytes(8).toString("hex");
 app.post("/api/example", auth, editor, wrap(async (req, res) => {
   const action = req.body.action;
@@ -416,7 +417,7 @@ app.post("/api/example", auth, editor, wrap(async (req, res) => {
       if (MAIN.some(k => (cur[k] || []).length)) fail(400, "Пример можно загрузить только в пустой кабинет");
       doc = JSON.parse(JSON.stringify(DEMO));
       doc.settings.company = cur.settings.company || req.user.company; doc.example = true;
-      [...MAIN.map(k => doc[k]), doc.kp.fot, ...doc.kp.blocks.map(b => b.rows)].forEach(a => a.forEach(row => { row._id = newRowId(); }));
+      [...MAIN.map(k => doc[k] || (doc[k] = [])), doc.kp.fot, ...doc.kp.blocks.map(b => b.rows)].forEach(a => a.forEach(row => { row._id = newRowId(); }));
     } else if (action === "clear") {
       if (!cur.example) fail(400, "В кабинете нет загруженного примера");
       doc = JSON.parse(JSON.stringify(TEMPLATE)); doc.settings.company = cur.settings.company || req.user.company;
