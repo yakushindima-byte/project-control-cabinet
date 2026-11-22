@@ -225,9 +225,9 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .t.dds tr.hd td.n{color:var(--ink);font-size:12.5px;letter-spacing:0;text-transform:none}
 .t.dds td small.dd{display:block;font-size:10px;font-weight:500;line-height:1;margin-top:-3px}
 .t.dds td.gap:has(small.dd){line-height:1.15;padding-top:3px}
-.tiles.t3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tiles.t4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .tw.ddsw{max-height:none}
-@media (max-width:720px){.tiles.t3{grid-template-columns:1fr}}
+@media (max-width:720px){.tiles.t4{grid-template-columns:1fr 1fr}}
 @media (max-width:720px){.ddsl{grid-template-columns:1fr}.ddsv{flex-direction:column}.ddsv-n{text-align:left;padding:10px 0 0;border-left:0;border-top:1px solid rgba(0,0,0,.08)}.ddsv-n small{justify-content:flex-start}}
 
 /* ---------- Гант */
@@ -765,7 +765,7 @@ const SHEETS = [
   {id:"projects", t:"Проекты", g:"Деньги", c:"#1565C0", sub:"Единый реестр объектов и договоров. Код проекта связывает все листы."},
   {id:"budget", t:"Бюджет", g:"Деньги", c:"#1565C0", sub:"План, факт и прогноз по статьям. Факт = оплаты из Платежей + корректировка, остаток считается сам."},
   {id:"payments", t:"Платежи", g:"Деньги", c:"#2E7D32", sub:"Платёжный календарь. Отметьте оплату — она сразу попадёт в факт Бюджета и в деньги на счёте."},
-  {id:"dds", t:"ДДС", g:"Деньги", c:"#2E7D32", sub:"Движение денег по неделям и месяцам: остаток по дням, кассовые разрывы и сценарии задержки оплат. Считается из Платежей."},
+  {id:"dds", t:"Кассовый разрыв", g:"Деньги", c:"#2E7D32", sub:"Движение денег по неделям и месяцам: когда денег на счёте не хватит на выплаты. Считается из Платежей."},
   {id:"purchases", t:"Закупки", g:"Снабжение", c:"#2E7D32", sub:"Поставки оборудования. Дата поставки сравнивается с началом монтажа по Графику работ."},
   {id:"replacements", t:"Замены", g:"Снабжение", c:"#2E7D32", sub:"Аналоги на согласовании у заказчика. Пока замена не согласована, поставка не считается «В срок»."},
   {id:"ppr", t:"ППР", g:"Сроки", c:"#EF6C00", sub:"Укрупнённые этапы для директора и заказчика. Если к этапу привязаны работы — факт и прогноз берутся из Графика работ."},
@@ -1189,7 +1189,7 @@ V.setup = () => {
   let h = `<section class="card"><h2 class="sec-h">Параметры</h2><div class="form">
     ${f("Название компании","company","text","Выводится на сводке директора")}${f("Отчётная дата (пусто — сегодняшняя)","repDate","date","Укажите дату, чтобы «заморозить» отчёт")}
     ${f("Остаток денег на счетах на дату начала учёта, ₽","startCash","money","Возьмите из банковской выписки")}${f("Дата начала учёта","startDate","date","Платежи раньше этой даты не влияют на остаток")}
-    ${f("Неснижаемый остаток денег, ₽","minCash","money","Ниже — жёлтая подсветка в ДДС")}
+    ${f("Неснижаемый остаток денег, ₽","minCash","money","Ниже — жёлтая подсветка на листе «Кассовый разрыв»")}
     ${f("Целевая маржа проекта, %","target","pct","Ниже — статус «Внимание»")}${f("Критическая маржа проекта, %","crit","pct","Ниже — статус «Риск»")}
     ${f("Налог на прибыль / УСН, %","tax","pct","Налог на прибыль с 2025 г. — 25%")}${f("Горизонт контроля платежей, дней","horizon","num","Платежи в горизонте — «Скоро срок»")}
     ${f("Допустимое отставание от графика, %","lagTol","pct","Больше — статус «Отставание»")}${f("Начало шкалы Ганта (пусто — авто)","ganttStart","date","Авто: за 4 недели до отчётной даты")}
@@ -1381,9 +1381,9 @@ function ddsBase(){ return R._ddsb || (R._ddsb = ddsCalc({step:"w", delay:0, noO
 function ddsStrip(){
   if(!S.payments.length) return "";
   const X = ddsBase(), g = X.gaps[0];
-  if(g) return `<section><button type="button" class="ddsstrip bad" data-go="dds"><b>Кассовый разрыв: денег не хватит ${fdate(g.s)}</b><span>нужно найти ${rub(-g.min)}${g.rec ? ` · в плюс — ${fdate(g.rec)}` : ""}</span><em>ДДС →</em></button></section>`;
-  if(X.low) return `<section><button type="button" class="ddsstrip warn" data-go="dds"><b>Ниже неснижаемого остатка ${fdate(X.low.d)}</b><span>${rub(X.low.bal)} при пороге ${rub(X.reserve)}</span><em>ДДС →</em></button></section>`;
-  return `<section><button type="button" class="ddsstrip" data-go="dds"><b>Денег хватает до ${fdate(X.end - 1)}</b><span>меньше всего денег будет ${fdate(X.minAll.d)}: ${rub(X.minAll.bal)}${X.margin ? ` · разрыв, если заказчики заплатят на ${X.margin} дн. позже` : ""}</span><em>ДДС →</em></button></section>`;
+  if(g) return `<section><button type="button" class="ddsstrip bad" data-go="dds"><b>Кассовый разрыв: денег не хватит ${fdate(g.s)}</b><span>нужно найти ${rub(-g.min)}${g.rec ? ` · в плюс — ${fdate(g.rec)}` : ""}</span><em>Кассовый разрыв →</em></button></section>`;
+  if(X.low) return `<section><button type="button" class="ddsstrip warn" data-go="dds"><b>Ниже неснижаемого остатка ${fdate(X.low.d)}</b><span>${rub(X.low.bal)} при пороге ${rub(X.reserve)}</span><em>Кассовый разрыв →</em></button></section>`;
+  return `<section><button type="button" class="ddsstrip" data-go="dds"><b>Денег хватает до ${fdate(X.end - 1)}</b><span>меньше всего денег будет ${fdate(X.minAll.d)}: ${rub(X.minAll.bal)}${X.margin ? ` · разрыв, если заказчики заплатят на ${X.margin} дн. позже` : ""}</span><em>Кассовый разрыв →</em></button></section>`;
 }
 V.dds = () => {
   const o = ddsOpts(), X = DDSX = ddsCalc(o), P = X.P, rep = R.repN, unit = o.step === "m" ? "месяц" : "неделю";
@@ -1392,13 +1392,14 @@ V.dds = () => {
   let h = `<div class="tools"><select data-ui="proj" data-id="dds" aria-label="Объект"><option value="">Вся компания</option><option value="_gen"${pr === "_gen" ? " selected" : ""}>Только общие расходы</option>${S.projects.filter(p => p.code).map(p => `<option value="${esc(p.code)}"${p.code === pr ? " selected" : ""}>${esc(p.code)} · ${esc(p.name)}</option>`).join("")}</select>`
     + sel("ddsstep", "Шаг", [["w", "По неделям"], ["m", "По месяцам"]])
     + sel("ddsdelay", "Проверка", [["0", "Заказчики платят в срок"], ["7", "Что если заказчики заплатят на 7 дн. позже"], ["14", "Что если на 14 дн. позже"], ["30", "Что если на 30 дн. позже"]]) + `</div>`;
-  if(!X.ev.length) return h + `<section class="card"><p class="note" style="margin:0">Пока нет платежей${pr ? " по этому выбору" : ""}. Внесите поступления и расходы на листе <a href="#payments">«Платежи»</a> — ДДС посчитается сам.</p></section>`;
+  if(!X.ev.length) return h + `<section class="card"><p class="note" style="margin:0">Пока нет платежей${pr ? " по этому выбору" : ""}. Внесите поступления и расходы на листе <a href="#payments">«Платежи»</a> — разрывы посчитаются сами.</p></section>`;
   const g = X.gaps[0];
   const tile = (lab, val, sub, color, alarm) => `<div class="tile" style="--tc:${color}"><small>${lab}</small><b class="${alarm ? "alarm" : ""}">${val}</b><span>${sub}</span></div>`;
-  h += `<section><div class="tiles t3">
+  h += `<section><div class="tiles t4">
     ${tile(pr ? "Деньги по выбору сейчас" : "На счёте сейчас", rub(X.fact), pr ? `получено − оплачено на ${fdate(rep)}` : `на ${fdate(rep)}`, "var(--cPurple)", X.fact < 0)}
     ${tile("Ближайший кассовый разрыв", g ? fdate(g.s) : "Нет", g ? `не хватит ${rub(-g.min)}${g.rec ? `, деньги придут ${fdate(g.rec)}` : ""}` : `до ${fdate(X.end - 1)}${X.margin ? ` · появится, если заказчики заплатят на ${X.margin} дн. позже` : ""}`, g ? "var(--cRed)" : "var(--cGreen)", !!g)}
-    ${tile(`До ${fdate(X.end - 1)}`, `+${money(X.toGet)} / −${money(X.toPay)}`, `ожидаем поступлений / предстоит выплат${X.overIn ? ` · просрочено поступлений: ${money(X.overIn)}` : ""}`, "var(--accent)", false)}
+    ${tile("Ожидаем поступлений", rub(X.toGet), `до ${fdate(X.end - 1)}${X.overIn ? ` · из них просрочено ${money(X.overIn)}` : ""}`, "var(--cGreen)", false)}
+    ${tile("Предстоит заплатить", rub(X.toPay), `до ${fdate(X.end - 1)}${X.overOut ? ` · из них просрочено ${money(X.overOut)}` : ""}`, "var(--cOrange)", false)}
   </div></section>`;
   const cls = v => v < 0 ? "gap" : v < X.reserve ? "low" : "";
   const tip = it => it.slice(0, 12).map(e => { const p = S.payments[e.i]; return `${fdate(e.d)} · ${p.contr || ""} · ${p.what || ""} · ${rub(e.amt)}${e.plan ? " (план)" : ""}`; }).join("\n") + (it.length > 12 ? `\n… ещё ${it.length - 12}` : "");
