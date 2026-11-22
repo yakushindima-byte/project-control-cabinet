@@ -166,6 +166,9 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .t input[disabled]{color:var(--muted);background:var(--neutral)}
 .t .del{border:0;background:none;color:var(--muted);cursor:pointer;width:26px;height:28px;font-size:15px}
 .t .del:hover{color:var(--cRed)}
+.t td.act{white-space:nowrap;padding:0}
+.t .dup{border:0;background:none;color:var(--muted);cursor:pointer;width:22px;height:28px;font-size:13px;padding:0}
+.t .dup:hover{color:var(--accent)}
 .addrow{margin-top:8px}
 .neg{color:var(--badInk);font-weight:600}
 .pos{color:var(--goodInk);font-weight:600}
@@ -837,8 +840,8 @@ function table(o){
   if(mob){
     h = `<div class="tw" data-tw="${o.id}"><table class="t mob"><colgroup>${cols.map(c => w(c) ? `<col style="width:${w(c)}px">` : "<col>").join("")}</colgroup><thead><tr>${cols.map(c => th(c, c.calc?"c":"")).join("")}</tr></thead><tbody>`;
   } else {
-    const tw = cols.reduce((a,c)=>a+(c.w||80),0) + (del?30:0);
-    h = `<div class="tw" data-tw="${o.id}"><table class="t" style="width:max(100%,${tw}px)"><colgroup>${del?'<col style="width:30px">':""}${cols.map(c=>`<col style="width:${c.w||80}px">`).join("")}</colgroup><thead><tr>`;
+    const tw = cols.reduce((a,c)=>a+(c.w||80),0) + (del?52:0);
+    h = `<div class="tw" data-tw="${o.id}"><table class="t" style="width:max(100%,${tw}px)"><colgroup>${del?'<col style="width:52px">':""}${cols.map(c=>`<col style="width:${c.w||80}px">`).join("")}</colgroup><thead><tr>`;
     if(del) h += `<th class="stk" aria-label="Удалить"></th>`;
     cols.forEach((c,j) => h += th(c, (c.calc?"c":"") + (j===0&&!del?" stk":"")));
     h += `</tr></thead><tbody>`;
@@ -860,7 +863,7 @@ function table(o){
       return;
     }
     h += o.go ? `<tr ${rid} class="go" data-go="${esc(o.go(i))}" tabindex="0" title="Открыть анализ объекта">` : `<tr ${rid}>`;
-    if(del) h += `<td class="stk ctr"><button class="del" data-del="${o.arr}" data-i="${i}" title="Удалить строку" aria-label="Удалить строку">×</button></td>`;
+    if(del) h += `<td class="stk ctr act"><button class="dup" data-dup="${o.arr}" data-i="${i}" data-tid="${o.id}" title="Дублировать строку" aria-label="Дублировать строку" type="button">⧉</button><button class="del" data-del="${o.arr}" data-i="${i}" title="Удалить строку" aria-label="Удалить строку" type="button">×</button></td>`;
     cols.forEach((c,j) => {
       const stk = j===0 && !del ? " stk" : "";
       if(c.calc || isAuto(c, i)){ const al = num(c) ? " n" : ["status","date","vat"].includes(c.t)||c.ctr ? " ctr" : ""; h += `<td class="c${al}${stk}"${c.calc ? "" : ' title="Считается из Графика работ"'}>${fmtA(c, cellVal(o, c, i))}</td>`; }
@@ -885,7 +888,7 @@ function renderCard(){
   const title = [row.proj || row.code, row.name || row.what || row.pos || row.stage || row.alt || row.role].filter(Boolean).join(" · ") || "Новая строка";
   let h = `<div class="cardbg" data-cardclose="1"><div class="rowcard" role="dialog" aria-modal="true" aria-label="Строка: ${esc(title)}"><header><b><small>${esc((SH[cur]||{}).t||"")}${pos>=0 ? ` · ${pos+1} из ${o._vis.length}` : ""}</small>${esc(title)}</b><button class="btn sm ghost" data-cardclose="1" type="button" aria-label="Закрыть">✕</button></header><div class="body">`;
   o.cols.forEach(col => { h += `<div class="f"><label>${esc(col.h)}</label>${col.calc || isAuto(col, i) ? `<div class="o">${fmtA(col, cellVal(o, col, i)) || "—"}</div>` : cellIn(o.arr, i, col, row[col.k])}</div>`; });
-  h += `</div><footer>${o.del ? `<button class="btn lg danger" data-del="${o.arr}" data-i="${i}" type="button">Удалить</button>` : ""}<span class="sp"></span>
+  h += `</div><footer>${o.del ? `<button class="btn lg danger" data-del="${o.arr}" data-i="${i}" type="button">Удалить</button><button class="btn lg" data-dup="${o.arr}" data-i="${i}" data-tid="${c.id}" type="button">Дублировать</button>` : ""}<span class="sp"></span>
     <button class="btn lg" data-cardgo="${prev ?? ""}" type="button"${prev===undefined?" disabled":""} aria-label="Предыдущая строка">←</button><button class="btn lg" data-cardgo="${next ?? ""}" type="button"${next===undefined?" disabled":""} aria-label="Следующая строка">→</button>
     <button class="btn lg pri" data-cardclose="1" type="button">Готово</button></footer></div></div>`;
   if(box.firstChild){ const t = document.createElement("div"); t.innerHTML = h; morphKids(box, t); } else { box.innerHTML = h; document.body.style.overflow = "hidden"; }
@@ -1638,6 +1641,21 @@ document.addEventListener("click", e => {
     const o = TABLES[tid];
     if(o && MOBLIST && isMob() && o.mob) openCard(tid, arr.indexOf(row));
     else { const tr = focusRow(row._id); if(tr) tr.classList.add("flash"); }
+    return; }
+  const dup = e.target.closest("[data-dup]");
+  if(dup){ if(RO) return; const path = dup.dataset.dup, tid = dup.dataset.tid, arr = arrOf(path), i = +dup.dataset.i, src = arr && arr[i]; if(!src) return;
+    const row = clone(src); row._id = rid();
+    const idk = {stages:["id","Э-",2], works:["id","Р-",3], repl:["id","ЗМ-",3], projects:["code","PR-",2]}[path];
+    if(idk) row[idk[0]] = nextId(arr, idk[0], idk[1], idk[2]);
+    // копия — новая плановая строка: факт не переносим
+    if(path==="payments"){ row.status = "План"; delete row.fdate; }
+    if(path==="works"){ ["fs","ff","done","reason"].forEach(k => delete row[k]); }
+    if(path==="stages"){ ["fs","ff","prog","reason"].forEach(k => delete row[k]); }
+    arr.splice(i + 1, 0, row);
+    send([{t:"add", a:path, row, at:i + 1}]);
+    ui.pin[tid] = row._id; if(ui.card) ui.card = {id:tid, rid:row._id};
+    render(true); toast(idk ? `Строка скопирована: ${row[idk[0]]}` : "Строка скопирована");
+    if(!ui.card){ const tr = focusRow(row._id); if(tr) tr.classList.add("flash"); }
     return; }
   const del = e.target.closest("[data-del]");
   if(del){ if(RO) return; const path = del.dataset.del, arr = arrOf(path), i = +del.dataset.i, row = arr[i]; if(!row) return;
