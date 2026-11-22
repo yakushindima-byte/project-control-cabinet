@@ -734,7 +734,7 @@ const SHEETS = [
   {id:"projects", t:"Проекты", g:"Деньги", c:"#1565C0", sub:"Единый реестр объектов и договоров. Код проекта связывает все листы."},
   {id:"budget", t:"Бюджет", g:"Деньги", c:"#1565C0", sub:"План, факт и прогноз по статьям. Факт = оплаты из Платежей + корректировка, остаток считается сам."},
   {id:"payments", t:"Платежи", g:"Деньги", c:"#2E7D32", sub:"Платёжный календарь. Отметьте оплату — она сразу попадёт в факт Бюджета и в деньги на счёте."},
-  {id:"dds", t:"Кассовый разрыв", g:"Деньги", c:"#2E7D32", sub:"Движение денег по неделям и месяцам: когда денег на счёте не хватит на выплаты. Считается из Платежей."},
+  {id:"dds", t:"ДДС", g:"Деньги", c:"#2E7D32", sub:"Движение денег по неделям и месяцам и кассовые разрывы — когда денег на счёте не хватит на выплаты. Считается из Платежей."},
   {id:"purchases", t:"Закупки", g:"Снабжение", c:"#2E7D32", sub:"Поставки оборудования. Дата поставки сравнивается с началом монтажа по Графику работ."},
   {id:"replacements", t:"Замены", g:"Снабжение", c:"#2E7D32", sub:"Аналоги на согласовании у заказчика. Пока замена не согласована, поставка не считается «В срок»."},
   {id:"ppr", t:"ППР", g:"Сроки", c:"#EF6C00", sub:"Укрупнённые этапы для директора и заказчика. Если к этапу привязаны работы — факт и прогноз берутся из Графика работ."},
@@ -1158,7 +1158,7 @@ V.setup = () => {
   let h = `<section class="card"><h2 class="sec-h">Параметры</h2><div class="form">
     ${f("Название компании","company","text","Выводится на сводке директора")}${f("Отчётная дата (пусто — сегодняшняя)","repDate","date","Укажите дату, чтобы «заморозить» отчёт")}
     ${f("Остаток денег на счетах на дату начала учёта, ₽","startCash","money","Возьмите из банковской выписки")}${f("Дата начала учёта","startDate","date","Платежи раньше этой даты не влияют на остаток")}
-    ${f("Неснижаемый остаток денег, ₽","minCash","money","Ниже — жёлтая подсветка на листе «Кассовый разрыв»")}
+    ${f("Неснижаемый остаток денег, ₽","minCash","money","Ниже — жёлтая подсветка в ДДС")}
     ${f("Целевая маржа проекта, %","target","pct","Ниже — статус «Внимание»")}${f("Критическая маржа проекта, %","crit","pct","Ниже — статус «Риск»")}
     ${f("Налог на прибыль / УСН, %","tax","pct","Налог на прибыль с 2025 г. — 25%")}${f("Горизонт контроля платежей, дней","horizon","num","Платежи в горизонте — «Скоро срок»")}
     ${f("Допустимое отставание от графика, %","lagTol","pct","Больше — статус «Отставание»")}${f("Начало шкалы Ганта (пусто — авто)","ganttStart","date","Авто: за 4 недели до отчётной даты")}
@@ -1350,9 +1350,9 @@ function ddsBase(){ return R._ddsb || (R._ddsb = ddsCalc({step:"w", delay:0, noO
 function ddsStrip(){
   if(!S.payments.length) return "";
   const X = ddsBase(), g = X.gaps[0];
-  if(g) return `<section><button type="button" class="ddsstrip bad" data-go="dds"><b>Кассовый разрыв: денег не хватит ${fdate(g.s)}</b><span>нужно найти ${rub(-g.min)}${g.rec ? ` · в плюс — ${fdate(g.rec)}` : ""}</span><em>Кассовый разрыв →</em></button></section>`;
-  if(X.low) return `<section><button type="button" class="ddsstrip warn" data-go="dds"><b>Ниже неснижаемого остатка ${fdate(X.low.d)}</b><span>${rub(X.low.bal)} при пороге ${rub(X.reserve)}</span><em>Кассовый разрыв →</em></button></section>`;
-  return `<section><button type="button" class="ddsstrip" data-go="dds"><b>Денег хватает до ${fdate(X.end - 1)}</b><span>меньше всего денег будет ${fdate(X.minAll.d)}: ${rub(X.minAll.bal)}${X.margin ? ` · разрыв, если заказчики заплатят на ${X.margin} дн. позже` : ""}</span><em>Кассовый разрыв →</em></button></section>`;
+  if(g) return `<section><button type="button" class="ddsstrip bad" data-go="dds"><b>Кассовый разрыв: денег не хватит ${fdate(g.s)}</b><span>нужно найти ${rub(-g.min)}${g.rec ? ` · в плюс — ${fdate(g.rec)}` : ""}</span><em>ДДС →</em></button></section>`;
+  if(X.low) return `<section><button type="button" class="ddsstrip warn" data-go="dds"><b>Ниже неснижаемого остатка ${fdate(X.low.d)}</b><span>${rub(X.low.bal)} при пороге ${rub(X.reserve)}</span><em>ДДС →</em></button></section>`;
+  return `<section><button type="button" class="ddsstrip" data-go="dds"><b>Денег хватает до ${fdate(X.end - 1)}</b><span>меньше всего денег будет ${fdate(X.minAll.d)}: ${rub(X.minAll.bal)}${X.margin ? ` · разрыв, если заказчики заплатят на ${X.margin} дн. позже` : ""}</span><em>ДДС →</em></button></section>`;
 }
 V.dds = () => {
   const o = ddsOpts(), X = DDSX = ddsCalc(o), P = X.P, rep = R.repN, unit = o.step === "m" ? "месяц" : "неделю";
