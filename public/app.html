@@ -61,6 +61,7 @@ a{color:var(--accent)}
 .app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100%}
 /* ---------- панель листов */
 .side{align-self:start;background:var(--navy);color:var(--navyInk);position:sticky;top:env(safe-area-inset-top,0px);height:calc(100vh / var(--z,1) - env(safe-area-inset-top,0px));overflow:auto;display:flex;flex-direction:column;padding:18px 12px 16px max(12px,env(safe-area-inset-left,0px))}
+a.logo{display:block;text-decoration:none}a.logo:hover span{color:#fff}
 .logo{font-family:var(--f-disp);font-weight:700;font-size:15px;letter-spacing:.3px;line-height:1.15;padding:0 8px;color:#fff}
 .logo span{color:#6FA8FF}
 .company{font-size:var(--fs-xs);color:var(--navyMuted);padding:4px 8px 14px}
@@ -1728,7 +1729,7 @@ function drawCharts(){
 /* ---------- отрисовка */
 function nav(){
   const counts = {dds:ddsBase().gaps.length, payments:R.dash.overdueN, purchases:R.dash.supply, schedule:R.dash.slips, analysis:R.dash.risk};
-  let h = `<div class="logo">PROJECT<br>CONTROL <span>PRO</span></div><div class="company">${esc(S.settings.company)}</div><nav class="nav" aria-label="Листы">`;
+  let h = `<a class="logo" href="#dash" title="Сводка директора">PROJECT<br>CONTROL <span>PRO</span></a><div class="company">${esc(S.settings.company)}</div><nav class="nav" aria-label="Листы">`;
   let g = "";
   SHEETS.forEach(s => { if(s.g!==g){ h += `<div class="grp">${s.g}</div>`; g = s.g; } h += `<a href="#${s.id}" class="${cur===s.id?"on":""}"><i style="background:${s.c}"></i>${s.t}${counts[s.id]?`<span class="cnt">${counts[s.id]}</span>`:""}</a>`; });
   if(CAB){
