@@ -3,6 +3,7 @@
 "company": "ООО «СлаботочМонтаж» (демо)",
 "repDate": "2026-10-20",
 "startCash": 6000000,
+"minCash": 1500000,
 "startDate": "2026-03-01",
 "target": 0.2,
 "crit": 0.1,

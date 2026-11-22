@@ -3,6 +3,7 @@
   "company": "",
   "repDate": "",
   "startCash": 0,
+  "minCash": 0,
   "startDate": "",
   "target": 0.2,
   "crit": 0.1,

@@ -166,6 +166,31 @@ table.t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);table-la
 .mbar u{display:block;width:44px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;text-decoration:none}
 .mbar u s{display:block;height:100%;background:var(--cGreen);text-decoration:none}
 .note{font-size:12px;color:var(--muted);margin:6px 2px 0}
+.t.dds td.n{padding:0 8px}
+.t.dds td.lbl{background:var(--surface);font-weight:500}
+.t.dds tr.ch td.lbl{padding-left:22px;color:var(--muted);font-weight:400}
+.t.dds tr.bal td{font-weight:700}
+.t.dds tr.last td{border-bottom:2px solid var(--accent)}
+.t.dds tr.hd td{background:var(--calc);font-weight:700;color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.t.dds tr.hd td.lbl{background:var(--calc)}
+.t.dds td.gap{background:var(--bad);color:var(--badInk);font-weight:700}
+.t.dds td.low{background:var(--warn);color:var(--warnInk)}
+.t.dds th.now{background:var(--accent)}
+.t.dds th small{display:block;font-weight:400;opacity:.75;font-size:10px;margin-top:2px}
+.ddsgap{border-left:4px solid var(--cRed)} .ddsgap.warn{border-left-color:#F2B705} .ddsgap.ok{border-left-color:var(--cGreen)}
+.ddsgap p{margin:0 0 8px;font-size:13.5px;line-height:1.45}
+.ddsl{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:10px}
+.ddsl h3{font-size:11px;margin:0 0 6px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.ddsl ul{list-style:none;margin:0;padding:0}
+.ddsl li{display:flex;gap:10px;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line2);font-size:12.5px}
+.ddsl li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.ddsl li b{white-space:nowrap}
+.ddsstrip{display:flex;gap:12px;align-items:center;flex-wrap:wrap;width:100%;text-align:left;border:1px solid var(--line);border-left:4px solid var(--cGreen);background:var(--surface);border-radius:8px;padding:10px 14px;font:inherit;font-size:13.5px;color:var(--ink);cursor:pointer}
+.ddsstrip:hover{border-color:var(--accent)}
+.ddsstrip.bad{border-left-color:var(--cRed);background:var(--bad);color:var(--badInk)}
+.ddsstrip.warn{border-left-color:#F2B705;background:var(--warn);color:var(--warnInk)}
+.ddsstrip em{font-style:normal;margin-left:auto;font-weight:700;white-space:nowrap}
+@media (max-width:720px){.ddsl{grid-template-columns:1fr}}
 
 /* ---------- Гант */
 .gantt{overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
@@ -688,6 +713,7 @@ const SHEETS = [
   {id:"projects", t:"Проекты", g:"Деньги", c:"#1565C0", sub:"Единый реестр объектов и договоров. Код проекта связывает все листы."},
   {id:"budget", t:"Бюджет", g:"Деньги", c:"#1565C0", sub:"План, факт и прогноз по статьям. Факт = оплаты из Платежей + корректировка, остаток считается сам."},
   {id:"payments", t:"Платежи", g:"Деньги", c:"#2E7D32", sub:"Платёжный календарь. Отметьте оплату — она сразу попадёт в факт Бюджета и в деньги на счёте."},
+  {id:"dds", t:"ДДС", g:"Деньги", c:"#2E7D32", sub:"Движение денег по неделям и месяцам: остаток по дням, кассовые разрывы и сценарии задержки оплат. Считается из Платежей."},
   {id:"purchases", t:"Закупки", g:"Снабжение", c:"#2E7D32", sub:"Поставки оборудования. Дата поставки сравнивается с началом монтажа по Графику работ."},
   {id:"replacements", t:"Замены", g:"Снабжение", c:"#2E7D32", sub:"Аналоги на согласовании у заказчика. Пока замена не согласована, поставка не считается «В срок»."},
   {id:"ppr", t:"ППР", g:"Сроки", c:"#EF6C00", sub:"Укрупнённые этапы для директора и заказчика. Если к этапу привязаны работы — факт и прогноз берутся из Графика работ."},
@@ -890,6 +916,7 @@ V.dash = () => {
     ${tile("Прогноз маржи", pct(T.margin), `цель: ${Math.round(st.target*100)}%, критично: ${Math.round(st.crit*100)}%`, "var(--cGreen)", "analysis")}
     ${tile("На расчётном счёте", rub(D.cash), `долг заказчиков: ${money(T.debt)}`, "var(--cPurple)", "payments")}
   </div></section>
+  ${ddsStrip()}
   <section><h2 class="sec-h red">Сигналы и риски</h2><div class="tiles">
     ${tile("Просроченные платежи", D.overdueN, `на сумму ${rub(D.overdueSum)}`, "var(--cRed)", "payments:Просрочено", D.overdueN>0)}
     ${tile("К оплате поставщикам", rub(D.toPay), `в ближайшие ${st.horizon} дн.`, "var(--cOrange)", "payments:Скоро срок")}
@@ -1110,6 +1137,7 @@ V.setup = () => {
   let h = `<section class="card"><h2 class="sec-h">Параметры</h2><div class="form">
     ${f("Название компании","company","text","Выводится на сводке директора")}${f("Отчётная дата (пусто — сегодняшняя)","repDate","date","Укажите дату, чтобы «заморозить» отчёт")}
     ${f("Остаток денег на счетах на дату начала учёта, ₽","startCash","money","Возьмите из банковской выписки")}${f("Дата начала учёта","startDate","date","Платежи раньше этой даты не влияют на остаток")}
+    ${f("Неснижаемый остаток денег, ₽","minCash","money","Ниже — жёлтая подсветка в ДДС")}
     ${f("Целевая маржа проекта, %","target","pct","Ниже — статус «Внимание»")}${f("Критическая маржа проекта, %","crit","pct","Ниже — статус «Риск»")}
     ${f("Налог на прибыль / УСН, %","tax","pct","Налог на прибыль с 2025 г. — 25%")}${f("Горизонт контроля платежей, дней","horizon","num","Платежи в горизонте — «Скоро срок»")}
     ${f("Допустимое отставание от графика, %","lagTol","pct","Больше — статус «Отставание»")}${f("Начало шкалы Ганта (пусто — авто)","ganttStart","date","Авто: за 4 недели до отчётной даты")}
@@ -1157,7 +1185,7 @@ async function loadShares(){
 }
 /* ---------- история изменений */
 const ARRL = {projects:"Проекты", budget:"Бюджет", payments:"Платежи", purchases:"Закупки", repl:"Замены", stages:"ППР", works:"График работ"};
-const SETL = {company:["Название компании"], repDate:["Отчётная дата","date"], startCash:["Остаток денег на начало учёта","money"], startDate:["Дата начала учёта","date"], target:["Целевая маржа","pct"], crit:["Критическая маржа","pct"], tax:["Налог на прибыль","pct"], horizon:["Горизонт контроля платежей","num"], lagTol:["Допустимое отставание","pct"], ganttStart:["Начало шкалы Ганта","date"]};
+const SETL = {company:["Название компании"], repDate:["Отчётная дата","date"], startCash:["Остаток денег на начало учёта","money"], minCash:["Неснижаемый остаток","money"], startDate:["Дата начала учёта","date"], target:["Целевая маржа","pct"], crit:["Критическая маржа","pct"], tax:["Налог на прибыль","pct"], horizon:["Горизонт контроля платежей","num"], lagTol:["Допустимое отставание","pct"], ganttStart:["Начало шкалы Ганта","date"]};
 const KPL = {obj:["Объект"], cust:["Заказчик"], link:["Ссылка на закупку"], s:["Дата начала работ","date"], e:["Дата окончания работ","date"], nmck:["НМЦК","money"], vat:["Ставка НДС","pct"], price:["Наша цена","money"], ins:["Страховые взносы","pct"], reserve:["Резерв","pct"]};
 const LISTL = {systems:"Системы", cost:"Статьи затрат", stages:"Этапы проекта", exec:"Исполнители", contr:"Контрагенты", units:"Ед. изм.", pms:"Руководители", reasons:"Причины замены", delays:"Причины срыва сроков"};
 let COLMAP = null;
@@ -1216,13 +1244,175 @@ V.buy = () => {
 };
 
 /* ---------- графики */
+/* ---------- ДДС: движение денег и кассовые разрывы (данные — лист «Платежи») */
+const ddsD = n => { const s = ds(n); return s.slice(8,10) + "." + s.slice(5,7); };
+let DDSX = null;            // последний расчёт листа ДДС — для графика
+function ddsOpts(){ return { step: ui.f.ddsstep || "w", delay: +(ui.f.ddsdelay || 0), noOver: ui.f.ddsover === "no", proj: ui.proj.dds || "", group: ui.f.ddsgroup || "art" }; }
+function ddsEvents(o){
+  const rep = R.repN, startD = R.startD, ev = [];
+  S.payments.forEach((p, i) => {
+    const d0 = R.pay[i] && R.pay[i].dds;
+    if(d0 === null || d0 === undefined || blank(p.type) || p.status === "Отменено" || d0 < startD) return;
+    if(o.proj === "_gen" ? !blank(p.proj) : (o.proj && p.proj !== o.proj)) return;
+    const inc = p.type === "Поступление", plan = p.status !== "Оплачено", a = dn(p.date);
+    const over = plan && a !== null && a < rep;
+    let d = d0;
+    if(inc && plan){ if(o.noOver && over) return; d += o.delay; }
+    ev.push({d, inc, amt:num(p.amt), i, plan, over});
+  });
+  return ev;
+}
+function ddsPeriods(o){
+  const rep = R.repN, P = [];
+  if(o.step === "m"){
+    const rd = new Date(rep * DAY), y = rd.getUTCFullYear(), m = rd.getUTCMonth();
+    for(let k = -3; k <= 8; k++){ const a = Math.round(Date.UTC(y, m + k, 1) / DAY), b = Math.round(Date.UTC(y, m + k + 1, 1) / DAY), t = new Date(a * DAY);
+      P.push({a, b, l: MON[t.getUTCMonth()] + " " + String(t.getUTCFullYear()).slice(2)}); }
+  } else {
+    const w0 = rep - wd2(rep) + 1;
+    for(let k = -4; k <= 12; k++){ const a = w0 + 7 * k; P.push({a, b: a + 7, l: ddsD(a) + "–" + ddsD(a + 6)}); }
+  }
+  P.forEach(p => p.kind = p.b <= rep ? "fact" : p.a <= rep ? "now" : "plan");
+  return P;
+}
+// минимальный остаток с отчётной даты до конца горизонта — для запаса прочности
+function ddsMin(o, end){
+  const rep = R.repN, m = new Map(); let bal = o.proj ? 0 : num(S.settings.startCash);
+  ddsEvents(o).forEach(e => { const v = e.inc ? e.amt : -e.amt; if(e.d < rep) bal += v; else if(e.d < end) m.set(e.d, (m.get(e.d) || 0) + v); });
+  let mn = Infinity; for(let d = rep; d < end; d++){ bal += m.get(d) || 0; if(bal < mn) mn = bal; }
+  return mn;
+}
+function ddsCalc(o){
+  const rep = R.repN, P = ddsPeriods(o), ev = ddsEvents(o), a0 = P[0].a, end = P[P.length - 1].b;
+  const reserve = o.proj ? 0 : num(S.settings.minCash);
+  let open = o.proj ? 0 : num(S.settings.startCash), fact = open;
+  const byDay = new Map(), pk = d => { for(let k = 0; k < P.length; k++) if(d >= P[k].a && d < P[k].b) return k; return -1; };
+  const key = e => { const p = S.payments[e.i];
+    if(o.group === "contr") return p.contr || "Без контрагента";
+    if(e.inc) return blank(p.proj) ? "Прочие поступления" : R.pay[e.i].obj;
+    return o.group === "proj" ? R.pay[e.i].obj : (p.art || "Без статьи"); };
+  const rows = {inc:new Map(), out:new Map()};
+  const X = {P, open:0, reserve, end, toGet:0, toPay:0, overIn:0, overOut:0, ev};
+  ev.forEach(e => {
+    const v = e.inc ? e.amt : -e.amt;
+    if(!e.plan && e.d <= rep) fact += v;
+    if(e.plan && e.d >= rep && e.d < end){ if(e.inc) X.toGet += e.amt; else X.toPay += e.amt; }
+    if(e.over){ if(e.inc) X.overIn += e.amt; else X.overOut += e.amt; }
+    if(e.d < a0){ open += v; return; }
+    if(e.d >= end) return;
+    byDay.set(e.d, (byDay.get(e.d) || 0) + v);
+    const k = pk(e.d), m = e.inc ? rows.inc : rows.out, n = key(e);
+    if(!m.has(n)) m.set(n, {name:n, v:P.map(() => 0), it:P.map(() => [])});
+    const r = m.get(n); r.v[k] += e.amt; r.it[k].push(e);
+  });
+  const tot = r => r.v.reduce((a, b) => a + b, 0), ord = S.lists.cost;
+  X.inc = [...rows.inc.values()].sort((x, y) => tot(y) - tot(x));
+  X.out = [...rows.out.values()].sort((x, y) => (o.group === "art" && ord.includes(x.name) && ord.includes(y.name)) ? ord.indexOf(x.name) - ord.indexOf(y.name)
+    : (o.group === "art" && ord.includes(x.name) !== ord.includes(y.name)) ? (ord.includes(x.name) ? -1 : 1) : tot(y) - tot(x));
+  X.open = open; X.fact = fact;
+  // остаток по дням: разрыв виден, даже если на конец месяца всё в плюсе
+  let bal = open; const daily = [];
+  P.forEach((p, k) => {
+    p.open = bal; p.inc = X.inc.reduce((a, r) => a + r.v[k], 0); p.out = X.out.reduce((a, r) => a + r.v[k], 0); p.min = Infinity; p.minD = p.a;
+    for(let d = p.a; d < p.b; d++){ bal += byDay.get(d) || 0; if(d >= rep) daily.push({d, bal}); if(bal < p.min){ p.min = bal; p.minD = d; } }
+    p.close = bal;
+  });
+  X.gaps = []; let g = null;
+  daily.forEach(x => { if(x.bal < 0){ if(!g){ g = {s:x.d, e:x.d, min:x.bal, minD:x.d, rec:null}; X.gaps.push(g); } if(x.bal < g.min){ g.min = x.bal; g.minD = x.d; } g.e = x.d; } else if(g){ g.rec = x.d; g = null; } });
+  X.low = reserve > 0 ? daily.find(x => x.bal < reserve) || null : null;
+  X.minAll = daily.reduce((m, x) => x.bal < m.bal ? x : m, daily[0] || {d:rep, bal:open});
+  X.margin = undefined;
+  if(!X.gaps.length && ev.length){ X.margin = null; for(let dd = 1; dd <= 90; dd++) if(ddsMin(Object.assign({}, o, {delay:o.delay + dd}), end) < 0){ X.margin = dd; break; } }
+  return X;
+}
+function ddsBase(){ return R._ddsb || (R._ddsb = ddsCalc({step:"w", delay:0, noOver:false, proj:"", group:"art"})); }
+function ddsStrip(){
+  if(!S.payments.length) return "";
+  const X = ddsBase(), g = X.gaps[0];
+  if(g) return `<section><button type="button" class="ddsstrip bad" data-go="dds"><b>Кассовый разрыв ${fdate(g.s)}</b><span>остаток уйдёт до ${rub(g.min)}${g.rec ? `, в плюс — ${fdate(g.rec)}` : ""}${X.gaps.length > 1 ? ` · разрывов в ближайшие 3 месяца: ${X.gaps.length}` : ""}</span><em>ДДС →</em></button></section>`;
+  if(X.low) return `<section><button type="button" class="ddsstrip warn" data-go="dds"><b>Ниже неснижаемого остатка ${fdate(X.low.d)}</b><span>${rub(X.low.bal)} при пороге ${rub(X.reserve)}</span><em>ДДС →</em></button></section>`;
+  return `<section><button type="button" class="ddsstrip" data-go="dds"><b>Кассовых разрывов нет до ${fdate(X.end - 1)}</b><span>минимальный остаток ${rub(X.minAll.bal)} — ${fdate(X.minAll.d)}${X.margin === null ? "" : X.margin ? ` · разрыв, если заказчики заплатят на ${X.margin} дн. позже` : ""}</span><em>ДДС →</em></button></section>`;
+}
+V.dds = () => {
+  const o = ddsOpts(), X = DDSX = ddsCalc(o), P = X.P, rep = R.repN;
+  const sel = (id, label, opts) => { const v = ui.f[id] || opts[0][0]; return `<select data-ui="f" data-id="${id}" aria-label="${label}">${opts.map(([k, t]) => `<option value="${k}"${k === v ? " selected" : ""}>${t}</option>`).join("")}</select>`; };
+  const tile = (lab, val, sub, color, alarm) => `<div class="tile" style="--tc:${color}"><small>${lab}</small><b class="${alarm ? "alarm" : ""}">${val}</b><span>${sub}</span></div>`;
+  const pr = o.proj, prName = pr === "_gen" ? "общие расходы компании" : pr ? (S.projects.find(p => p.code === pr) || {}).name || pr : "";
+  let h = `<div class="tools"><select data-ui="proj" data-id="dds" aria-label="Объект"><option value="">Вся компания</option><option value="_gen"${pr === "_gen" ? " selected" : ""}>Только общие расходы</option>${S.projects.filter(p => p.code).map(p => `<option value="${esc(p.code)}"${p.code === pr ? " selected" : ""}>${esc(p.code)} · ${esc(p.name)}</option>`).join("")}</select>`
+    + sel("ddsstep", "Шаг", [["w", "По неделям"], ["m", "По месяцам"]])
+    + sel("ddsgroup", "Разрез", [["art", "Выплаты по статьям"], ["proj", "Выплаты по объектам"], ["contr", "По контрагентам"]])
+    + sel("ddsdelay", "Сценарий", [["0", "Заказчики платят в срок"], ["7", "Заказчики платят на 7 дн. позже"], ["14", "Заказчики платят на 14 дн. позже"], ["30", "Заказчики платят на 30 дн. позже"]])
+    + sel("ddsover", "Просроченные поступления", [["yes", "Просроченные поступления — сейчас"], ["no", "Просроченные поступления не придут"]]) + `</div>`;
+  if(!X.ev.length) return h + `<section class="card"><p class="note" style="margin:0">Пока нет платежей${pr ? " по этому выбору" : ""}. Внесите поступления и расходы на листе <a href="#payments">«Платежи»</a> — ДДС и кассовые разрывы посчитаются сами.</p></section>`;
+  const g = X.gaps[0];
+  h += `<section><div class="tiles">
+    ${tile(pr ? "Деньги по выбору" : "Деньги на счёте", rub(X.fact), pr ? `получено − оплачено на ${fdate(rep)}` : `на ${fdate(rep)}, по оплатам`, "var(--cPurple)", X.fact < 0)}
+    ${tile("Минимальный остаток", rub(X.minAll.bal), fdate(X.minAll.d), X.minAll.bal < 0 ? "var(--cRed)" : X.minAll.bal < X.reserve ? "#F2B705" : "var(--accent)", X.minAll.bal < 0)}
+    ${tile("Кассовый разрыв", g ? fdate(g.s) : "Нет", g ? `до ${rub(g.min)}, ${g.rec ? (g.rec - g.s) + " дн." : "без выхода в плюс"}` : `до ${fdate(X.end - 1)}`, g ? "var(--cRed)" : "var(--cGreen)", !!g)}
+    ${tile("Запас по оплатам заказчиков", g ? "—" : X.margin === null ? "> 90 дн." : X.margin + " дн.", g ? "разрыв уже есть" : "на сколько могут опоздать поступления без разрыва", g ? "var(--cRed)" : X.margin !== null && X.margin < 14 ? "#F2B705" : "var(--cGreen)")}
+    ${tile("Ожидаем поступлений", rub(X.toGet), X.overIn ? `из них просрочено: ${money(X.overIn)}` : `до ${fdate(X.end - 1)}`, "var(--cGreen)", false)}
+    ${tile("Предстоит выплат", rub(X.toPay), X.overOut ? `из них просрочено: ${money(X.overOut)}` : `до ${fdate(X.end - 1)}`, "var(--cOrange)", false)}
+  </div></section>`;
+  // что делать с разрывом
+  const li = e => { const p = S.payments[e.i]; return `<li><span>${fdate(e.d)} · ${esc(p.contr || p.what || "")}${p.proj ? ` · ${esc(p.proj)}` : ""}${e.over ? ` · <b class="neg">просрочено</b>` : ""}</span><b>${money(e.amt)}</b></li>`; };
+  if(g){
+    const outs = X.ev.filter(e => !e.inc && e.plan && e.d >= rep && e.d <= g.minD).sort((a, b) => b.amt - a.amt).slice(0, 6);
+    const ins = X.ev.filter(e => e.inc && e.plan && e.d > g.s && e.d < X.end).sort((a, b) => a.d - b.d).slice(0, 6);
+    h += `<section class="card ddsgap"><h2 class="sec-h red">Кассовый разрыв ${fdate(g.s)}${pr ? " · " + esc(prName) : ""}</h2>
+      <p>${pr ? "По этому выбору выплаты обгоняют поступления: с" : "С"} ${fdate(g.s)} остаток уходит в минус и опускается до <b class="neg">${rub(g.min)}</b> (${fdate(g.minD)}). ${g.rec ? `В плюс выходит ${fdate(g.rec)} — через ${g.rec - g.s} дн.` : `До ${fdate(X.end - 1)} в плюс не выходит.`}${X.gaps.length > 1 ? ` Разрывов в горизонте: ${X.gaps.length}.` : ""}</p>
+      <p>${pr ? "Этот минус покрывается деньгами компании. " : ""}Чтобы закрыть разрыв, нужно <b>${rub(-g.min)}</b>: перенести часть выплат на даты после ${fdate(g.rec || X.end - 1)}, получить поступления до ${fdate(g.s)} или заранее договориться об овердрафте.</p>
+      <div class="ddsl"><div><h3>Крупные выплаты до дна разрыва</h3><ul>${outs.map(li).join("") || "<li><span>Нет плановых выплат</span></li>"}</ul></div>
+      <div><h3>Поступления, которые закрывают разрыв — ускорить</h3><ul>${ins.map(li).join("") || "<li><span>В горизонте поступлений нет</span></li>"}</ul></div></div></section>`;
+  } else if(X.low){
+    h += `<section class="card ddsgap warn"><h2 class="sec-h">Ниже неснижаемого остатка ${fdate(X.low.d)}</h2><p>Разрыва нет, но ${fdate(X.low.d)} на счёте останется ${rub(X.low.bal)} при пороге ${rub(X.reserve)}. Минимум — ${rub(X.minAll.bal)} (${fdate(X.minAll.d)}). Порог меняется в «Настройках».</p></section>`;
+  } else {
+    h += `<section class="card ddsgap ok"><h2 class="sec-h">Кассовых разрывов нет до ${fdate(X.end - 1)}</h2><p>Минимальный остаток — ${rub(X.minAll.bal)} (${fdate(X.minAll.d)}). ${X.margin === null ? "Даже если заказчики заплатят на 90 дней позже, денег хватит." : `Разрыв появится, если заказчики заплатят на ${X.margin} дн. позже — проверьте сценарием выше.`}</p></section>`;
+  }
+  h += `<section class="card"><h2 class="sec-h">Поступления, выплаты и остаток</h2><div class="chartbox"><canvas id="chDds" aria-label="Поступления, выплаты и остаток по периодам"></canvas></div></section>`;
+  // таблица ДДС
+  const balCls = v => v < 0 ? "gap" : v < X.reserve ? "low" : "";
+  const tip = it => it.slice(0, 12).map(e => { const p = S.payments[e.i]; return `${fdate(e.d)} · ${p.contr || ""} · ${p.what || ""} · ${rub(e.amt)}${e.plan ? " (план)" : ""}`; }).join("\n") + (it.length > 12 ? `\n… ещё ${it.length - 12}` : "");
+  const td = (v, cls = "", t = "") => `<td class="n ${cls}"${t ? ` title="${esc(t)}"` : ""}>${money(v)}</td>`;
+  const line = (cls, lab, cells) => `<tr class="${cls}"><td class="stk lbl">${lab}</td>${cells}</tr>`;
+  let t = `<section><h2 class="sec-h">Движение денежных средств${pr ? ` <span class="rt">${esc(prName)}</span>` : ""}</h2><div class="tw"><table class="t dds" style="width:max(100%,${230 + P.length * 98}px)"><colgroup><col style="width:230px">${P.map(() => '<col style="width:98px">').join("")}</colgroup>
+    <thead><tr><th class="stk">Статья</th>${P.map(p => `<th class="${p.kind === "now" ? "now" : ""}">${p.l}<small>${p.kind === "fact" ? "факт" : p.kind === "now" ? "сейчас" : "план"}</small></th>`).join("")}</tr></thead><tbody>`;
+  const net = p => p.inc - p.out;
+  t += line("bal", "Остаток на начало", P.map(p => td(p.open, balCls(p.open))).join(""));
+  t += line("sum", "Поступления", P.map(p => td(p.inc, "pos")).join(""));
+  t += line("sum", "Выплаты", P.map(p => td(p.out, "neg")).join(""));
+  t += line("sum", "Чистый поток", P.map(p => td(net(p), net(p) < 0 ? "neg" : "pos")).join(""));
+  t += line("bal", "Остаток на конец", P.map(p => td(p.close, balCls(p.close))).join(""));
+  t += line("bal last", "Минимум внутри периода", P.map(p => td(p.min, balCls(p.min), `Минимум ${fdate(p.minD)}`)).join(""));
+  t += line("hd", "Поступления по " + (o.group === "contr" ? "контрагентам" : "объектам"), P.map(() => "<td></td>").join(""));
+  X.inc.forEach(r => t += line("ch", esc(r.name), r.v.map((v, k) => td(v, "", tip(r.it[k]))).join("")));
+  t += line("hd", "Выплаты по " + (o.group === "contr" ? "контрагентам" : o.group === "proj" ? "объектам" : "статьям"), P.map(() => "<td></td>").join(""));
+  X.out.forEach(r => t += line("ch", esc(r.name), r.v.map((v, k) => td(v, "", tip(r.it[k]))).join("")));
+  t += `</tbody></table></div><p class="note">Факт — оплаченные платежи по фактической дате, план — по плановой. Неоплаченные платежи с прошедшим сроком стоят на отчётную дату. Красным — минус на счёте${X.reserve ? `, жёлтым — ниже неснижаемого остатка ${rub(X.reserve)}` : ""}. Наведите на сумму — увидите платежи. Данные берутся из листа <a href="#payments">«Платежи»</a>.</p></section>`;
+  return h + t;
+};
+function drawDds(grid){
+  const X = DDSX, el = document.getElementById("chDds"); if(!X || !el) return;
+  const tickM = v => Math.abs(v) >= 1e6 ? String(+(v / 1e6).toFixed(1)).replace(".", ",") + " млн" : nf0.format(v);
+  const bad = css("--cRed"), acc = css("--accent");
+  const ds2 = [
+    {type:"bar", label:"Поступления", data:X.P.map(p => p.inc), backgroundColor:css("--cGreen"), borderRadius:3, order:3},
+    {type:"bar", label:"Выплаты", data:X.P.map(p => -p.out), backgroundColor:css("--cOrange"), borderRadius:3, order:3},
+    {type:"line", label:"Остаток на конец", data:X.P.map(p => p.close), borderColor:acc, backgroundColor:acc, borderWidth:2.5, pointRadius:X.P.map(p => p.close < 0 ? 5 : 3), pointBackgroundColor:X.P.map(p => p.close < 0 ? bad : acc), pointBorderColor:X.P.map(p => p.close < 0 ? bad : acc), order:1},
+    {type:"line", label:"Минимум в периоде", data:X.P.map(p => p.min), borderColor:bad, backgroundColor:bad, borderDash:[5, 4], borderWidth:1.5, pointRadius:X.P.map(p => p.min < 0 ? 4 : 0), order:2},
+  ];
+  if(X.reserve > 0) ds2.push({type:"line", label:"Неснижаемый остаток", data:X.P.map(() => X.reserve), borderColor:"#F2B705", backgroundColor:"#F2B705", borderWidth:1.5, pointRadius:0, order:2});
+  charts.push(new Chart(el, {data:{labels:X.P.map(p => p.l), datasets:ds2},
+    options:{maintainAspectRatio:false, plugins:{legend:{position:"bottom", labels:{boxWidth:12}}, tooltip:{callbacks:{label:c => `${c.dataset.label}: ${rub(c.dataset.type === "bar" ? Math.abs(c.raw) : c.raw)}`}}},
+      scales:{x:{grid:{display:false}}, y:{grid:{color:c => c.tick.value === 0 ? css("--muted") : grid}, ticks:{callback:tickM}}}}}));
+}
 let charts = [];
 function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 function drawCharts(){
   charts.forEach(c=>c.destroy()); charts = [];
-  if(!R || cur!=="dash" || typeof Chart==="undefined") return;
+  if(!R || (cur!=="dash" && cur!=="dds") || typeof Chart==="undefined") return;
   const ink = css("--muted"), grid = css("--line2");
   Chart.defaults.font.family = css("--f-ui"); Chart.defaults.color = ink;
+  if(cur==="dds"){ drawDds(grid); return; }
   const M = R.dash.months, lab = M.map(m => { const d = new Date(m.a*86400000); return MON[d.getUTCMonth()]+" "+String(d.getUTCFullYear()).slice(2); });
   const tickM = v => Math.abs(v)>=1e6 ? (v/1e6).toFixed(0)+" млн" : nf0.format(v);
   const tip = {callbacks:{label:c=>`${c.dataset.label}: ${rub(c.raw)}`}};
@@ -1244,7 +1434,7 @@ function drawCharts(){
 
 /* ---------- отрисовка */
 function nav(){
-  const counts = {payments:R.dash.overdueN, purchases:R.dash.supply, schedule:R.dash.slips, analysis:R.dash.risk};
+  const counts = {dds:ddsBase().gaps.length, payments:R.dash.overdueN, purchases:R.dash.supply, schedule:R.dash.slips, analysis:R.dash.risk};
   let h = `<div class="logo">PROJECT<br>CONTROL <span>PRO</span></div><div class="company">${esc(S.settings.company)}</div><nav class="nav" aria-label="Листы">`;
   let g = "";
   SHEETS.forEach(s => { if(s.g!==g){ h += `<div class="grp">${s.g}</div>`; g = s.g; } h += `<a href="#${s.id}" class="${cur===s.id?"on":""}"><i style="background:${s.c}"></i>${s.t}${counts[s.id]?`<span class="cnt">${counts[s.id]}</span>`:""}</a>`; });

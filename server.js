@@ -300,7 +300,7 @@ app.get("/api/version", auth, wrap(async (req, res) => {
 
 const ARR_RE = /^(projects|budget|payments|purchases|repl|stages|works|kp\.fot|kp\.blocks\.[0-3]\.rows)$/;
 const KEY_RE = /^[A-Za-z][A-Za-z0-9_]{0,30}$/;
-const SETTINGS_KEYS = new Set(["company", "repDate", "startCash", "startDate", "target", "crit", "tax", "horizon", "lagTol", "ganttStart"]);
+const SETTINGS_KEYS = new Set(["company", "repDate", "startCash", "startDate", "target", "crit", "tax", "horizon", "lagTol", "ganttStart", "minCash"]);
 const KP_KEYS = new Set(["obj", "cust", "link", "s", "e", "nmck", "vat", "price", "ins", "reserve"]);
 const LISTS = new Set(["systems", "cost", "stages", "exec", "contr", "units", "pms", "reasons", "delays"]);
 function val(v) {
