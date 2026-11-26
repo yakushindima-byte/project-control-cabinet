@@ -1520,7 +1520,7 @@ V.dds = () => {
     ${tile("Предстоит заплатить", rub(X.toPay), `до ${fdate(X.end - 1)}${X.overOut ? ` · из них просрочено ${money(X.overOut)}` : ""}`, "var(--cOrange)", false)}
   </div></section>`;
   const cls = v => v < 0 ? "gap" : v < X.reserve ? "low" : "";
-  const tip = it => it.slice(0, 12).map(e => { const p = S.payments[e.i]; return `${fdate(e.d)} · ${p.contr || ""} · ${p.what || ""} · ${rub(e.amt)}${e.plan ? " (план)" : ""}`; }).join("\n") + (it.length > 12 ? `\n… ещё ${it.length - 12}` : "");
+  const tip = it => it.slice(0, 12).map(e => { const p = S.payments[e.i], pd = dn(p.date); const why = !e.plan ? `оплачено ${fdate(e.d)}${pd !== null && pd !== e.d ? `, плановая дата была ${fdate(pd)}` : ""}` : e.over ? `просрочен (плановая дата ${fdate(pd)}) — стоит на дату отчёта` : pd !== null && pd !== e.d ? `план ${fdate(pd)}, сдвиг по проверке «заплатят позже»` : `план ${fdate(e.d)}`; return `${fdate(e.d)} · ${p.contr || ""} · ${p.what || ""} · ${rub(e.amt)} · ${why}`; }).join("\n") + (it.length > 12 ? `\n… ещё ${it.length - 12}` : "");
   const td = (v, c = "", t = "") => `<td class="n ${c}"${t ? ` title="${esc(t)}"` : ""}>${money(v)}</td>`;
   const line = (c, lab, cells) => `<tr class="${c}"><td class="stk lbl">${lab}</td>${cells}</tr>`;
   let t = `<section><h2 class="sec-h">Движение денежных средств${pr ? ` <span class="rt">${esc(prName)}</span>` : ""}</h2><div class="tw ddsw"><table class="t dds" style="width:max(100%,${230 + P.length * 98}px)"><colgroup><col style="width:230px">${P.map(() => '<col style="width:98px">').join("")}</colgroup>
